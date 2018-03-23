@@ -194,6 +194,7 @@ int main(int argc, char **argv){
 
   //Getting tree
   // {{{
+  Int_t errors = 0;
   //Vertex specific
   Double_t vx_z;
   Int_t targetPosition;
@@ -211,38 +212,45 @@ int main(int argc, char **argv){
   Double_t x_beam, x_target, x_feynman, q_transverse, Mmumu;
   
   //Vertex specific
-  tree->SetBranchAddress("vx_z", &vx_z);
-  tree->SetBranchAddress("targetPosition", &targetPosition);
+  errors += tree->SetBranchAddress("vx_z", &vx_z);
+  errors += tree->SetBranchAddress("targetPosition", &targetPosition);
   //Drell-Yan Angles
-  tree->SetBranchAddress("PhiS_simple", &PhiS_simple);
-  tree->SetBranchAddress("Theta_CS", &Theta_CS);
-  tree->SetBranchAddress("vOpenAngle", &vOpenAngle);
+  errors += tree->SetBranchAddress("PhiS_simple", &PhiS_simple);
+  errors += tree->SetBranchAddress("Theta_CS", &Theta_CS);
+  errors += tree->SetBranchAddress("vOpenAngle", &vOpenAngle);
   //Muons
-  tree->SetBranchAddress("phi_traj1", &phi_traj1);
-  tree->SetBranchAddress("phi_traj2", &phi_traj2);
-  tree->SetBranchAddress("theta_traj1", &theta_traj1);
-  tree->SetBranchAddress("theta_traj2", &theta_traj2);
-  tree->SetBranchAddress("qP_traj1", &qP_traj1);
-  tree->SetBranchAddress("qP_traj2", &qP_traj2);
+  errors += tree->SetBranchAddress("phi_traj1", &phi_traj1);
+  errors += tree->SetBranchAddress("phi_traj2", &phi_traj2);
+  errors += tree->SetBranchAddress("theta_traj1", &theta_traj1);
+  errors += tree->SetBranchAddress("theta_traj2", &theta_traj2);
+  errors += tree->SetBranchAddress("qP_traj1", &qP_traj1);
+  errors += tree->SetBranchAddress("qP_traj2", &qP_traj2);
   //Event
-  tree->SetBranchAddress("trigMask", &trigMask);
-  tree->SetBranchAddress("MasterTrigMask", &MasterTrigMask);
+  errors += tree->SetBranchAddress("trigMask", &trigMask);
+  errors += tree->SetBranchAddress("MasterTrigMask", &MasterTrigMask);
   //Target values
-  tree->SetBranchAddress("Spin_0", &Spin_0);
-  tree->SetBranchAddress("Spin_1", &Spin_1);
-  tree->SetBranchAddress("Spin_2", &Spin_2);
-  tree->SetBranchAddress("Spin_3", &Spin_3);
-  tree->SetBranchAddress("Spin_4", &Spin_4);
-  tree->SetBranchAddress("Spin_5", &Spin_5);
-  tree->SetBranchAddress("Spin_6", &Spin_6);
+  errors += tree->SetBranchAddress("Spin_0", &Spin_0);
+  errors += tree->SetBranchAddress("Spin_1", &Spin_1);
+  errors += tree->SetBranchAddress("Spin_2", &Spin_2);
+  errors += tree->SetBranchAddress("Spin_3", &Spin_3);
+  errors += tree->SetBranchAddress("Spin_4", &Spin_4);
+  errors += tree->SetBranchAddress("Spin_5", &Spin_5);
+  errors += tree->SetBranchAddress("Spin_6", &Spin_6);
   //DY-variables
-  tree->SetBranchAddress("x_beam", &x_beam);
-  tree->SetBranchAddress("x_target", &x_target);
-  tree->SetBranchAddress("x_feynman", &x_feynman);
-  tree->SetBranchAddress("q_transverse", &q_transverse);
-  tree->SetBranchAddress("Mmumu", &Mmumu);
-  // }}}
+  errors += tree->SetBranchAddress("x_beam", &x_beam);
+  errors += tree->SetBranchAddress("x_target", &x_target);
+  errors += tree->SetBranchAddress("x_feynman", &x_feynman);
+  errors += tree->SetBranchAddress("q_transverse", &q_transverse);
+  errors += tree->SetBranchAddress("Mmumu", &Mmumu);
 
+  if (errors){
+    cout << " " << endl;
+    cout << "Errors opening trees variables" << endl;
+    cout << " " << endl;
+    exit(EXIT_FAILURE);
+  }
+  // }}}
+  
   //Kinematic Counting Setup
   ///////////////
   // {{{
@@ -378,7 +386,7 @@ int main(int argc, char **argv){
   }//End tree loop
 
   //Draw graphs
-  //{{{
+  // {{{
   const Int_t nCanvas = 20;
   if (nCanvas < nBins/5.0) {
     cout << "nCanvas is too small..." << endl;
