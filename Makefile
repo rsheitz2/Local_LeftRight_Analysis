@@ -17,11 +17,13 @@ PHYS_BUILDDIR := $(PHYSDIR)/build
 
 HEADER := $(shell find $(SRCDIR)/include -type f -name '*.h')
 SOURCES := $(shell find $(SRCDIR) -type f -name '*.cpp')
-PHYSICS := $(shell find $(PHYSDIR) -type f -maxdepth 1 -name '*.cpp')
+#PHYSICS := $(shell find $(PHYSDIR) -type f -maxdepth 1 -name '*.cpp')
+PHYSICS := $(shell find $(PHYSDIR) -maxdepth 1 -type f -name '*.cpp')
 
 OBJS := $(patsubst $(SRCDIR)/%,$(SRC_BUILDDIR)/%,$(SOURCES:.cpp=.o))
 PHYS := $(patsubst $(PHYSDIR)/%,$(PHYS_BUILDDIR)/%,$(PHYSICS:.cpp=.o)) 
-MAIN := $(shell find Physics -type f -maxdepth 1 -name '*.cpp')
+#MAIN := $(shell find Physics -type f -maxdepth 1 -name '*.cpp')
+MAIN := $(shell find Physics -maxdepth 1 -type f -name '*.cpp')
 EXE := $(patsubst Physics/%,%,$(MAIN:.cpp=))
 
 all:$(EXE)

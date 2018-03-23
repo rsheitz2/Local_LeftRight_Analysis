@@ -16,6 +16,10 @@ int main(int argc, char **argv){
     cout << "        default output file is named \"Output.root\"" << endl;
     cout << "Option:  -Q outName	(write output to file to outName)"
 	 << endl;
+    cout << "Option:  -B binVar	(Variable to bin in)" << endl;
+    cout << "     (Current options: HM, xN, xPi, xF, pT, vxZ_upstream, ";
+    cout << "vxZ_downstream)" << endl;
+    cout << "     (Default option is HM)" << endl;
     cout << "" << endl;
 	
     exit(EXIT_FAILURE);
@@ -25,11 +29,11 @@ int main(int argc, char **argv){
   //Read input arguments
   ///////////////
   // {{{
-  Int_t wflag=0, Qflag=0, fflag=0;
+  Int_t wflag=0, Qflag=0, fflag=0, Bflag=0;
   Int_t c;
-  TString fname = "", outFile = "";
+  TString fname = "", outFile = "", binVar="";
   
-  while ((c = getopt (argc, argv, "wf:Q:")) != -1) {
+  while ((c = getopt (argc, argv, "wf:Q:B:")) != -1) {
     switch (c) {
     case 'w':
       wflag = 1;
@@ -43,10 +47,16 @@ int main(int argc, char **argv){
       fname += optarg;
       cout << fname << endl;
       break;
+    case 'B':
+      Bflag = 1;
+      binVar += optarg;
+      break;
     case '?':
       if (optopt == 'u')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (optopt == 'f')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'B')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (isprint (optopt))
 	fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -71,6 +81,11 @@ int main(int argc, char **argv){
     }
     f1->Close();
   }
+
+  if (!Bflag){
+    cout << " " << endl;
+    cout << "Default binning variable = Invariant mass" << endl;
+  }
   // }}}
   
   //Opening data files
@@ -86,9 +101,14 @@ int main(int argc, char **argv){
   TVectorD tv_xF_bounds( *( (TVectorD*)fdata->Get("tv_xF_bounds") ) );
   TVectorD tv_pT_bounds( *( (TVectorD*)fdata->Get("tv_pT_bounds") ) );
   TVectorD tv_M_bounds( *( (TVectorD*)fdata->Get("tv_M_bounds") ) );
+  TVectorD tv_rad_bounds( *( (TVectorD*)fdata->Get("tv_rad_bounds") ) );
+  TVectorD tv_vxZ_upstream_bounds(*((TVectorD*)fdata->Get("tv_vxZ_upstream_bounds")));
+  TVectorD tv_vxZ_downstream_bounds(*((TVectorD*)fdata->Get("tv_vxZ_downstream_bounds")));
   Int_t nBounds = tv_xN_bounds.GetNoElements();
   Double_t xN_bounds[nBounds], xPi_bounds[nBounds], xF_bounds[nBounds];
   Double_t pT_bounds[nBounds], M_bounds[nBounds];
+  Double_t rad_bounds[nBounds];
+  Double_t vxZ_upstream_bounds[nBounds], vxZ_downstream_bounds[nBounds];
   Double_t bounds[nBounds];
   for (Int_t i=0; i<nBounds; i++) {
     xN_bounds[i] = tv_xN_bounds[i];
@@ -96,9 +116,21 @@ int main(int argc, char **argv){
     xF_bounds[i] = tv_xF_bounds[i];
     pT_bounds[i] = tv_pT_bounds[i];
     M_bounds[i] = tv_M_bounds[i];
+    rad_bounds[i]=tv_rad_bounds[i];
+    vxZ_upstream_bounds[i]=tv_vxZ_upstream_bounds[i];
+    vxZ_downstream_bounds[i]=tv_vxZ_downstream_bounds[i];
 
     //Generic bounds
-    bounds[i] = M_bounds[i];
+    if (!Bflag || binVar=="HM") bounds[i] = M_bounds[i];
+    else if (binVar=="xN") bounds[i] = xN_bounds[i];
+    else if (binVar=="xPi") bounds[i] = xPi_bounds[i];
+    else if (binVar=="xF") bounds[i] = xF_bounds[i];
+    else if (binVar=="pT") bounds[i] = pT_bounds[i];
+    else if (binVar=="rad") bounds[i] = rad_bounds[i];
+    else if (binVar=="vxZ_upstream") bounds[i] = vxZ_upstream_bounds[i];
+    else if (binVar=="vxZ_downstream") bounds[i] = vxZ_downstream_bounds[i];
+    else {cout << "Wrong binning variable option" << endl;
+	exit(EXIT_FAILURE);}
   }
 
   //Dilution and polarization corrections
@@ -210,6 +242,8 @@ int main(int argc, char **argv){
   Double_t Spin_0, Spin_1, Spin_2, Spin_3, Spin_4, Spin_5, Spin_6;
   //DY-variables
   Double_t x_beam, x_target, x_feynman, q_transverse, Mmumu;
+  //Generic binning
+  Double_t *boundValue;
   
   //Vertex specific
   errors += tree->SetBranchAddress("vx_z", &vx_z);
@@ -242,6 +276,14 @@ int main(int argc, char **argv){
   errors += tree->SetBranchAddress("x_feynman", &x_feynman);
   errors += tree->SetBranchAddress("q_transverse", &q_transverse);
   errors += tree->SetBranchAddress("Mmumu", &Mmumu);
+  //Generic bound value
+  if (!Bflag || binVar=="HM") boundValue = &Mmumu;
+  else if (binVar=="xN") boundValue = &x_target;
+  else if (binVar=="xPi") boundValue = &x_beam;
+  else if (binVar=="xF") boundValue = &x_feynman;
+  else if (binVar=="pT") boundValue = &q_transverse;
+  //else if (binVar=="rad") boundValue = &q_transverse; //done in loop
+  else if (binVar=="vxZ_upstream"||binVar=="vxZ_downstream") boundValue = &vx_z;
 
   if (errors){
     cout << " " << endl;
@@ -341,37 +383,35 @@ int main(int argc, char **argv){
       first = false;
     }
 
-    Double_t boundValue = Mmumu;
-
     if (trigMask == 65792){
-      BinDataFill(hPhi1_LL, phi_traj1, nBins, boundValue, bounds);
-      BinDataFill(hPhi2_LL, phi_traj2, nBins, boundValue, bounds);
+      BinDataFill(hPhi1_LL, phi_traj1, nBins, *boundValue, bounds);
+      BinDataFill(hPhi2_LL, phi_traj2, nBins, *boundValue, bounds);
 
-      BinDataFill(hTheta1_LL, theta_traj1, nBins, boundValue, bounds);
-      BinDataFill(hTheta2_LL, theta_traj2, nBins, boundValue, bounds);
+      BinDataFill(hTheta1_LL, theta_traj1, nBins, *boundValue, bounds);
+      BinDataFill(hTheta2_LL, theta_traj2, nBins, *boundValue, bounds);
 
-      BinDataFill(hP1_LL, qP_traj1, nBins, boundValue, bounds);
-      BinDataFill(hP2_LL, -1.0*qP_traj2, nBins, boundValue, bounds);
+      BinDataFill(hP1_LL, qP_traj1, nBins, *boundValue, bounds);
+      BinDataFill(hP2_LL, -1.0*qP_traj2, nBins, *boundValue, bounds);
     }
     else if (trigMask == 65540){
-      BinDataFill(hPhi1_LO, phi_traj1, nBins, boundValue, bounds);
-      BinDataFill(hPhi2_LO, phi_traj2, nBins, boundValue, bounds);
+      BinDataFill(hPhi1_LO, phi_traj1, nBins, *boundValue, bounds);
+      BinDataFill(hPhi2_LO, phi_traj2, nBins, *boundValue, bounds);
 
-      BinDataFill(hTheta1_LO, theta_traj1, nBins, boundValue, bounds);
-      BinDataFill(hTheta2_LO, theta_traj2, nBins, boundValue, bounds);
+      BinDataFill(hTheta1_LO, theta_traj1, nBins, *boundValue, bounds);
+      BinDataFill(hTheta2_LO, theta_traj2, nBins, *boundValue, bounds);
 
-      BinDataFill(hP1_LO, qP_traj1, nBins, boundValue, bounds);
-      BinDataFill(hP2_LO, -1.0*qP_traj2, nBins, boundValue, bounds);
+      BinDataFill(hP1_LO, qP_traj1, nBins, *boundValue, bounds);
+      BinDataFill(hP2_LO, -1.0*qP_traj2, nBins, *boundValue, bounds);
     }
     else if (trigMask == 65796){
-      BinDataFill(hPhi1_LL_LO, phi_traj1, nBins, boundValue, bounds);
-      BinDataFill(hPhi2_LL_LO, phi_traj2, nBins, boundValue, bounds);
+      BinDataFill(hPhi1_LL_LO, phi_traj1, nBins, *boundValue, bounds);
+      BinDataFill(hPhi2_LL_LO, phi_traj2, nBins, *boundValue, bounds);
 
-      BinDataFill(hTheta1_LL_LO, theta_traj1, nBins, boundValue, bounds);
-      BinDataFill(hTheta2_LL_LO, theta_traj2, nBins, boundValue, bounds);
+      BinDataFill(hTheta1_LL_LO, theta_traj1, nBins, *boundValue, bounds);
+      BinDataFill(hTheta2_LL_LO, theta_traj2, nBins, *boundValue, bounds);
 
-      BinDataFill(hP1_LL_LO, qP_traj1, nBins, boundValue, bounds);
-      BinDataFill(hP2_LL_LO, -1.0*qP_traj2, nBins, boundValue, bounds);
+      BinDataFill(hP1_LL_LO, qP_traj1, nBins, *boundValue, bounds);
+      BinDataFill(hP2_LL_LO, -1.0*qP_traj2, nBins, *boundValue, bounds);
     }
 
     
@@ -394,14 +434,14 @@ int main(int argc, char **argv){
   
   TCanvas *cPhi[nCanvas], *cTheta[nCanvas], *cP[nCanvas];
   for (Int_t i=0; i<nBins/5.0; i++) {
-    cPhi[i] = new TCanvas(Form("cPhi_%i", i) );
-    cPhi[i]->Divide(3, 5); }
+    cPhi[i] = new TCanvas(Form("cPhi_%i", i), Form("cPhi_%i", i) );
+    (nBins>=5) ? cPhi[i]->Divide(3, 5) : cPhi[i]->Divide(3, nBins); }
   for (Int_t i=0; i<nBins/5.0; i++) {
-    cTheta[i] = new TCanvas(Form("cTheta_%i", i) );
-    cTheta[i]->Divide(3, 5); }
+    cTheta[i] = new TCanvas(Form("cTheta_%i", i), Form("cTheta_%i", i) );
+    (nBins>=5) ? cTheta[i]->Divide(3, 5) : cTheta[i]->Divide(3, nBins); }
   for (Int_t i=0; i<nBins/5.0; i++) {
-    cP[i] = new TCanvas(Form("cP_%i", i) );
-    cP[i]->Divide(3, 5); }
+    cP[i] = new TCanvas(Form("cP_%i", i), Form("cP_%i", i) );
+    (nBins>=5) ? cP[i]->Divide(3, 5) : cP[i]->Divide(3, nBins); }
   
   for (Int_t ibin=0, ic=0, ipad=1; ibin<nBins; ibin++, ipad++) {
     if (ipad>15) {ic++; ipad=1;}
