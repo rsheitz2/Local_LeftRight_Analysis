@@ -21,7 +21,8 @@ int main(int argc, char **argv){
     cout << "vxZ_downstream)" << endl;
     cout << "     (Default option is HM)" << endl;
     cout << "Option   -B binVar (Variables that require a bin count)" << endl;
-    cout << "     (Current options: rapidity, phi_vPh, openAngle" << endl;
+    cout << "     (Current options: rapidity, phi_vPh, theta_vPh, openAngle"
+	 << endl;
     cout << "Option   -N bounds,   bounds=nBins+1"
 	 << " (For varibles that require a bin count)"
 	 << endl;
@@ -103,7 +104,7 @@ int main(int argc, char **argv){
     cout << "Please enter and integer with -N option" << endl;
     exit(EXIT_FAILURE);
   }
-  else if (NVar < 2){
+  else if (Nflag && NVar < 2){
     cout << " " << endl;
     cout << "Please enter a number >= 2 for -N option" << endl;
     exit(EXIT_FAILURE);
@@ -115,7 +116,8 @@ int main(int argc, char **argv){
     cout << "Please enter an -N option with -B" << binVar << endl;
     exit(EXIT_FAILURE);
   }
-  else if(binVar!="rapidity"&&binVar!="phi_vPh"&&binVar!="openAngle"){
+  else if(Nflag && binVar!="rapidity"&&binVar!="phi_vPh"&&binVar!="theta_vPh"&&
+	  binVar!="openAngle"){
     cout << " " << endl;
     cout << "Please do not enter an -N option with -B" << binVar << endl;
     exit(EXIT_FAILURE);
@@ -350,6 +352,7 @@ int main(int argc, char **argv){
       //General useful variables
       TLorentzVector vPhoton(vPhoton_X, vPhoton_Y, vPhoton_Z, vPhoton_E);
       if (binVar=="phi_vPh") *boundValue = vPhoton.Phi();
+      else if (binVar=="theta_vPh") *boundValue = vPhoton.Theta();
 
       sort_val.push_back(*boundValue);
     }
@@ -459,6 +462,7 @@ int main(int argc, char **argv){
     //General useful variables
     TLorentzVector vPhoton(vPhoton_X, vPhoton_Y, vPhoton_Z, vPhoton_E);
     if (binVar=="phi_vPh") *boundValue = vPhoton.Phi();
+    else if (binVar=="theta_vPh") *boundValue = vPhoton.Theta();
         
     if (trigMask == 65792){//Last-Last
       BinDataFill(hPhi1_LL, phi_traj1, nBins, *boundValue, bounds);
@@ -476,6 +480,7 @@ int main(int argc, char **argv){
       //if (q_transverse < 0.781648) continue;
       //if (phi_traj1 < 0.7 && phi_traj1 > -0.7) continue;
       //if (phi_traj2 < 0.7 && phi_traj1 > -0.7) continue;
+      //if (*boundValue < 0.0356868) continue;
 	    
       BinDataFill(hPhi1_LO, phi_traj1, nBins, *boundValue, bounds);
       BinDataFill(hPhi2_LO, phi_traj2, nBins, *boundValue, bounds);
