@@ -361,6 +361,7 @@ int main(int argc, char **argv){
     //768 == Last-Last
     //780 == Last-Last && Last-Outer
     //if (trigMask == 65792 || trigMask == 65796) continue; //Only Last-Outer
+    if (trigMask != 65792) continue; //Only Last-Outer 
     //if (trigMask == 65540| trigMask == 65796) continue; //Only Last-Last
 
     //Choose Left/Right

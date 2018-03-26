@@ -20,6 +20,11 @@ int main(int argc, char **argv){
     cout << "     (Current options: HM, xN, xPi, xF, pT, vxZ_upstream, ";
     cout << "vxZ_downstream)" << endl;
     cout << "     (Default option is HM)" << endl;
+    cout << "Option   -B binVar (Variables that require a bin count)" << endl;
+    cout << "     (Current options: rapidity, phi_vPh, openAngle" << endl;
+    cout << "Option   -N bounds,   bounds=nBins+1"
+	 << " (For varibles that require a bin count)"
+	 << endl;
     cout << "" << endl;
 	
     exit(EXIT_FAILURE);
@@ -29,11 +34,12 @@ int main(int argc, char **argv){
   //Read input arguments
   ///////////////
   // {{{
-  Int_t wflag=0, Qflag=0, fflag=0, Bflag=0;
+  Int_t wflag=0, Qflag=0, fflag=0, Bflag=0, Nflag=0;
   Int_t c;
   TString fname = "", outFile = "", binVar="";
+  Int_t NVar=0;
   
-  while ((c = getopt (argc, argv, "wf:Q:B:")) != -1) {
+  while ((c = getopt (argc, argv, "wf:Q:B:N:")) != -1) {
     switch (c) {
     case 'w':
       wflag = 1;
@@ -51,12 +57,18 @@ int main(int argc, char **argv){
       Bflag = 1;
       binVar += optarg;
       break;
+    case 'N':
+      Nflag = 1;
+      NVar = atoi(optarg);
+      break;
     case '?':
       if (optopt == 'u')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (optopt == 'f')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (optopt == 'B')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'N')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (isprint (optopt))
 	fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -86,6 +98,28 @@ int main(int argc, char **argv){
     cout << " " << endl;
     cout << "Default binning variable = Invariant mass" << endl;
   }
+  if (Nflag && !NVar){
+    cout << " " << endl;
+    cout << "Please enter and integer with -N option" << endl;
+    exit(EXIT_FAILURE);
+  }
+  else if (NVar < 2){
+    cout << " " << endl;
+    cout << "Please enter a number >= 2 for -N option" << endl;
+    exit(EXIT_FAILURE);
+  }
+  if (!Nflag && (binVar!="HM"&&binVar!="xN"&&binVar!="xPi"&&binVar!="xF"&&
+		 binVar!="pT"&&binVar!="vxZ_upstream"&&
+		 binVar!="vxZ_downstream" ) ){
+    cout << " " << endl;
+    cout << "Please enter an -N option with -B" << binVar << endl;
+    exit(EXIT_FAILURE);
+  }
+  else if(binVar!="rapidity"&&binVar!="phi_vPh"&&binVar!="openAngle"){
+    cout << " " << endl;
+    cout << "Please do not enter an -N option with -B" << binVar << endl;
+    exit(EXIT_FAILURE);
+  }
   // }}}
   
   //Opening data files
@@ -104,7 +138,7 @@ int main(int argc, char **argv){
   TVectorD tv_rad_bounds( *( (TVectorD*)fdata->Get("tv_rad_bounds") ) );
   TVectorD tv_vxZ_upstream_bounds(*((TVectorD*)fdata->Get("tv_vxZ_upstream_bounds")));
   TVectorD tv_vxZ_downstream_bounds(*((TVectorD*)fdata->Get("tv_vxZ_downstream_bounds")));
-  Int_t nBounds = tv_xN_bounds.GetNoElements();
+  Int_t nBounds = (!Nflag) ? tv_xN_bounds.GetNoElements() : NVar;
   Double_t xN_bounds[nBounds], xPi_bounds[nBounds], xF_bounds[nBounds];
   Double_t pT_bounds[nBounds], M_bounds[nBounds];
   Double_t rad_bounds[nBounds];
@@ -121,6 +155,7 @@ int main(int argc, char **argv){
     vxZ_downstream_bounds[i]=tv_vxZ_downstream_bounds[i];
 
     //Generic bounds
+    if (Nflag) continue;//bounds made after tree loop 1
     if (!Bflag || binVar=="HM") bounds[i] = M_bounds[i];
     else if (binVar=="xN") bounds[i] = xN_bounds[i];
     else if (binVar=="xPi") bounds[i] = xPi_bounds[i];
@@ -231,11 +266,13 @@ int main(int argc, char **argv){
   Double_t vx_z;
   Int_t targetPosition;
   //Drell-Yan Angles
-  Double_t PhiS_simple, Theta_CS, vOpenAngle;
+  Double_t PhiS_simple, Theta_CS, rapidity, vOpenAngle;
   //Muons
   Double_t phi_traj1, phi_traj2;
   Double_t theta_traj1, theta_traj2;
   Double_t qP_traj1, qP_traj2;
+  //Virtual Photon
+  Double_t vPhoton_X, vPhoton_Y, vPhoton_Z, vPhoton_E;
   //Event
   Int_t trigMask, MasterTrigMask;
   //Target values
@@ -251,7 +288,13 @@ int main(int argc, char **argv){
   //Drell-Yan Angles
   errors += tree->SetBranchAddress("PhiS_simple", &PhiS_simple);
   errors += tree->SetBranchAddress("Theta_CS", &Theta_CS);
+  errors += tree->SetBranchAddress("rapidity", &rapidity);
   errors += tree->SetBranchAddress("vOpenAngle", &vOpenAngle);
+  //Virtual Photon
+  errors += tree->SetBranchAddress("vPhoton_X", &vPhoton_X);
+  errors += tree->SetBranchAddress("vPhoton_Y", &vPhoton_Y);
+  errors += tree->SetBranchAddress("vPhoton_Z", &vPhoton_Z);
+  errors += tree->SetBranchAddress("vPhoton_E", &vPhoton_E);
   //Muons
   errors += tree->SetBranchAddress("phi_traj1", &phi_traj1);
   errors += tree->SetBranchAddress("phi_traj2", &phi_traj2);
@@ -284,12 +327,38 @@ int main(int argc, char **argv){
   else if (binVar=="pT") boundValue = &q_transverse;
   //else if (binVar=="rad") boundValue = &q_transverse; //done in loop
   else if (binVar=="vxZ_upstream"||binVar=="vxZ_downstream") boundValue = &vx_z;
+  else if (binVar=="rapidity") boundValue = &rapidity;
+  else if (binVar=="openAngle") boundValue = &vOpenAngle;
 
   if (errors){
     cout << " " << endl;
     cout << "Errors opening trees variables" << endl;
     cout << " " << endl;
     exit(EXIT_FAILURE);
+  }
+  // }}}
+
+  //Sort bin boundries if -N option is given
+  ///////////////
+  // {{{
+  Int_t tree_entries = tree->GetEntries();//Tree Loop 1
+  if(Nflag) {
+    vector<Double_t> sort_val;
+    for (Int_t ev=0; ev<tree_entries; ev++) {
+      tree->GetEntry(ev, 0);
+
+      //General useful variables
+      TLorentzVector vPhoton(vPhoton_X, vPhoton_Y, vPhoton_Z, vPhoton_E);
+      if (binVar=="phi_vPh") *boundValue = vPhoton.Phi();
+
+      sort_val.push_back(*boundValue);
+    }
+    std::sort(sort_val.begin(), sort_val.end() );
+    bounds[0] = sort_val.at(0);
+    for (Int_t i=0; i<nBounds; i++) {
+      bounds[i] = (i) ? sort_val.at( i*sort_val.size()/(1.0*nBounds-1.0) - 1 ) :
+	sort_val.at( i*sort_val.size()/(1.0*nBounds-1.0) );
+    }
   }
   // }}}
   
@@ -370,20 +439,28 @@ int main(int argc, char **argv){
 
   //Tree loop
   Bool_t first = true;
-  Int_t tree_entries = tree->GetEntries();//Tree Loop
   cout << "Number of entries in tree: " << tree_entries << endl;
-  for (Int_t ev=0; ev<tree_entries; ev++) {
+  for (Int_t ev=0; ev<tree_entries; ev++) {//Tree Loop 2
     //cout << "Debug mode" << endl; for (Int_t ev=0; ev<1000; ev++) {
     tree->GetEntry(ev, 0);
 
     if (first || ev==tree_entries-1){
       cout << " " << endl;
       cout << "Setup!!!!!!!!!!!!!!!" << endl;
+      //cout << "Additional Last-Outer cuts" << endl;
 
       first = false;
     }
 
-    if (trigMask == 65792){
+    //Basic checks/cuts
+    if(binVar=="vxZ_upstream" && targetPosition==1) continue;
+    else if(binVar=="vxZ_downstream" && targetPosition==0) continue;
+    
+    //General useful variables
+    TLorentzVector vPhoton(vPhoton_X, vPhoton_Y, vPhoton_Z, vPhoton_E);
+    if (binVar=="phi_vPh") *boundValue = vPhoton.Phi();
+        
+    if (trigMask == 65792){//Last-Last
       BinDataFill(hPhi1_LL, phi_traj1, nBins, *boundValue, bounds);
       BinDataFill(hPhi2_LL, phi_traj2, nBins, *boundValue, bounds);
 
@@ -393,7 +470,13 @@ int main(int argc, char **argv){
       BinDataFill(hP1_LL, qP_traj1, nBins, *boundValue, bounds);
       BinDataFill(hP2_LL, -1.0*qP_traj2, nBins, *boundValue, bounds);
     }
-    else if (trigMask == 65540){
+    else if (trigMask == 65540){//Last-Outer
+      //additional last-outer cuts
+      //if (vx_z < -202.235) continue;
+      //if (q_transverse < 0.781648) continue;
+      //if (phi_traj1 < 0.7 && phi_traj1 > -0.7) continue;
+      //if (phi_traj2 < 0.7 && phi_traj1 > -0.7) continue;
+	    
       BinDataFill(hPhi1_LO, phi_traj1, nBins, *boundValue, bounds);
       BinDataFill(hPhi2_LO, phi_traj2, nBins, *boundValue, bounds);
 
@@ -403,7 +486,7 @@ int main(int argc, char **argv){
       BinDataFill(hP1_LO, qP_traj1, nBins, *boundValue, bounds);
       BinDataFill(hP2_LO, -1.0*qP_traj2, nBins, *boundValue, bounds);
     }
-    else if (trigMask == 65796){
+    else if (trigMask == 65796){//Last-Last and Last-Outer
       BinDataFill(hPhi1_LL_LO, phi_traj1, nBins, *boundValue, bounds);
       BinDataFill(hPhi2_LL_LO, phi_traj2, nBins, *boundValue, bounds);
 
@@ -497,7 +580,14 @@ int main(int argc, char **argv){
     hP2_LL_LO[ibin]->SetLineColor(kRed);
   }//loop of bins
   // }}}
-  
+
+  cout << " " << endl;
+  cout << "Bounds for: " << binVar << endl;
+  for (Int_t i=0; i<nBounds; i++) {
+    cout << bounds[i] << endl;
+  }
+  cout << " " << endl;
+
   //Write output
   ///////////////
   // {{{

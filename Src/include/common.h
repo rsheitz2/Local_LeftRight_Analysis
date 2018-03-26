@@ -7,6 +7,7 @@
   #include <cmath>
   #include <cstdio>
   #include <cstring>
+  #include <string>
   #include <ctime>
   #include <iomanip>
   #include <vector>
