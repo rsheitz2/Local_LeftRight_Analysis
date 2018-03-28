@@ -463,7 +463,7 @@ int main(int argc, char **argv){
     TLorentzVector vPhoton(vPhoton_X, vPhoton_Y, vPhoton_Z, vPhoton_E);
     if (binVar=="phi_vPh") *boundValue = vPhoton.Phi();
     else if (binVar=="theta_vPh") *boundValue = vPhoton.Theta();
-        
+
     if (trigMask == 65792){//Last-Last
       BinDataFill(hPhi1_LL, phi_traj1, nBins, *boundValue, bounds);
       BinDataFill(hPhi2_LL, phi_traj2, nBins, *boundValue, bounds);

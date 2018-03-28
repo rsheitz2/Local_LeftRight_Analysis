@@ -21,6 +21,8 @@ int main(int argc, char **argv){
 	 << endl;
     cout << "Option:  -P       (Turn off polarization and dilution corrections)"
 	 << endl;
+    cout << "Option:  -T trig       (Specific trigger)" << endl;
+    cout << "                  (\"LL\"=last-last)" << endl;
     cout << "" << endl;
 	
     exit(EXIT_FAILURE);
@@ -30,11 +32,11 @@ int main(int argc, char **argv){
   //Read input arguments
   ///////////////
   // {{{
-  Int_t wflag=0, Qflag=0, fflag=0, Sflag=0, Pflag=0;
+  Int_t wflag=0, Qflag=0, fflag=0, Sflag=0, Pflag=0, Tflag=0;
   Int_t c;
-  TString fname = "", outFile = "", leftrightChoice="";
+  TString fname = "", outFile = "", leftrightChoice="", trig="";
   
-  while ((c = getopt (argc, argv, "Pwf:Q:S:")) != -1) {
+  while ((c = getopt (argc, argv, "Pwf:Q:S:T:")) != -1) {
     switch (c) {
     case 'w':
       wflag = 1;
@@ -54,13 +56,19 @@ int main(int argc, char **argv){
       break;
     case 'P':
       Pflag = 1;
-      break;      
+      break;
+    case 'T':
+      Tflag = 1;
+      trig += optarg;
+      break;
     case '?':
       if (optopt == 'u')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (optopt == 'f')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (optopt == 'S')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'T')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (isprint (optopt))
 	fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -85,6 +93,14 @@ int main(int argc, char **argv){
     }
     f1->Close();
   }
+
+  Int_t trigChoice=0;
+  if (Tflag && (trig!="LL") ){
+    cout << " " << endl;
+    cout << "Option -T" << trig << " is not a valid choice" << endl;
+    exit(EXIT_FAILURE);
+  }
+  else if (trig=="LL") trigChoice = 65792;
   // }}}
   
   //Opening data files/getting trees
@@ -337,32 +353,23 @@ int main(int argc, char **argv){
     if (first || ev==tree_entries-1){
       cout << " " << endl;
       cout << "Setup!!!!!!!!!!!!!!!" << endl;
-      //cout << "Trig Mask settings:" << endl;
-      //cout << "Only Last-Outer" << endl;
-      //cout << "Only Last-Last" << endl;
-      //cout << " " << endl;
-      //cout << "Left = Top, Right = Bottom" << endl;
-      //cout << " " << endl;
-      //cout << "M bins are binned in vOpenAngle" << endl;
-      //cout << " " << endl;
-
+      cout << " " << endl;
+      
       if(leftrightChoice=="True") {
 	cout << "True left/right asymmetry (no spin influence)" << endl;
       }
       else if (leftrightChoice=="Spin" || leftrightChoice==""){
 	cout << "Spin influnced left/right asymmetry" << endl;
       }
+      if (Tflag){
+	cout << "Trigger mask set to: " << trig << " only" << endl;
+      }
 
       first = false;
     }
-
+    
     //Trig Mask
-    //524 == Last-Outer
-    //768 == Last-Last
-    //780 == Last-Last && Last-Outer
-    //if (trigMask == 65792 || trigMask == 65796) continue; //Only Last-Outer
-    if (trigMask != 65792) continue; //Only Last-Outer 
-    //if (trigMask == 65540| trigMask == 65796) continue; //Only Last-Last
+    if (Tflag && (trigMask != trigChoice)) continue;
 
     //Choose Left/Right
     // {{{
