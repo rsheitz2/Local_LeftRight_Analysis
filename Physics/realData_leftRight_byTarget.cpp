@@ -19,10 +19,16 @@ int main(int argc, char **argv){
     cout << "Option:  -S Left/right asymmetry choice" << endl;
     cout << "	 (True=no spin influence, Spin=spin influence, default=Spin)"
 	 << endl;
+    cout << "    (Default=Spin)" << endl;
     cout << "Option:  -P       (Turn off polarization and dilution corrections)"
 	 << endl;
-    cout << "Option:  -T trig       (Specific trigger)" << endl;
-    cout << "                  (\"LL\"=last-last)" << endl;
+    cout << "Option:  -T trig       (Only specific trigger)" << endl;
+    cout << "                  (\"LL\"=last-last, \"LO\"=last-outer, " <<
+      "\"LL_LO\"=last-last && last-outer)" << endl;
+    cout << "Option:  -i min       (Minimum mass to consider)" << endl;
+    cout << "    (Default=0.0)" << endl;
+    cout << "Option:  -a max       (Maximum mass to consider)" << endl;
+    cout << "    (Default=12.0)" << endl;
     cout << "" << endl;
 	
     exit(EXIT_FAILURE);
@@ -33,10 +39,12 @@ int main(int argc, char **argv){
   ///////////////
   // {{{
   Int_t wflag=0, Qflag=0, fflag=0, Sflag=0, Pflag=0, Tflag=0;
+  Int_t iflag=0, aflag=0;
   Int_t c;
   TString fname = "", outFile = "", leftrightChoice="", trig="";
+  Double_t M_min=0.0, M_max=12.0;
   
-  while ((c = getopt (argc, argv, "Pwf:Q:S:T:")) != -1) {
+  while ((c = getopt (argc, argv, "Pwf:Q:S:T:i:a:")) != -1) {
     switch (c) {
     case 'w':
       wflag = 1;
@@ -61,6 +69,14 @@ int main(int argc, char **argv){
       Tflag = 1;
       trig += optarg;
       break;
+    case 'i':
+      iflag = 1;
+      M_min = stof(optarg);
+      break;
+    case 'a':
+      aflag = 1;
+      M_max = stof(optarg);
+      break;
     case '?':
       if (optopt == 'u')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
@@ -69,6 +85,10 @@ int main(int argc, char **argv){
       else if (optopt == 'S')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (optopt == 'T')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'i')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'a')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (isprint (optopt))
 	fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -95,12 +115,14 @@ int main(int argc, char **argv){
   }
 
   Int_t trigChoice=0;
-  if (Tflag && (trig!="LL") ){
+  if (trig=="LL") trigChoice = 65792;
+  else if (trig=="LO") trigChoice = 65540;
+  else if (trig=="LL_LO") trigChoice = 65796;
+  else if (Tflag) {
     cout << " " << endl;
     cout << "Option -T" << trig << " is not a valid choice" << endl;
     exit(EXIT_FAILURE);
   }
-  else if (trig=="LL") trigChoice = 65792;
   // }}}
   
   //Opening data files/getting trees
@@ -353,7 +375,11 @@ int main(int argc, char **argv){
     if (first || ev==tree_entries-1){
       cout << " " << endl;
       cout << "Setup!!!!!!!!!!!!!!!" << endl;
-      cout << " " << endl;
+
+      if (iflag || aflag){
+	cout << "Additional mass cut" << endl;
+	cout << "    Mass range " << M_min << " - " << M_max << endl;
+      }
       
       if(leftrightChoice=="True") {
 	cout << "True left/right asymmetry (no spin influence)" << endl;
@@ -365,11 +391,13 @@ int main(int argc, char **argv){
 	cout << "Trigger mask set to: " << trig << " only" << endl;
       }
 
+      cout << " " << endl;
       first = false;
     }
     
     //Trig Mask
     if (Tflag && (trigMask != trigChoice)) continue;
+    if (Mmumu < M_min || Mmumu > M_max) continue;
 
     //Choose Left/Right
     // {{{
@@ -426,24 +454,21 @@ int main(int argc, char **argv){
 	BinDataCounts(xPi_Left_UpStream, nBins, x_beam, xPi_bounds);
 	BinDataCounts(xF_Left_UpStream, nBins, x_feynman, xF_bounds);
 	BinDataCounts(pT_Left_UpStream, nBins, q_transverse, pT_bounds);
-	BinDataCounts(M_Left_UpStream, nBins, Mmumu, M_bounds);//co open angle
-	//BinDataCounts(M_Left_UpStream, nBins, vOpenAngle, M_bounds);//openAngle
+	BinDataCounts(M_Left_UpStream, nBins, Mmumu, M_bounds);
 
 	if (Spin_0 > 0){//Polarized Up
 	  BinDataCounts(xN_Left_UpStream_Up, nBins, x_target, xN_bounds);
 	  BinDataCounts(xPi_Left_UpStream_Up, nBins, x_beam, xPi_bounds);
 	  BinDataCounts(xF_Left_UpStream_Up, nBins, x_feynman, xF_bounds);
 	  BinDataCounts(pT_Left_UpStream_Up, nBins, q_transverse, pT_bounds);
-	  BinDataCounts(M_Left_UpStream_Up, nBins, Mmumu, M_bounds);//openAngle
-	  //BinDataCounts(M_Left_UpStream_Up, nBins, vOpenAngle, M_bounds);//openAngle
+	  BinDataCounts(M_Left_UpStream_Up, nBins, Mmumu, M_bounds);
 	}
 	else if (Spin_0 < 0){//Polarized Down
 	  BinDataCounts(xN_Left_UpStream_Down, nBins, x_target, xN_bounds);
 	  BinDataCounts(xPi_Left_UpStream_Down, nBins, x_beam, xPi_bounds);
 	  BinDataCounts(xF_Left_UpStream_Down, nBins, x_feynman, xF_bounds);
 	  BinDataCounts(pT_Left_UpStream_Down, nBins, q_transverse, pT_bounds);
-	  BinDataCounts(M_Left_UpStream_Down, nBins, Mmumu, M_bounds);//openAngle
-	  //BinDataCounts(M_Left_UpStream_Down, nBins, vOpenAngle, M_bounds);//openAngle
+	  BinDataCounts(M_Left_UpStream_Down, nBins, Mmumu, M_bounds);
 	}
 	// }}}
       }//End Left
@@ -1213,7 +1238,7 @@ int main(int argc, char **argv){
   l_M_LR_DownStream_Down->Draw("same");
   SetupTLine(l_M_LR_DownStream_Down);
   // }}}
-  
+
   //Write output
   ///////////////
   // {{{
