@@ -29,6 +29,14 @@ int main(int argc, char **argv){
     cout << "    (Default=0.0)" << endl;
     cout << "Option:  -a max       (Maximum mass to consider)" << endl;
     cout << "    (Default=12.0)" << endl;
+    cout << "Option:  -b textfile with binning information	";
+    cout << "(textfile should be made from Macro/Binning/avgBinBounds.C)";
+    cout << endl;
+    cout << "" << endl;
+    cout << "Option:  -M (\"HM\", \"JPsi\", \"AMDY\") to specify which mass ";
+    cout << "range to use for \"binning information\" " << endl;
+    cout << "   (Must be used with \"-b\" option)" << endl;
+    cout << "   (default when \"-b\" is used = high mass)" << endl;
     cout << "" << endl;
 	
     exit(EXIT_FAILURE);
@@ -39,12 +47,13 @@ int main(int argc, char **argv){
   ///////////////
   // {{{
   Int_t wflag=0, Qflag=0, fflag=0, Sflag=0, Pflag=0, Tflag=0;
-  Int_t iflag=0, aflag=0;
+  Int_t iflag=0, aflag=0, binFlag=0, Mflag=0;
   Int_t c;
   TString fname = "", outFile = "", leftrightChoice="", trig="";
+  TString binFile = "", massRange="";
   Double_t M_min=0.0, M_max=12.0;
   
-  while ((c = getopt (argc, argv, "Pwf:Q:S:T:i:a:")) != -1) {
+  while ((c = getopt (argc, argv, "Pwf:Q:S:T:i:a:b:M:")) != -1) {
     switch (c) {
     case 'w':
       wflag = 1;
@@ -77,6 +86,14 @@ int main(int argc, char **argv){
       aflag = 1;
       M_max = stof(optarg);
       break;
+    case 'b':
+      binFlag = 1;
+      binFile += optarg;
+      break;
+    case 'M':
+      Mflag = 1;
+      massRange += optarg;
+      break;
     case '?':
       if (optopt == 'u')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
@@ -89,6 +106,10 @@ int main(int argc, char **argv){
       else if (optopt == 'i')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (optopt == 'a')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'b')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'M')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (isprint (optopt))
 	fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -123,6 +144,174 @@ int main(int argc, char **argv){
     cout << "Option -T" << trig << " is not a valid choice" << endl;
     exit(EXIT_FAILURE);
   }
+
+  vector<Double_t> xN_bounds, xN_xval; 
+  vector<Double_t> xPi_bounds, xPi_xval;
+  vector<Double_t> xF_bounds, xF_xval; 
+  vector<Double_t> pT_bounds, pT_xval;
+  vector<Double_t> M_bounds, M_xval;
+  vector<Double_t> rad_bounds, rad_xval;
+  vector<Double_t> vxZ_upstream_bounds, vxZ_upstream_xval;
+  vector<Double_t> vxZ_downstream_bounds, vxZ_downstream_xval;
+  if (binFlag) {
+    xN_bounds.push_back(0.0);
+    xPi_bounds.push_back(0.0);
+    xF_bounds.push_back(-1.0);
+    pT_bounds.push_back(0.4);
+    rad_bounds.push_back(0.0);
+    vxZ_upstream_bounds.push_back(-294.5);
+    vxZ_downstream_bounds.push_back(-219.5);
+
+    if (!Mflag || massRange=="HM") M_bounds.push_back(4.3);//High mass
+    else if (massRange=="JPsi")M_bounds.push_back(2.5);//JPsi mass
+    else if (massRange=="AMDY")M_bounds.push_back(0.0);//All Mass DY
+    else {
+      cout << "Invalid mass range specified" << endl;
+      exit(EXIT_FAILURE);
+    }
+    
+    string line;
+    TString dy_type = "";
+    Int_t xval = 1;
+    ifstream f_bins(binFile);
+    if(!f_bins.is_open() ) {
+      cout << " " << endl;
+      cout << "binFile: " << binFile << " did not open" << endl;
+      exit(EXIT_FAILURE); }
+    while (!f_bins.eof()) {
+      getline(f_bins,line);
+
+      if (line[1] == 'N') {
+	if (dy_type == "xN") xval = 1;
+	else {
+	  dy_type = "xN";
+	  xval = 0;
+	}			
+      }
+      else if (line[1] == 'P') {
+	if (dy_type == "xPi") xval = 1;
+	else {
+	  dy_type = "xPi";
+	  xval = 0;
+	}			
+      }
+      else if (line[1] == 'F') {
+	if (dy_type == "xF") xval = 1;
+	else {
+	  dy_type = "xF";
+	  xval = 0;
+	}			
+      }
+      else if (line[1] == 'T') {
+	if (dy_type == "pT") xval = 1;
+	else {
+	  dy_type = "pT";
+	  xval = 0;
+	}			
+      }
+      else if (line[2] == 's') {
+	if (dy_type == "M") xval = 1;
+	else {
+	  dy_type = "M";
+	  xval = 0;
+	}			
+      }
+      else if (line[0] == 'r') {
+	if (dy_type == "rad") xval = 1;
+	else {
+	  dy_type = "rad";
+	  xval = 0;
+	}			
+      }
+      else if (line[4] == 'u') {
+	if (dy_type == "vxZ_upstream") xval = 1;
+	else {
+	  dy_type = "vxZ_upstream";
+	  xval = 0;
+	}			
+      }
+      else if (line[4] == 'd') {
+	if (dy_type == "vxZ_downstream") xval = 1;
+	else {
+	  dy_type = "vxZ_downstream";
+	  xval = 0;
+	}			
+      }
+
+      //Don't read title lines
+      if (line[0] == 'x' || line[0] == 'p' || line[1] == 'a' || line[0] == 'v'){
+	continue;
+      }
+      
+      if (dy_type == "xN"){
+	if (xval == 0) xN_bounds.push_back(atof(line.c_str() ) );
+	else xN_xval.push_back(atof(line.c_str() ) );
+      }
+      else if (dy_type == "xPi"){
+	if (xval == 0) xPi_bounds.push_back(atof(line.c_str() ) );
+	else xPi_xval.push_back(atof(line.c_str() ) );
+      }
+      else if (dy_type == "xF"){
+	if (xval == 0) xF_bounds.push_back(atof(line.c_str() ) );
+	else xF_xval.push_back(atof(line.c_str() ) );
+      }
+      else if (dy_type == "pT"){
+	if (xval == 0) pT_bounds.push_back(atof(line.c_str() ) );
+	else pT_xval.push_back(atof(line.c_str() ) );
+      }
+      else if (dy_type == "M"){
+	if (xval == 0) M_bounds.push_back(atof(line.c_str() ) );
+	else M_xval.push_back(atof(line.c_str() ) );
+      }
+      else if (dy_type == "rad"){
+	if (xval == 0) rad_bounds.push_back(atof(line.c_str() ) );
+	else rad_xval.push_back(atof(line.c_str() ) );
+      }
+      else if (dy_type == "vxZ_upstream"){
+	if (xval == 0) vxZ_upstream_bounds.push_back(atof(line.c_str() ) );
+	else vxZ_upstream_xval.push_back(atof(line.c_str() ) );
+      }
+      else if (dy_type == "vxZ_downstream"){
+	if (xval == 0) vxZ_downstream_bounds.push_back(atof(line.c_str() ) );
+	else vxZ_downstream_xval.push_back(atof(line.c_str() ) );
+      }
+    }//end file loop
+
+    xN_bounds.push_back(1.0);
+    xPi_bounds.push_back(1.0);
+    xF_bounds.push_back(1.0);
+    pT_bounds.push_back(5.0);
+    rad_bounds.push_back(1.9);
+    vxZ_upstream_bounds.push_back(-239.3);
+    vxZ_downstream_bounds.push_back(-164.3);
+    if(xN_xval.size()==0 || xPi_xval.size()==0 || xF_xval.size()==0 ||
+       pT_xval.size()==0 || M_xval.size()==0 || rad_xval.size()==0 ||
+       vxZ_upstream_xval.size()==0 || vxZ_downstream_xval.size()==0){
+      cout << "Error:" << endl;
+      cout << "Modern xval values not specifed in " << binFile << endl;
+      cout << " " << endl;
+      exit(EXIT_FAILURE);
+    }
+
+    if (!Mflag || massRange=="HM") M_bounds.push_back(8.5);//High mass
+    else if (massRange=="JPsi")M_bounds.push_back(4.3);//JPsi mass
+    else if (massRange=="AMDY")M_bounds.push_back(16.0);//All Mass DY
+    cout << " " << endl;
+    cout << "Mass range set to:" << endl;
+    (!Mflag) ? cout << "HM" << endl : cout << massRange << endl;
+    cout << " " << endl;
+
+    if (M_bounds.at(0) > M_bounds.at(1) || M_bounds.back() < M_xval.front() ){
+      cout << "Mass Range not setup correct" << endl;
+      exit(EXIT_FAILURE);
+    }
+  }//end binFlag
+  else if (Mflag){
+    cout << " " << endl;
+    cout << "\"-M\" flag specifed but not \"-b\" flag" << endl;
+    cout << " " << endl;
+    exit(EXIT_FAILURE);
+  }
   // }}}
   
   //Opening data files/getting trees
@@ -138,18 +327,18 @@ int main(int argc, char **argv){
   TVectorD tv_xF_bounds( *( (TVectorD*)fdata->Get("tv_xF_bounds") ) );
   TVectorD tv_pT_bounds( *( (TVectorD*)fdata->Get("tv_pT_bounds") ) );
   TVectorD tv_M_bounds( *( (TVectorD*)fdata->Get("tv_M_bounds") ) );
-  Int_t nBounds = tv_xN_bounds.GetNoElements();
-  Double_t xN_bounds[nBounds], xPi_bounds[nBounds], xF_bounds[nBounds];
-  Double_t pT_bounds[nBounds], M_bounds[nBounds];//comment open angle
-  //Double_t pT_bounds[nBounds]; //Open angle
-  for (Int_t i=0; i<nBounds; i++) {
-    xN_bounds[i] = tv_xN_bounds[i];
-    xPi_bounds[i] = tv_xPi_bounds[i];
-    xF_bounds[i] = tv_xF_bounds[i];
-    pT_bounds[i] = tv_pT_bounds[i];
-    M_bounds[i] = tv_M_bounds[i];//comment open angle
+  Int_t nBounds;
+  if(binFlag) nBounds = xN_bounds.size();
+  else nBounds = tv_xN_bounds.GetNoElements();
+  if (!binFlag){
+    for (Int_t i=0; i<nBounds; i++) {
+      xN_bounds.push_back(tv_xN_bounds[i]);
+      xPi_bounds.push_back(tv_xPi_bounds[i]);
+      xF_bounds.push_back(tv_xF_bounds[i]);
+      pT_bounds.push_back(tv_pT_bounds[i]);
+      M_bounds.push_back(tv_M_bounds[i]);
+    }
   }
-  //Double_t M_bounds[] = {0.0, 0.06, 0.08, 0.10, 0.11, 0.12, 0.15, 0.35};//Open angle
 
   //Dilution and polarization corrections
   TVectorD Dil_int( *( (TVectorD*)fdata->Get("Dil_int") ) );
@@ -480,52 +669,49 @@ int main(int argc, char **argv){
       
       if (Left){//Left
 	// {{{
-	BinDataCounts(xN_Left_UpStream, nBins, x_target, xN_bounds);
-	BinDataCounts(xPi_Left_UpStream, nBins, x_beam, xPi_bounds);
-	BinDataCounts(xF_Left_UpStream, nBins, x_feynman, xF_bounds);
-	BinDataCounts(pT_Left_UpStream, nBins, q_transverse, pT_bounds);
-	BinDataCounts(M_Left_UpStream, nBins, Mmumu, M_bounds);
+	BinDataCounts(xN_Left_UpStream, x_target, xN_bounds);
+	BinDataCounts(xPi_Left_UpStream, x_beam, xPi_bounds);
+	BinDataCounts(xF_Left_UpStream, x_feynman, xF_bounds);
+	BinDataCounts(pT_Left_UpStream, q_transverse, pT_bounds);
+	BinDataCounts(M_Left_UpStream, Mmumu, M_bounds);
 
 	if (Spin_0 > 0){//Polarized Up
-	  BinDataCounts(xN_Left_UpStream_Up, nBins, x_target, xN_bounds);
-	  BinDataCounts(xPi_Left_UpStream_Up, nBins, x_beam, xPi_bounds);
-	  BinDataCounts(xF_Left_UpStream_Up, nBins, x_feynman, xF_bounds);
-	  BinDataCounts(pT_Left_UpStream_Up, nBins, q_transverse, pT_bounds);
-	  BinDataCounts(M_Left_UpStream_Up, nBins, Mmumu, M_bounds);
+	  BinDataCounts(xN_Left_UpStream_Up, x_target, xN_bounds);
+	  BinDataCounts(xPi_Left_UpStream_Up, x_beam, xPi_bounds);
+	  BinDataCounts(xF_Left_UpStream_Up, x_feynman, xF_bounds);
+	  BinDataCounts(pT_Left_UpStream_Up, q_transverse, pT_bounds);
+	  BinDataCounts(M_Left_UpStream_Up, Mmumu, M_bounds);
 	}
 	else if (Spin_0 < 0){//Polarized Down
-	  BinDataCounts(xN_Left_UpStream_Down, nBins, x_target, xN_bounds);
-	  BinDataCounts(xPi_Left_UpStream_Down, nBins, x_beam, xPi_bounds);
-	  BinDataCounts(xF_Left_UpStream_Down, nBins, x_feynman, xF_bounds);
-	  BinDataCounts(pT_Left_UpStream_Down, nBins, q_transverse, pT_bounds);
-	  BinDataCounts(M_Left_UpStream_Down, nBins, Mmumu, M_bounds);
+	  BinDataCounts(xN_Left_UpStream_Down, x_target, xN_bounds);
+	  BinDataCounts(xPi_Left_UpStream_Down, x_beam, xPi_bounds);
+	  BinDataCounts(xF_Left_UpStream_Down, x_feynman, xF_bounds);
+	  BinDataCounts(pT_Left_UpStream_Down, q_transverse, pT_bounds);
+	  BinDataCounts(M_Left_UpStream_Down, Mmumu, M_bounds);
 	}
 	// }}}
       }//End Left
       else if (Right){//Right
 	// {{{
-	BinDataCounts(xN_Right_UpStream, nBins, x_target, xN_bounds);
-	BinDataCounts(xPi_Right_UpStream, nBins, x_beam, xPi_bounds);
-	BinDataCounts(xF_Right_UpStream, nBins, x_feynman, xF_bounds);
-	BinDataCounts(pT_Right_UpStream, nBins, q_transverse, pT_bounds);
-	BinDataCounts(M_Right_UpStream, nBins, Mmumu, M_bounds);//openAngle
-	//BinDataCounts(M_Right_UpStream, nBins, vOpenAngle, M_bounds);//openAngle
+	BinDataCounts(xN_Right_UpStream, x_target, xN_bounds);
+	BinDataCounts(xPi_Right_UpStream, x_beam, xPi_bounds);
+	BinDataCounts(xF_Right_UpStream, x_feynman, xF_bounds);
+	BinDataCounts(pT_Right_UpStream, q_transverse, pT_bounds);
+	BinDataCounts(M_Right_UpStream, Mmumu, M_bounds);
 
 	if (Spin_0 > 0){//Polarized Up
-	  BinDataCounts(xN_Right_UpStream_Up, nBins, x_target, xN_bounds);
-	  BinDataCounts(xPi_Right_UpStream_Up, nBins, x_beam, xPi_bounds);
-	  BinDataCounts(xF_Right_UpStream_Up, nBins, x_feynman, xF_bounds);
-	  BinDataCounts(pT_Right_UpStream_Up, nBins, q_transverse, pT_bounds);
-	  BinDataCounts(M_Right_UpStream_Up, nBins, Mmumu, M_bounds);//openAngle
-	  //BinDataCounts(M_Right_UpStream_Up, nBins, vOpenAngle, M_bounds);//openAngle
+	  BinDataCounts(xN_Right_UpStream_Up, x_target, xN_bounds);
+	  BinDataCounts(xPi_Right_UpStream_Up, x_beam, xPi_bounds);
+	  BinDataCounts(xF_Right_UpStream_Up, x_feynman, xF_bounds);
+	  BinDataCounts(pT_Right_UpStream_Up, q_transverse, pT_bounds);
+	  BinDataCounts(M_Right_UpStream_Up, Mmumu, M_bounds);
 	}
 	else if (Spin_0 < 0){//Polarized Down
-	  BinDataCounts(xN_Right_UpStream_Down, nBins, x_target, xN_bounds);
-	  BinDataCounts(xPi_Right_UpStream_Down, nBins, x_beam, xPi_bounds);
-	  BinDataCounts(xF_Right_UpStream_Down, nBins, x_feynman, xF_bounds);
-	  BinDataCounts(pT_Right_UpStream_Down, nBins, q_transverse, pT_bounds);
-	  BinDataCounts(M_Right_UpStream_Down, nBins, Mmumu, M_bounds);//openAngle
-	  //BinDataCounts(M_Right_UpStream_Down, nBins, vOpenAngle, M_bounds);//openAngle
+	  BinDataCounts(xN_Right_UpStream_Down, x_target, xN_bounds);
+	  BinDataCounts(xPi_Right_UpStream_Down, x_beam, xPi_bounds);
+	  BinDataCounts(xF_Right_UpStream_Down, x_feynman, xF_bounds);
+	  BinDataCounts(pT_Right_UpStream_Down, q_transverse, pT_bounds);
+	  BinDataCounts(M_Right_UpStream_Down, Mmumu, M_bounds);
 	}
 	// }}}
       }//End Right
@@ -537,55 +723,49 @@ int main(int argc, char **argv){
       
       if (Left){//Left
 	// {{{
-	BinDataCounts(xN_Left_DownStream, nBins, x_target, xN_bounds);
-	BinDataCounts(xPi_Left_DownStream, nBins, x_beam, xPi_bounds);
-	BinDataCounts(xF_Left_DownStream, nBins, x_feynman, xF_bounds);
-	BinDataCounts(pT_Left_DownStream, nBins, q_transverse, pT_bounds);
-	BinDataCounts(M_Left_DownStream, nBins, Mmumu, M_bounds);//openAngle
-	//BinDataCounts(M_Left_DownStream, nBins, vOpenAngle, M_bounds);//openAngle
+	BinDataCounts(xN_Left_DownStream, x_target, xN_bounds);
+	BinDataCounts(xPi_Left_DownStream, x_beam, xPi_bounds);
+	BinDataCounts(xF_Left_DownStream, x_feynman, xF_bounds);
+	BinDataCounts(pT_Left_DownStream, q_transverse, pT_bounds);
+	BinDataCounts(M_Left_DownStream, Mmumu, M_bounds);
 
 	if (Spin_0 > 0){//Polarized Up
-	  BinDataCounts(xN_Left_DownStream_Up, nBins, x_target, xN_bounds);
-	  BinDataCounts(xPi_Left_DownStream_Up, nBins, x_beam, xPi_bounds);
-	  BinDataCounts(xF_Left_DownStream_Up, nBins, x_feynman, xF_bounds);
-	  BinDataCounts(pT_Left_DownStream_Up, nBins, q_transverse, pT_bounds);
-	  BinDataCounts(M_Left_DownStream_Up, nBins, Mmumu, M_bounds);//openAngle
-	  //BinDataCounts(M_Left_DownStream_Up, nBins, vOpenAngle, M_bounds);//openAngle
+	  BinDataCounts(xN_Left_DownStream_Up, x_target, xN_bounds);
+	  BinDataCounts(xPi_Left_DownStream_Up, x_beam, xPi_bounds);
+	  BinDataCounts(xF_Left_DownStream_Up, x_feynman, xF_bounds);
+	  BinDataCounts(pT_Left_DownStream_Up, q_transverse, pT_bounds);
+	  BinDataCounts(M_Left_DownStream_Up, Mmumu, M_bounds);
 	}
 	else if (Spin_0 < 0){//Polarized Down
-	  BinDataCounts(xN_Left_DownStream_Down, nBins, x_target, xN_bounds);
-	  BinDataCounts(xPi_Left_DownStream_Down, nBins, x_beam, xPi_bounds);
-	  BinDataCounts(xF_Left_DownStream_Down, nBins, x_feynman, xF_bounds);
-	  BinDataCounts(pT_Left_DownStream_Down, nBins, q_transverse, pT_bounds);
-	  BinDataCounts(M_Left_DownStream_Down, nBins, Mmumu, M_bounds);//openAngle
-	  //BinDataCounts(M_Left_DownStream_Down, nBins, vOpenAngle, M_bounds);//openAngle
+	  BinDataCounts(xN_Left_DownStream_Down, x_target, xN_bounds);
+	  BinDataCounts(xPi_Left_DownStream_Down, x_beam, xPi_bounds);
+	  BinDataCounts(xF_Left_DownStream_Down, x_feynman, xF_bounds);
+	  BinDataCounts(pT_Left_DownStream_Down, q_transverse, pT_bounds);
+	  BinDataCounts(M_Left_DownStream_Down, Mmumu, M_bounds);
 	}
 	// }}}
       }//End Left
       else if (Right){//Right
 	// {{{
-	BinDataCounts(xN_Right_DownStream, nBins, x_target, xN_bounds);
-	BinDataCounts(xPi_Right_DownStream, nBins, x_beam, xPi_bounds);
-	BinDataCounts(xF_Right_DownStream, nBins, x_feynman, xF_bounds);
-	BinDataCounts(pT_Right_DownStream, nBins, q_transverse, pT_bounds);
-	BinDataCounts(M_Right_DownStream, nBins, Mmumu, M_bounds);//openAngle
-	//BinDataCounts(M_Right_DownStream, nBins, vOpenAngle, M_bounds);//openAngle
+	BinDataCounts(xN_Right_DownStream, x_target, xN_bounds);
+	BinDataCounts(xPi_Right_DownStream, x_beam, xPi_bounds);
+	BinDataCounts(xF_Right_DownStream, x_feynman, xF_bounds);
+	BinDataCounts(pT_Right_DownStream, q_transverse, pT_bounds);
+	BinDataCounts(M_Right_DownStream, Mmumu, M_bounds);
 
 	if (Spin_0 > 0){//Polarized Up
-	  BinDataCounts(xN_Right_DownStream_Up, nBins, x_target, xN_bounds);
-	  BinDataCounts(xPi_Right_DownStream_Up, nBins, x_beam, xPi_bounds);
-	  BinDataCounts(xF_Right_DownStream_Up, nBins, x_feynman, xF_bounds);
-	  BinDataCounts(pT_Right_DownStream_Up, nBins, q_transverse, pT_bounds);
-	  BinDataCounts(M_Right_DownStream_Up, nBins, Mmumu, M_bounds);//openAngle
-	  //BinDataCounts(M_Right_DownStream_Up, nBins, vOpenAngle, M_bounds);//openAngle
+	  BinDataCounts(xN_Right_DownStream_Up, x_target, xN_bounds);
+	  BinDataCounts(xPi_Right_DownStream_Up, x_beam, xPi_bounds);
+	  BinDataCounts(xF_Right_DownStream_Up, x_feynman, xF_bounds);
+	  BinDataCounts(pT_Right_DownStream_Up, q_transverse, pT_bounds);
+	  BinDataCounts(M_Right_DownStream_Up, Mmumu, M_bounds);
 	}
 	else if (Spin_0 < 0){//Polarized Down
-	  BinDataCounts(xN_Right_DownStream_Down, nBins, x_target, xN_bounds);
-	  BinDataCounts(xPi_Right_DownStream_Down, nBins, x_beam, xPi_bounds);
-	  BinDataCounts(xF_Right_DownStream_Down, nBins, x_feynman, xF_bounds);
-	  BinDataCounts(pT_Right_DownStream_Down, nBins, q_transverse, pT_bounds);
-	  BinDataCounts(M_Right_DownStream_Down, nBins, Mmumu, M_bounds);//openAngle
-	  //BinDataCounts(M_Right_DownStream_Down, nBins, vOpenAngle, M_bounds);//openAngle
+	  BinDataCounts(xN_Right_DownStream_Down, x_target, xN_bounds);
+	  BinDataCounts(xPi_Right_DownStream_Down, x_beam, xPi_bounds);
+	  BinDataCounts(xF_Right_DownStream_Down, x_feynman, xF_bounds);
+	  BinDataCounts(pT_Right_DownStream_Down, q_transverse, pT_bounds);
+	  BinDataCounts(M_Right_DownStream_Down, Mmumu, M_bounds);
 	}
 	// }}}
       }//End Right

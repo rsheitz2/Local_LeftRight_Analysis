@@ -63,6 +63,40 @@ Bool_t BinDataCounts(unsigned long long *counts, Int_t nBins, Double_t binVal,
 }
 
 
+Bool_t BinDataCounts(unsigned long long *counts, Double_t binVal,
+		     std::vector<Double_t> &binValBounds, Int_t noprint){
+
+  Int_t iter=0;
+  for (std::vector<Double_t>::iterator it=binValBounds.begin();
+       it!=binValBounds.end(); it++, iter++){
+    if(binVal <= *it ) {
+      if(iter==0){
+	if (noprint) return false;//Don't cout anything
+	
+	std::cout << "!!!!!!!!!!!!!!!" << std::endl;
+	std::cout << "bin value too low!!!!" << std::endl;
+	std::cout << *it << " " << binVal << std::endl;
+	std::cout << "!!!!!!!!!!!!!!!" << std::endl;
+	std::cout << " " << std::endl;
+	return false;
+      }
+      
+      counts[iter]++;
+      return true;
+    }
+  }
+
+  if (noprint) return false;//Don't cout anything
+  
+  std::cout << "!!!!!!!!!!!!!!!" << std::endl;
+  std::cout << "bin value too high!!!!" << std::endl;
+  std::cout << binValBounds.back() << " " << binVal << std::endl;
+  std::cout << "!!!!!!!!!!!!!!!" << std::endl;
+  std::cout << " " << std::endl;
+  return false;
+}
+
+
 Bool_t BinDataFill(TH1D** h1, Double_t fillVal, Int_t nBins, Double_t binVal,
 		     Double_t *binValBounds){
 

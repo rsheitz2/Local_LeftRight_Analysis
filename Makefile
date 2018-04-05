@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=`root-config --cflags --libs` -Wall
+CFLAGS=`root-config --cflags --libs` -Wall -std=c++11 -Wfatal-errors
 INC=-ISrc/include
 
 #Debug with OPT=-g

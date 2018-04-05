@@ -7,6 +7,8 @@ using namespace std;
 int main(int argc, char **argv){
   if(argc < 2){
     cout << "" << endl;
+    cout << "This program includes an additional TTree loop to ";
+    cout << "bin information in generic quantities" << endl;
     cout << "" << endl;
     cout << "Usage:" << endl;
     cout << "./main [options] [-ffilename]" << endl;
