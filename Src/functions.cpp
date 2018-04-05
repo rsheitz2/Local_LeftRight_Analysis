@@ -113,21 +113,43 @@ Bool_t BinnedLeftRight(unsigned long long *Left_UpStream,
     //Asymmetries
     long long UpStream_diff = Left_UpStream[i] - Right_UpStream[i];
     long long UpStream_sum = Left_UpStream[i] + Right_UpStream[i];
-    Asym_UpStream[i] = 1.0*UpStream_diff/(1.0*UpStream_sum);
 
+    if (!UpStream_sum) {
+      Asym_UpStream[i] = -10.0;//No data
+      e_Asym_UpStream[i] = 0.0;
+    }
+    else {
+      Asym_UpStream[i] = 1.0*UpStream_diff/(1.0*UpStream_sum);
+      e_Asym_UpStream[i] = AsymmetryError(Left_UpStream[i], Right_UpStream[i]);
+    }
+
+    
     long long DownStream_diff = Left_DownStream[i] - Right_DownStream[i];
     long long DownStream_sum = Left_DownStream[i] + Right_DownStream[i];
-    Asym_DownStream[i] = 1.0*DownStream_diff/(1.0*DownStream_sum);
 
-    Asym[i] = (UpStream_diff +
-	       DownStream_diff)/(1.0*(UpStream_sum + DownStream_sum));
+    if (!DownStream_sum) {
+      Asym_DownStream[i] = -10.0;//No data
+      e_Asym_DownStream[i] = 0.0;
+    }
+    else {
+      Asym_DownStream[i] = 1.0*DownStream_diff/(1.0*DownStream_sum);
+      e_Asym_DownStream[i] = AsymmetryError(Left_DownStream[i],
+					    Right_DownStream[i]);
+    }
 
-    //Error cals
-    e_Asym_UpStream[i] = AsymmetryError(Left_UpStream[i], Right_UpStream[i]);
-    e_Asym_DownStream[i] = AsymmetryError(Left_DownStream[i],
-					  Right_DownStream[i]);
     
-    e_Asym[i] = AsymmetryError(UpStream_sum, DownStream_sum);
+    if (!UpStream_sum && !DownStream_sum) {
+      Asym[i] = -10.0;//No data
+      e_Asym[i] = 0.0;
+    }
+    else {
+      Asym[i] = (UpStream_diff +
+		 DownStream_diff)/(1.0*(UpStream_sum + DownStream_sum));
+      e_Asym[i] = AsymmetryError(UpStream_sum, DownStream_sum);
+    }
+
+            
+    
 			       
   }
 
