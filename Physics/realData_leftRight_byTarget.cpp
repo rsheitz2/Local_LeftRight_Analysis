@@ -246,6 +246,10 @@ int main(int argc, char **argv){
   Int_t targetPosition;
   //Drell-Yan Angles
   Double_t PhiS_simple, Theta_CS, vOpenAngle;
+  //Mu plus
+  Double_t theta_traj1;
+  //Mu minus
+  Double_t theta_traj2;
   //Event
   Int_t trigMask, MasterTrigMask;
   //Target values
@@ -260,6 +264,10 @@ int main(int argc, char **argv){
   tree->SetBranchAddress("PhiS_simple", &PhiS_simple);
   tree->SetBranchAddress("Theta_CS", &Theta_CS);
   tree->SetBranchAddress("vOpenAngle", &vOpenAngle);
+  //Mu plus
+  tree->SetBranchAddress("theta_traj1", &theta_traj1);
+  //Mu Minus
+  tree->SetBranchAddress("theta_traj2", &theta_traj2);
   //Event
   tree->SetBranchAddress("trigMask", &trigMask);
   tree->SetBranchAddress("MasterTrigMask", &MasterTrigMask);
@@ -364,6 +372,14 @@ int main(int argc, char **argv){
 			 -TMath::Pi()/2, 3*TMath::Pi()/2);
   // }}}
 
+  const Int_t nBasic=10;
+  TH1D* hBasic_low[nBasic], *hBasic_high[nBasic];
+  for (Int_t i=0; i<nBasic; i++) {
+    hBasic_low[i] = new TH1D(Form("hlow_%i", i), Form("hlow_%i", i),100,2,5);
+    hBasic_high[i] = new TH1D(Form("hhigh_%i",i),Form("hhigh_%i", i),100,2,5);
+  }
+  
+  
   //Tree loop
   Bool_t first = true;
   Int_t tree_entries = tree->GetEntries();//Tree Loop
@@ -375,7 +391,7 @@ int main(int argc, char **argv){
     if (first || ev==tree_entries-1){
       cout << " " << endl;
       cout << "Setup!!!!!!!!!!!!!!!" << endl;
-
+      
       if (iflag || aflag){
 	cout << "Additional mass cut" << endl;
 	cout << "    Mass range " << M_min << " - " << M_max << endl;
@@ -395,9 +411,23 @@ int main(int argc, char **argv){
       first = false;
     }
     
-    //Trig Mask
+    //Additional Optional cuts
     if (Tflag && (trigMask != trigChoice)) continue;
     if (Mmumu < M_min || Mmumu > M_max) continue;
+
+    if (theta_traj1 < 0.04 && theta_traj1 > 0.02){
+      hBasic_low[0]->Fill(Mmumu);
+    }
+    else if (theta_traj1 > 0.04){
+      hBasic_high[0]->Fill(Mmumu);
+    }
+
+    if (theta_traj2 < 0.04 && theta_traj2 > 0.02){
+      hBasic_low[1]->Fill(Mmumu);
+    }
+    else if (theta_traj2 > 0.04){
+      hBasic_high[1]->Fill(Mmumu);
+    }
 
     //Choose Left/Right
     // {{{
@@ -566,7 +596,6 @@ int main(int argc, char **argv){
 
   }//End tree loop
   
-
   //Asymmetries
   ///////////////
   // {{{
@@ -1310,6 +1339,17 @@ int main(int argc, char **argv){
     else cout << "Output.root file written" << endl;
   }
   // }}}
-    
+
+  TCanvas* c1 = new TCanvas();
+  c1->Divide(2);
+  c1->cd(1);
+  hBasic_low[1]->Draw();
+  hBasic_low[1]->SetLineColor(kRed);
+  hBasic_low[0]->Draw("sames");
+  c1->cd(2);
+  hBasic_high[0]->Draw();
+  hBasic_high[1]->Draw("sames");
+  hBasic_high[1]->SetLineColor(kRed);
+  
   theApp.Run();//Needed to make root graphics work on C++
 }

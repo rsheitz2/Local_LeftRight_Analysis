@@ -16,6 +16,10 @@ int main(int argc, char **argv){
     cout << "        default output file is named \"Output.root\"" << endl;
     cout << "Option:  -Q outName	(write output to file to outName)"
 	 << endl;
+        cout << "Option:  -i min       (Minimum mass to consider)" << endl;
+    cout << "    (Default=0.0)" << endl;
+    cout << "Option:  -a max       (Maximum mass to consider)" << endl;
+    cout << "    (Default=16.0)" << endl;
     cout << "" << endl;
 	
     exit(EXIT_FAILURE);
@@ -26,10 +30,12 @@ int main(int argc, char **argv){
   ///////////////
   // {{{
   Int_t wflag=0, Qflag=0, fflag=0;
+  Int_t iflag=0, aflag=0;
   Int_t c;
   TString fname = "", outFile = "";
+  Double_t M_min=0.0, M_max=16.0;
   
-  while ((c = getopt (argc, argv, "wf:Q:")) != -1) {
+  while ((c = getopt (argc, argv, "wf:Q:i:a:")) != -1) {
     switch (c) {
     case 'w':
       wflag = 1;
@@ -43,6 +49,14 @@ int main(int argc, char **argv){
       fname += optarg;
       cout << fname << endl;
       break;
+    case 'i':
+      iflag = 1;
+      M_min = stof(optarg);
+      break;
+    case 'a':
+      aflag = 1;
+      M_max = stof(optarg);
+      break;
     case '?':
       if (optopt == 'u')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
@@ -50,6 +64,10 @@ int main(int argc, char **argv){
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (isprint (optopt))
 	fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+      else if (optopt == 'i')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'a')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else
 	fprintf (stderr,
 		 "Unknown option character `\\x%x'.\n",
@@ -76,6 +94,7 @@ int main(int argc, char **argv){
   //Opening data files/setting up tree
   ///////////////
   // {{{
+  Double_t M_proton = 0.9382720813; //GeV
   TFile *fdata = TFile::Open(fname);
   TTree *tree = (TTree*)fdata->Get("pT_Weighted");
   
@@ -89,7 +108,6 @@ int main(int argc, char **argv){
   Int_t nBounds = tv_xN_bounds.GetNoElements();
   Double_t xN_bounds[nBounds], xPi_bounds[nBounds], xF_bounds[nBounds];
   Double_t pT_bounds[nBounds], M_bounds[nBounds];
-  //Double_t pT_bounds[nBounds];
   for (Int_t i=0; i<nBounds; i++) {
     xN_bounds[i] = tv_xN_bounds[i];
     xPi_bounds[i] = tv_xPi_bounds[i];
@@ -97,7 +115,6 @@ int main(int argc, char **argv){
     pT_bounds[i] = tv_pT_bounds[i];
     M_bounds[i] = tv_M_bounds[i];
   }
-  //Double_t M_bounds[] = {0.0, 0.06, 0.08, 0.10, 0.11, 0.12, 0.15, 0.35};
   
   //Vertex specific
   Double_t vx_z, Spin;
@@ -197,38 +214,22 @@ int main(int argc, char **argv){
     
     if (first || ev==tree_entries-1){//first or last
       cout << " " << endl;
-      cout << "Warning!!!!!!!!!!!!!!!" << endl;
+      cout << "Setup!!!!!!!!!!!!!!!" << endl;
       cout << "True spectrometer left/right (no spin influcence)" << endl;
       cout << "This is always the case for MC data" << endl;
       cout << " " << endl;
-      cout << "!!!!!!!!!!!!!!!" << endl;
-      //cout << "Gen PhiS Simple currently in use" << endl;
-      //cout << "Gen photon tlorentz vector currently in use" << endl;
-      //cout << "vPhoton tlorentz vector currently in use" << endl;
+      if (iflag || aflag){
+	cout << "Additional mass cut" << endl;
+	cout << "    Mass range " << M_min << " - " << M_max << endl;
+      }
       cout << " " << endl;
-      //cout << "Trig Mask settings:" << endl;
-      //cout << "Only Last-Outer" << endl;
-      //cout << "Only Last-Last" << endl;
-      //cout << " " << endl;
-      //cout << "vOpenAngle < 0.15" << endl;
-      //cout << " " << endl;
-      //cout << "M bins are binned in vOpenAngle" << endl;
-      //cout << " " << endl;
-      //cout << "Left = Top, Right = Bottom" << endl;
-      //cout << " " << endl;
       
       first = false;
     }
 
-    //Trig Mask
-    //524 == Last-Outer
-    //768 == Last-Last
-    //780 == Last-Last && Last-Outer
-    //if (trigMask == 768 || trigMask == 780) continue; //Only Last-Outer
-    //if (trigMask == 524 || trigMask == 780) continue; //Only Last-Last
-
-    //if (vOpenAngle <0.15) continue;
-
+    //Additional Optional cuts
+    if (Mmumu < M_min || Mmumu > M_max) continue;
+    
     //Choose Left/Right
     Double_t phi_photon_lab = ShiftPhiSimple(PhiS_simple);
     //Double_t phi_photon_lab = ShiftPhiSimple(Gen_PhiS_simple);
