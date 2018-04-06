@@ -314,11 +314,6 @@ int main(int argc, char **argv){
     cout << " " << endl;
     exit(EXIT_FAILURE);
   }
-
-  //for (vector<Double_t>::iterator it=xN_bounds.begin(); it!=xN_bounds.end(); it++) {
-  //  cout << *it << endl;
-  //}
-  //exit(EXIT_FAILURE);//cleanup
   // }}}
   
   //Opening data files/getting trees
@@ -670,7 +665,7 @@ int main(int argc, char **argv){
       }
     }
     // }}}
-    
+
     //Bin data
     if (targetPosition == 0) {//UpStream target
       
@@ -1077,8 +1072,6 @@ int main(int argc, char **argv){
 					   e_M_Asym);
   // }}}
 
-  //cout << "yes1" << endl;
-  
   ////////////////
   //Draw and pretty up graphs
   ////////////////
@@ -1232,7 +1225,6 @@ int main(int argc, char **argv){
   SetupTLine(l_M);
   // }}}
 
-  cout << "yes2" << endl;
   //TGraphs by target
   ///////////////
   // {{{
@@ -1456,7 +1448,6 @@ int main(int argc, char **argv){
   SetupTLine(l_M_LR_DownStream_Down);
   // }}}
 
-    cout << "yes3" << endl;
   //Write output
   ///////////////
   // {{{

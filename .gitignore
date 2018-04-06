@@ -5,3 +5,4 @@ realData_leftRight_byTarget
 realData_binning
 mcData_leftRight_byTarget
 setup.sh
+*.txt

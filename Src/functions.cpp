@@ -66,11 +66,11 @@ Bool_t BinDataCounts(unsigned long long *counts, Int_t nBins, Double_t binVal,
 Bool_t BinDataCounts(unsigned long long *counts, Double_t binVal,
 		     std::vector<Double_t> &binValBounds, Int_t noprint){
 
-  Int_t iter=0;
+  Int_t iter=-1;
   for (std::vector<Double_t>::iterator it=binValBounds.begin();
        it!=binValBounds.end(); it++, iter++){
     if(binVal <= *it ) {
-      if(iter==0){
+      if(iter==-1){
 	if (noprint) return false;//Don't cout anything
 	
 	std::cout << "!!!!!!!!!!!!!!!" << std::endl;
@@ -151,6 +151,8 @@ Bool_t BinnedLeftRight(unsigned long long *Left_UpStream,
     if (!UpStream_sum) {
       Asym_UpStream[i] = -10.0;//No data
       e_Asym_UpStream[i] = 0.0;
+
+      std::cout<<"!!!!!! No Data Upstream for L/R Asymmetry !!!!!"<<std::endl;
     }
     else {
       Asym_UpStream[i] = 1.0*UpStream_diff/(1.0*UpStream_sum);
@@ -164,6 +166,8 @@ Bool_t BinnedLeftRight(unsigned long long *Left_UpStream,
     if (!DownStream_sum) {
       Asym_DownStream[i] = -10.0;//No data
       e_Asym_DownStream[i] = 0.0;
+
+      std::cout<<"!!!!!! No Data Downstream for L/R Asymmetry !!!!!"<<std::endl;
     }
     else {
       Asym_DownStream[i] = 1.0*DownStream_diff/(1.0*DownStream_sum);
@@ -175,6 +179,9 @@ Bool_t BinnedLeftRight(unsigned long long *Left_UpStream,
     if (!UpStream_sum && !DownStream_sum) {
       Asym[i] = -10.0;//No data
       e_Asym[i] = 0.0;
+
+      std::cout<<"!!!!!! No Data   UP/DOWN   stream for L/R Asymmetry !!!!!"
+	       <<std::endl;
     }
     else {
       Asym[i] = (UpStream_diff +
