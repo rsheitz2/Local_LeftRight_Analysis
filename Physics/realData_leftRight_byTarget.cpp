@@ -12,10 +12,13 @@ int main(int argc, char **argv){
     cout << "./main [options] [-ffilename]" << endl;
     cout << "filename should be the full path name" << endl;
     cout << "" << endl;
+    cout << "----Writing Options----"<< endl;
     cout << "Option:  -w		(write output to file)" << endl;
     cout << "        default output file is named \"Output.root\"" << endl;
     cout << "Option:  -Q outName	(write output to file to outName)"
 	 << endl;
+    cout << " " << endl;
+    cout << "----Additional Setup Options----"<< endl;
     cout << "Option:  -S Left/right asymmetry choice" << endl;
     cout << "	 (True=no spin influence, Spin=spin influence, default=Spin)"
 	 << endl;
@@ -29,14 +32,14 @@ int main(int argc, char **argv){
     cout << "    (Default=0.0)" << endl;
     cout << "Option:  -a max       (Maximum mass to consider)" << endl;
     cout << "    (Default=12.0)" << endl;
+    cout << " " << endl;
+    cout << "----Changing Binning Options----" << endl;
     cout << "Option:  -b textfile with binning information	";
-    cout << "(textfile should be made from Macro/Binning/avgBinBounds.C)";
-    cout << endl;
-    cout << "" << endl;
+    cout << "(textfile should be made from Macro/Binning/avgBinBounds.C)"<<endl;
     cout << "Option:  -M (\"HM\", \"JPsi\", \"AMDY\") to specify which mass ";
     cout << "range to use for \"binning information\" " << endl;
     cout << "   (Must be used with \"-b\" option)" << endl;
-    cout << "   (default when \"-b\" is used = high mass)" << endl;
+    cout << "   (default when \"-b\" is used=AMDY)" << endl;
     cout << "" << endl;
 	
     exit(EXIT_FAILURE);
@@ -65,7 +68,6 @@ int main(int argc, char **argv){
     case 'f':
       fflag = 1;
       fname += optarg;
-      cout << fname << endl;
       break;
     case 'S':
       Sflag = 1;
@@ -162,9 +164,9 @@ int main(int argc, char **argv){
     vxZ_upstream_bounds.push_back(-294.5);
     vxZ_downstream_bounds.push_back(-219.5);
 
-    if (!Mflag || massRange=="HM") M_bounds.push_back(4.3);//High mass
+    if (!Mflag || massRange=="AMDY")M_bounds.push_back(0.0);//All Mass DY
+    else if (massRange=="HM") M_bounds.push_back(4.3);//High mass
     else if (massRange=="JPsi")M_bounds.push_back(2.5);//JPsi mass
-    else if (massRange=="AMDY")M_bounds.push_back(0.0);//All Mass DY
     else {
       cout << "Invalid mass range specified" << endl;
       exit(EXIT_FAILURE);
@@ -293,12 +295,12 @@ int main(int argc, char **argv){
       exit(EXIT_FAILURE);
     }
 
-    if (!Mflag || massRange=="HM") M_bounds.push_back(8.5);//High mass
+    if (!Mflag || massRange=="AMDY")M_bounds.push_back(16.0);//All Mass DY
+    else if (massRange=="HM") M_bounds.push_back(8.5);//High mass
     else if (massRange=="JPsi")M_bounds.push_back(4.3);//JPsi mass
-    else if (massRange=="AMDY")M_bounds.push_back(16.0);//All Mass DY
     cout << " " << endl;
     cout << "Mass range set to:" << endl;
-    (!Mflag) ? cout << "HM" << endl : cout << massRange << endl;
+    (!Mflag) ? cout << "AMDY" << endl : cout << massRange << endl;
     cout << " " << endl;
 
     if (M_bounds.at(0) > M_bounds.at(1) || M_bounds.back() < M_xval.front() ){
@@ -312,6 +314,11 @@ int main(int argc, char **argv){
     cout << " " << endl;
     exit(EXIT_FAILURE);
   }
+
+  //for (vector<Double_t>::iterator it=xN_bounds.begin(); it!=xN_bounds.end(); it++) {
+  //  cout << *it << endl;
+  //}
+  //exit(EXIT_FAILURE);//cleanup
   // }}}
   
   //Opening data files/getting trees
@@ -329,8 +336,8 @@ int main(int argc, char **argv){
   TVectorD tv_M_bounds( *( (TVectorD*)fdata->Get("tv_M_bounds") ) );
   Int_t nBounds;
   if(binFlag) nBounds = xN_bounds.size();
-  else nBounds = tv_xN_bounds.GetNoElements();
-  if (!binFlag){
+  else {
+    nBounds = tv_xN_bounds.GetNoElements();
     for (Int_t i=0; i<nBounds; i++) {
       xN_bounds.push_back(tv_xN_bounds[i]);
       xPi_bounds.push_back(tv_xPi_bounds[i]);
@@ -775,7 +782,7 @@ int main(int argc, char **argv){
     }//End DownStream target
 
   }//End tree loop
-  
+
   //Asymmetries
   ///////////////
   // {{{
@@ -1012,19 +1019,17 @@ int main(int argc, char **argv){
   Double_t xval_pT[nBins], xval_M[nBins];//openAngle
   Double_t ex[nBins];
   for (Int_t i=0; i<nBins; i++) {
-    xval_xN[i] = tv_xN_xval[i]; xval_xPi[i] = tv_xPi_xval[i];
-    xval_xF[i]=tv_xF_xval[i]; xval_pT[i]=tv_pT_xval[i]; xval_M[i]=tv_M_xval[i];//openAngle
-    ex[i] = 0.0;
+    if (binFlag){
+      xval_xN[i] = xN_xval.at(i); xval_xPi[i] = xPi_xval.at(i);
+      xval_xF[i]=xF_xval.at(i); xval_pT[i]=pT_xval.at(i);xval_M[i]=M_xval.at(i);
+      ex[i] = 0.0;
+    }
+    else {xval_xN[i] = tv_xN_xval[i]; xval_xPi[i] = tv_xPi_xval[i];
+      xval_xF[i]=tv_xF_xval[i]; xval_pT[i]=tv_pT_xval[i];xval_M[i]=tv_M_xval[i];
+      ex[i] = 0.0;
+    }
   }
-
-  //Double_t xval_pT[nBins];//openAngle
-  //Double_t xval_M[] = {0.03, 0.07, 0.1, 0.115, 0.13, 0.155, 0.2};//openAngle
-
-  //Double_t xval_xN[] = {0.100881, 0.157517, 0.248419}; //High Mass binning
-  //Double_t xval_xPi[] = {0.314897, 0.476024, 0.684437};
-  //Double_t xval_xF[] = {0.0876318, 0.307122, 0.556132};
-  //Double_t xval_pT[] = {0.61, 1.18, 1.98};
-  //Double_t xval_M[] = {4.50638, 5.07645, 6.4052};
+  
   TGraphErrors* gr_xN_LR_UpStream = new TGraphErrors(nBins, xval_xN,
 						     xN_Asym_UpStream, ex,
 						     e_xN_Asym_UpStream);
@@ -1072,6 +1077,8 @@ int main(int argc, char **argv){
 					   e_M_Asym);
   // }}}
 
+  //cout << "yes1" << endl;
+  
   ////////////////
   //Draw and pretty up graphs
   ////////////////
@@ -1224,7 +1231,8 @@ int main(int argc, char **argv){
   SetupTGraph(gr_M_LR, "Both Targets", "M", 1.0);
   SetupTLine(l_M);
   // }}}
-  
+
+  cout << "yes2" << endl;
   //TGraphs by target
   ///////////////
   // {{{
@@ -1448,6 +1456,7 @@ int main(int argc, char **argv){
   SetupTLine(l_M_LR_DownStream_Down);
   // }}}
 
+    cout << "yes3" << endl;
   //Write output
   ///////////////
   // {{{
