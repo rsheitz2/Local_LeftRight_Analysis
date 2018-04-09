@@ -1,3 +1,4 @@
+#pragma once
 #ifndef __COMMON_H_INCLUDED__
 #define __COMMON_H_INCLUDED__
   

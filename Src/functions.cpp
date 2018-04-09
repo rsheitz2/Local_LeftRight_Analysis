@@ -215,6 +215,40 @@ Bool_t BinnedLeftRight(unsigned long long *Left, unsigned long long *Right,
 }//BinnedLeftRight
 
 
+Bool_t BinAvg(std::vector<Double_t> &Avg, std::vector<Int_t> &count, 
+	      Double_t binVal, std::vector<Double_t> &binValBounds, 
+	      Double_t avgVal){
+  Int_t iter = 0;
+  for (std::vector<Double_t>::iterator it = binValBounds.begin();
+       it != binValBounds.end(); it++){
+    if(iter == 0 && binVal < *it ) {
+      std::cout << "!!!!!!!!!!!!!!!" << std::endl;
+      std::cout << "bin value too low!!!!" << std::endl;
+      std::cout << "Lower bound: " << *it << "    val: "
+		<< binVal << std::endl;
+      std::cout << " " << std::endl;
+
+      return false;
+    }
+    else if (binVal < *(it+1)){
+      Avg.at(iter) += avgVal;
+      count.at(iter)++;
+
+      return true;
+    }
+
+    iter++;
+  }
+  
+  std::cout << "!!!!!!!!!!!!!!!" << std::endl;
+  std::cout << "bin value too high!!!!" << std::endl;
+  std::cout << "Upper bound: " << binValBounds.back() << "    val:"
+	    << binVal << std::endl;
+  std::cout << " " << std::endl;
+  return false;
+}
+
+
 void Hist_LRAsym(TH1D* h_input, TH1D* h_output, Int_t nBins){
   if (nBins % 2 != 0){
     std::cout << "Histogram bin number should be even" << std::endl;

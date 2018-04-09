@@ -1,3 +1,7 @@
+#pragma once
+#ifndef SETUP_H
+#define SETUP_H
+
 #include "common.h"
 
 void SetupTGraph(TGraphErrors* gr, TString title, TString xTitle,
@@ -6,3 +10,5 @@ void SetupTGraph(TGraphErrors* gr, TString title, TString xTitle,
 void SetupTLine(TLine*);
 
 void SetupHist(TH1D* h);
+
+#endif

@@ -342,98 +342,8 @@ int main(int argc, char **argv){
     }
   }
 
-  //Dilution and polarization corrections
-  TVectorD Dil_int( *( (TVectorD*)fdata->Get("Dil_int") ) );
-  TVectorD Pol_int( *( (TVectorD*)fdata->Get("Pol_int") ) );
-
-  ////Binned Amplitudes
-  //Dilution and Polarization corrections
-  TVectorD Dil_xN( *( (TVectorD*)fdata->Get("Dil_xN") ) );
-  TVectorD Dil_xPi( *( (TVectorD*)fdata->Get("Dil_xPi") ) );
-  TVectorD Dil_xF( *( (TVectorD*)fdata->Get("Dil_xF") ) );
-  TVectorD Dil_pT( *( (TVectorD*)fdata->Get("Dil_pT") ) );
-  TVectorD Dil_M( *( (TVectorD*)fdata->Get("Dil_M") ) );
-
-  TVectorD Dil_xN_UpStream( *( (TVectorD*)fdata->Get("Dil_xN_UpStream") ) );
-  TVectorD Dil_xPi_UpStream( *( (TVectorD*)fdata->Get("Dil_xPi_UpStream") ) );
-  TVectorD Dil_xF_UpStream( *( (TVectorD*)fdata->Get("Dil_xF_UpStream") ) );
-  TVectorD Dil_pT_UpStream( *( (TVectorD*)fdata->Get("Dil_pT_UpStream") ) );
-  TVectorD Dil_M_UpStream( *( (TVectorD*)fdata->Get("Dil_M_UpStream") ) );
-
-  TVectorD Dil_xN_UpStream_Up( *( (TVectorD*)fdata->Get("Dil_xN_UpStream_Up")));
-  TVectorD Dil_xPi_UpStream_Up(*((TVectorD*)fdata->Get("Dil_xPi_UpStream_Up")));
-  TVectorD Dil_xF_UpStream_Up( *( (TVectorD*)fdata->Get("Dil_xF_UpStream_Up")));
-  TVectorD Dil_pT_UpStream_Up( *( (TVectorD*)fdata->Get("Dil_pT_UpStream_Up")));
-  TVectorD Dil_M_UpStream_Up( *( (TVectorD*)fdata->Get("Dil_M_UpStream_Up") ));
-
-  TVectorD Dil_xN_UpStream_Down( *( (TVectorD*)fdata->Get("Dil_xN_UpStream_Down")));
-  TVectorD Dil_xPi_UpStream_Down(*((TVectorD*)fdata->Get("Dil_xPi_UpStream_Down")));
-  TVectorD Dil_xF_UpStream_Down( *( (TVectorD*)fdata->Get("Dil_xF_UpStream_Down")));
-  TVectorD Dil_pT_UpStream_Down( *( (TVectorD*)fdata->Get("Dil_pT_UpStream_Down")));
-  TVectorD Dil_M_UpStream_Down( *( (TVectorD*)fdata->Get("Dil_M_UpStream_Down") ));
-
-  TVectorD Dil_xN_DownStream( *( (TVectorD*)fdata->Get("Dil_xN_DownStream") ) );
-  TVectorD Dil_xPi_DownStream( *( (TVectorD*)fdata->Get("Dil_xPi_DownStream")));
-  TVectorD Dil_xF_DownStream( *( (TVectorD*)fdata->Get("Dil_xF_DownStream") ) );
-  TVectorD Dil_pT_DownStream( *( (TVectorD*)fdata->Get("Dil_pT_DownStream") ) );
-  TVectorD Dil_M_DownStream( *( (TVectorD*)fdata->Get("Dil_M_DownStream") ) );
-
-  TVectorD Dil_xN_DownStream_Up( *( (TVectorD*)fdata->Get("Dil_xN_DownStream_Up")));
-  TVectorD Dil_xPi_DownStream_Up(*((TVectorD*)fdata->Get("Dil_xPi_DownStream_Up")));
-  TVectorD Dil_xF_DownStream_Up( *( (TVectorD*)fdata->Get("Dil_xF_DownStream_Up")));
-  TVectorD Dil_pT_DownStream_Up( *( (TVectorD*)fdata->Get("Dil_pT_DownStream_Up")));
-  TVectorD Dil_M_DownStream_Up( *( (TVectorD*)fdata->Get("Dil_M_DownStream_Up") ));
-
-  TVectorD Dil_xN_DownStream_Down( *( (TVectorD*)fdata->Get("Dil_xN_DownStream_Down")));
-  TVectorD Dil_xPi_DownStream_Down(*((TVectorD*)fdata->Get("Dil_xPi_DownStream_Down")));
-  TVectorD Dil_xF_DownStream_Down( *( (TVectorD*)fdata->Get("Dil_xF_DownStream_Down")));
-  TVectorD Dil_pT_DownStream_Down( *( (TVectorD*)fdata->Get("Dil_pT_DownStream_Down")));
-  TVectorD Dil_M_DownStream_Down( *( (TVectorD*)fdata->Get("Dil_M_DownStream_Down") ));
-  
-  TVectorD Pol_xN( *( (TVectorD*)fdata->Get("Pol_xN") ) );
-  TVectorD Pol_xPi( *( (TVectorD*)fdata->Get("Pol_xPi") ) );
-  TVectorD Pol_xF( *( (TVectorD*)fdata->Get("Pol_xF") ) );
-  TVectorD Pol_pT( *( (TVectorD*)fdata->Get("Pol_pT") ) );
-  TVectorD Pol_M( *( (TVectorD*)fdata->Get("Pol_M") ) );
-
-  TVectorD Pol_xN_UpStream( *( (TVectorD*)fdata->Get("Pol_xN_UpStream") ) );
-  TVectorD Pol_xPi_UpStream( *( (TVectorD*)fdata->Get("Pol_xPi_UpStream") ) );
-  TVectorD Pol_xF_UpStream( *( (TVectorD*)fdata->Get("Pol_xF_UpStream") ) );
-  TVectorD Pol_pT_UpStream( *( (TVectorD*)fdata->Get("Pol_pT_UpStream") ) );
-  TVectorD Pol_M_UpStream( *( (TVectorD*)fdata->Get("Pol_M_UpStream") ) );
-
-  TVectorD Pol_xN_UpStream_Up( *( (TVectorD*)fdata->Get("Pol_xN_UpStream_Up") ) );
-  TVectorD Pol_xPi_UpStream_Up( *( (TVectorD*)fdata->Get("Pol_xPi_UpStream_Up") ) );
-  TVectorD Pol_xF_UpStream_Up( *( (TVectorD*)fdata->Get("Pol_xF_UpStream_Up") ) );
-  TVectorD Pol_pT_UpStream_Up( *( (TVectorD*)fdata->Get("Pol_pT_UpStream_Up") ) );
-  TVectorD Pol_M_UpStream_Up( *( (TVectorD*)fdata->Get("Pol_M_UpStream_Up") ) );
-
-  TVectorD Pol_xN_UpStream_Down( *( (TVectorD*)fdata->Get("Pol_xN_UpStream_Down") ) );
-  TVectorD Pol_xPi_UpStream_Down( *( (TVectorD*)fdata->Get("Pol_xPi_UpStream_Down") ) );
-  TVectorD Pol_xF_UpStream_Down( *( (TVectorD*)fdata->Get("Pol_xF_UpStream_Down") ) );
-  TVectorD Pol_pT_UpStream_Down( *( (TVectorD*)fdata->Get("Pol_pT_UpStream_Down") ) );
-  TVectorD Pol_M_UpStream_Down( *( (TVectorD*)fdata->Get("Pol_M_UpStream_Down") ) );
-
-  TVectorD Pol_xN_DownStream( *( (TVectorD*)fdata->Get("Pol_xN_DownStream") ) );
-  TVectorD Pol_xPi_DownStream( *( (TVectorD*)fdata->Get("Pol_xPi_DownStream")));
-  TVectorD Pol_xF_DownStream( *( (TVectorD*)fdata->Get("Pol_xF_DownStream") ) );
-  TVectorD Pol_pT_DownStream( *( (TVectorD*)fdata->Get("Pol_pT_DownStream") ) );
-  TVectorD Pol_M_DownStream( *( (TVectorD*)fdata->Get("Pol_M_DownStream") ) );
-
-  TVectorD Pol_xN_DownStream_Up( *( (TVectorD*)fdata->Get("Pol_xN_DownStream_Up") ) );
-  TVectorD Pol_xPi_DownStream_Up( *( (TVectorD*)fdata->Get("Pol_xPi_DownStream_Up") ) );
-  TVectorD Pol_xF_DownStream_Up( *( (TVectorD*)fdata->Get("Pol_xF_DownStream_Up") ) );
-  TVectorD Pol_pT_DownStream_Up( *( (TVectorD*)fdata->Get("Pol_pT_DownStream_Up") ) );
-  TVectorD Pol_M_DownStream_Up( *( (TVectorD*)fdata->Get("Pol_M_DownStream_Up") ) );
-
-  TVectorD Pol_xN_DownStream_Down( *( (TVectorD*)fdata->Get("Pol_xN_DownStream_Down") ) );
-  TVectorD Pol_xPi_DownStream_Down( *( (TVectorD*)fdata->Get("Pol_xPi_DownStream_Down") ) );
-  TVectorD Pol_xF_DownStream_Down( *( (TVectorD*)fdata->Get("Pol_xF_DownStream_Down") ) );
-  TVectorD Pol_pT_DownStream_Down( *( (TVectorD*)fdata->Get("Pol_pT_DownStream_Down") ) );
-  TVectorD Pol_M_DownStream_Down( *( (TVectorD*)fdata->Get("Pol_M_DownStream_Down") ) );
-
   //Vertex specific
-  Double_t vx_z;
+  Double_t vx_z, vx_x, vx_y;
   Int_t targetPosition;
   //Drell-Yan Angles
   Double_t PhiS_simple, Theta_CS, vOpenAngle;
@@ -445,11 +355,14 @@ int main(int argc, char **argv){
   Int_t trigMask, MasterTrigMask;
   //Target values
   Double_t Spin_0, Spin_1, Spin_2, Spin_3, Spin_4, Spin_5, Spin_6;
+  Double_t dilutionFactor, Polarization;
   //DY-variables
   Double_t x_beam, x_target, x_feynman, q_transverse, Mmumu;
   
   //Vertex specific
   tree->SetBranchAddress("vx_z", &vx_z);
+  tree->SetBranchAddress("vx_x", &vx_x);
+  tree->SetBranchAddress("vx_y", &vx_y);
   tree->SetBranchAddress("targetPosition", &targetPosition);
   //Drell-Yan Angles
   tree->SetBranchAddress("PhiS_simple", &PhiS_simple);
@@ -470,6 +383,8 @@ int main(int argc, char **argv){
   tree->SetBranchAddress("Spin_4", &Spin_4);
   tree->SetBranchAddress("Spin_5", &Spin_5);
   tree->SetBranchAddress("Spin_6", &Spin_6);
+  tree->SetBranchAddress("dilutionFactor", &dilutionFactor);
+  tree->SetBranchAddress("Polarization", &Polarization);  
   //DY-variables
   tree->SetBranchAddress("x_beam", &x_beam);
   tree->SetBranchAddress("x_target", &x_target);
@@ -548,6 +463,124 @@ int main(int argc, char **argv){
     M_Left_DownStream_Up[i]=0; M_Right_DownStream_Up[i]=0;
     M_Left_DownStream_Down[i]=0; M_Right_DownStream_Down[i]=0;
   }
+
+  //Averages
+  Double_t AvgPolarization=0.0, AvgDilution=0.0, AvgDilution_corrected=0.0;
+  Int_t AvgPolarization_count=0, AvgDilution_count=0;
+
+  vector<Double_t> AvgPol_xN(nBins, 0.0), AvgDil_xN(nBins, 0.0);
+  vector<Int_t> AvgPol_xN_count(nBins, 0), AvgDil_xN_count(nBins, 0);
+  vector<Double_t> AvgPol_xN_UpStream(nBins, 0.0), AvgDil_xN_UpStream(nBins, 0.0);
+  vector<Int_t> AvgPol_xN_count_UpStream(nBins, 0), AvgDil_xN_count_UpStream(nBins, 0);
+  vector<Double_t> AvgPol_xN_DownStream(nBins, 0.0), AvgDil_xN_DownStream(nBins, 0.0);
+  vector<Int_t> AvgPol_xN_count_DownStream(nBins, 0), AvgDil_xN_count_DownStream(nBins, 0);
+  //Polarization by target
+  vector<Double_t> AvgPol_xN_UpStream_Up(nBins, 0.0), AvgDil_xN_UpStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_xN_count_UpStream_Up(nBins, 0), AvgDil_xN_count_UpStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_xN_DownStream_Up(nBins, 0.0), AvgDil_xN_DownStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_xN_count_DownStream_Up(nBins, 0), AvgDil_xN_count_DownStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_xN_UpStream_Down(nBins, 0.0), AvgDil_xN_UpStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_xN_count_UpStream_Down(nBins, 0), AvgDil_xN_count_UpStream_Down(nBins, 0);
+  vector<Double_t> AvgPol_xN_DownStream_Down(nBins, 0.0), AvgDil_xN_DownStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_xN_count_DownStream_Down(nBins, 0), AvgDil_xN_count_DownStream_Down(nBins, 0);
+
+  vector<Double_t> AvgPol_xPi(nBins, 0.0), AvgDil_xPi(nBins, 0.0);
+  vector<Int_t> AvgPol_xPi_count(nBins, 0), AvgDil_xPi_count(nBins, 0);
+  vector<Double_t> AvgPol_xPi_UpStream(nBins, 0.0), AvgDil_xPi_UpStream(nBins, 0.0);
+  vector<Int_t> AvgPol_xPi_count_UpStream(nBins, 0), AvgDil_xPi_count_UpStream(nBins, 0);
+  vector<Double_t> AvgPol_xPi_DownStream(nBins, 0.0), AvgDil_xPi_DownStream(nBins, 0.0);
+  vector<Int_t> AvgPol_xPi_count_DownStream(nBins, 0), AvgDil_xPi_count_DownStream(nBins, 0);
+  //Polarization by target
+  vector<Double_t> AvgPol_xPi_UpStream_Up(nBins, 0.0), AvgDil_xPi_UpStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_xPi_count_UpStream_Up(nBins, 0), AvgDil_xPi_count_UpStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_xPi_DownStream_Up(nBins, 0.0), AvgDil_xPi_DownStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_xPi_count_DownStream_Up(nBins, 0), AvgDil_xPi_count_DownStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_xPi_UpStream_Down(nBins, 0.0), AvgDil_xPi_UpStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_xPi_count_UpStream_Down(nBins, 0), AvgDil_xPi_count_UpStream_Down(nBins, 0);
+  vector<Double_t> AvgPol_xPi_DownStream_Down(nBins, 0.0), AvgDil_xPi_DownStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_xPi_count_DownStream_Down(nBins, 0), AvgDil_xPi_count_DownStream_Down(nBins, 0);
+
+  vector<Double_t> AvgPol_xF(nBins, 0.0), AvgDil_xF(nBins, 0.0);
+  vector<Int_t> AvgPol_xF_count(nBins, 0), AvgDil_xF_count(nBins, 0);
+  vector<Double_t> AvgPol_xF_UpStream(nBins, 0.0), AvgDil_xF_UpStream(nBins, 0.0);
+  vector<Int_t> AvgPol_xF_count_UpStream(nBins, 0), AvgDil_xF_count_UpStream(nBins, 0);
+  vector<Double_t> AvgPol_xF_DownStream(nBins, 0.0), AvgDil_xF_DownStream(nBins, 0.0);
+  vector<Int_t> AvgPol_xF_count_DownStream(nBins, 0), AvgDil_xF_count_DownStream(nBins, 0);
+  //Polarization by target
+  vector<Double_t> AvgPol_xF_UpStream_Up(nBins, 0.0), AvgDil_xF_UpStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_xF_count_UpStream_Up(nBins, 0), AvgDil_xF_count_UpStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_xF_DownStream_Up(nBins, 0.0), AvgDil_xF_DownStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_xF_count_DownStream_Up(nBins, 0), AvgDil_xF_count_DownStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_xF_UpStream_Down(nBins, 0.0), AvgDil_xF_UpStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_xF_count_UpStream_Down(nBins, 0), AvgDil_xF_count_UpStream_Down(nBins, 0);
+  vector<Double_t> AvgPol_xF_DownStream_Down(nBins, 0.0), AvgDil_xF_DownStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_xF_count_DownStream_Down(nBins, 0), AvgDil_xF_count_DownStream_Down(nBins, 0);
+
+  vector<Double_t> AvgPol_pT(nBins, 0.0), AvgDil_pT(nBins, 0.0);
+  vector<Int_t> AvgPol_pT_count(nBins, 0), AvgDil_pT_count(nBins, 0);
+  vector<Double_t> AvgPol_pT_UpStream(nBins, 0.0), AvgDil_pT_UpStream(nBins, 0.0);
+  vector<Int_t> AvgPol_pT_count_UpStream(nBins, 0), AvgDil_pT_count_UpStream(nBins, 0);
+  vector<Double_t> AvgPol_pT_DownStream(nBins, 0.0), AvgDil_pT_DownStream(nBins, 0.0);
+  vector<Int_t> AvgPol_pT_count_DownStream(nBins, 0), AvgDil_pT_count_DownStream(nBins, 0);
+  //Polarization by target
+  vector<Double_t> AvgPol_pT_UpStream_Up(nBins, 0.0), AvgDil_pT_UpStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_pT_count_UpStream_Up(nBins, 0), AvgDil_pT_count_UpStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_pT_DownStream_Up(nBins, 0.0), AvgDil_pT_DownStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_pT_count_DownStream_Up(nBins, 0), AvgDil_pT_count_DownStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_pT_UpStream_Down(nBins, 0.0), AvgDil_pT_UpStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_pT_count_UpStream_Down(nBins, 0), AvgDil_pT_count_UpStream_Down(nBins, 0);
+  vector<Double_t> AvgPol_pT_DownStream_Down(nBins, 0.0), AvgDil_pT_DownStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_pT_count_DownStream_Down(nBins, 0), AvgDil_pT_count_DownStream_Down(nBins, 0);
+
+  vector<Double_t> AvgPol_M(nBins, 0.0), AvgDil_M(nBins, 0.0);
+  vector<Int_t> AvgPol_M_count(nBins, 0), AvgDil_M_count(nBins, 0);
+  vector<Double_t> AvgPol_M_UpStream(nBins, 0.0), AvgDil_M_UpStream(nBins, 0.0);
+  vector<Int_t> AvgPol_M_count_UpStream(nBins, 0), AvgDil_M_count_UpStream(nBins, 0);
+  vector<Double_t> AvgPol_M_DownStream(nBins, 0.0), AvgDil_M_DownStream(nBins, 0.0);
+  vector<Int_t> AvgPol_M_count_DownStream(nBins, 0), AvgDil_M_count_DownStream(nBins, 0);
+  //Polarization by target
+  vector<Double_t> AvgPol_M_UpStream_Up(nBins, 0.0), AvgDil_M_UpStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_M_count_UpStream_Up(nBins, 0), AvgDil_M_count_UpStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_M_DownStream_Up(nBins, 0.0), AvgDil_M_DownStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_M_count_DownStream_Up(nBins, 0), AvgDil_M_count_DownStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_M_UpStream_Down(nBins, 0.0), AvgDil_M_UpStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_M_count_UpStream_Down(nBins, 0), AvgDil_M_count_UpStream_Down(nBins, 0);
+  vector<Double_t> AvgPol_M_DownStream_Down(nBins, 0.0), AvgDil_M_DownStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_M_count_DownStream_Down(nBins, 0), AvgDil_M_count_DownStream_Down(nBins, 0);
+
+  vector<Double_t> AvgPol_rad(nBins, 0.0), AvgDil_rad(nBins, 0.0);
+  vector<Int_t> AvgPol_rad_count(nBins, 0), AvgDil_rad_count(nBins, 0);
+  vector<Double_t> AvgPol_rad_UpStream(nBins, 0.0), AvgDil_rad_UpStream(nBins, 0.0);
+  vector<Int_t> AvgPol_rad_count_UpStream(nBins, 0), AvgDil_rad_count_UpStream(nBins, 0);
+  vector<Double_t> AvgPol_rad_DownStream(nBins, 0.0), AvgDil_rad_DownStream(nBins, 0.0);
+  vector<Int_t> AvgPol_rad_count_DownStream(nBins, 0), AvgDil_rad_count_DownStream(nBins, 0);
+  //Polarization by target
+  vector<Double_t> AvgPol_rad_UpStream_Up(nBins, 0.0), AvgDil_rad_UpStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_rad_count_UpStream_Up(nBins, 0), AvgDil_rad_count_UpStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_rad_DownStream_Up(nBins, 0.0), AvgDil_rad_DownStream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_rad_count_DownStream_Up(nBins, 0), AvgDil_rad_count_DownStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_rad_UpStream_Down(nBins, 0.0), AvgDil_rad_UpStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_rad_count_UpStream_Down(nBins, 0), AvgDil_rad_count_UpStream_Down(nBins, 0);
+  vector<Double_t> AvgPol_rad_DownStream_Down(nBins, 0.0), AvgDil_rad_DownStream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_rad_count_DownStream_Down(nBins, 0), AvgDil_rad_count_DownStream_Down(nBins, 0);
+
+  vector<Double_t> AvgPol_vxZ_upstream(nBins, 0.0), AvgDil_vxZ_upstream(nBins, 0.0);
+  vector<Int_t> AvgPol_vxZ_count_UpStream(nBins, 0), AvgDil_vxZ_count_UpStream(nBins, 0);
+
+  //Polarization by target
+  vector<Double_t> AvgPol_vxZ_upstream_Up(nBins, 0.0), AvgDil_vxZ_upstream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_vxZ_count_UpStream_Up(nBins, 0), AvgDil_vxZ_count_UpStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_vxZ_upstream_Down(nBins, 0.0), AvgDil_vxZ_upstream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_vxZ_count_UpStream_Down(nBins, 0), AvgDil_vxZ_count_UpStream_Down(nBins, 0);
+
+  vector<Double_t> AvgPol_vxZ_downstream(nBins, 0.0), AvgDil_vxZ_downstream(nBins, 0.0);
+  vector<Int_t> AvgPol_vxZ_count_DownStream(nBins, 0), AvgDil_vxZ_count_DownStream(nBins, 0);
+
+  //Polarization by target
+  vector<Double_t> AvgPol_vxZ_downstream_Up(nBins, 0.0), AvgDil_vxZ_downstream_Up(nBins, 0.0);
+  vector<Int_t> AvgPol_vxZ_count_DownStream_Up(nBins, 0), AvgDil_vxZ_count_DownStream_Up(nBins, 0);
+  vector<Double_t> AvgPol_vxZ_downstream_Down(nBins, 0.0), AvgDil_vxZ_downstream_Down(nBins, 0.0);
+  vector<Int_t> AvgPol_vxZ_count_DownStream_Down(nBins, 0), AvgDil_vxZ_count_DownStream_Down(nBins, 0);
   // }}}
   
   //Phi filling
@@ -619,6 +652,12 @@ int main(int argc, char **argv){
     else if (theta_traj2 > 0.04){
       hBasic_high[1]->Fill(Mmumu);
     }
+
+    
+    ////All data after cuts
+    //////////////
+    ///////////////General useful quantities
+    Double_t radius = TMath::Sqrt(vx_x*vx_x+vx_y*vx_y);
 
     //Choose Left/Right
     // {{{
@@ -718,6 +757,128 @@ int main(int argc, char **argv){
 	// }}}
       }//End Right
 
+
+      if (binFlag){
+	//Dilution
+	// {{{
+      Double_t dil = TMath::Abs(dilutionFactor);
+      Double_t correct_dil = 0.95*dil;
+      AvgDilution += dil;
+      AvgDilution_corrected += correct_dil;
+      AvgDilution_count++;
+
+      BinAvg(AvgDil_xN, AvgDil_xN_count, x_target, xN_bounds, correct_dil);
+      BinAvg(AvgDil_xPi, AvgDil_xPi_count, x_beam, xPi_bounds, correct_dil);
+      BinAvg(AvgDil_xF, AvgDil_xF_count, x_feynman, xF_bounds, correct_dil);
+      BinAvg(AvgDil_pT, AvgDil_pT_count, q_transverse, pT_bounds, correct_dil);
+      BinAvg(AvgDil_M, AvgDil_M_count, Mmumu, M_bounds, correct_dil);
+      BinAvg(AvgDil_rad, AvgDil_rad_count, radius, rad_bounds, correct_dil);
+      BinAvg(AvgDil_vxZ_upstream, AvgDil_vxZ_count_UpStream, vx_z,
+	     vxZ_upstream_bounds, correct_dil);
+      
+      BinAvg(AvgDil_xN_UpStream, AvgDil_xN_count_UpStream, x_target,
+	     xN_bounds, correct_dil);
+      BinAvg(AvgDil_xPi_UpStream, AvgDil_xPi_count_UpStream, x_beam,
+	     xPi_bounds, correct_dil);
+      BinAvg(AvgDil_xF_UpStream, AvgDil_xF_count_UpStream, x_feynman,
+	     xF_bounds, correct_dil);
+      BinAvg(AvgDil_pT_UpStream, AvgDil_pT_count_UpStream, q_transverse,
+	     pT_bounds, correct_dil);
+      BinAvg(AvgDil_M_UpStream, AvgDil_M_count_UpStream, Mmumu,
+	     M_bounds, correct_dil);
+      BinAvg(AvgDil_rad_UpStream, AvgDil_rad_count_UpStream, radius, rad_bounds,
+	     correct_dil);
+      // }}}
+
+	//Polarization
+	// {{{
+      Double_t pol = TMath::Abs(Polarization);
+      BinAvg(AvgPol_xN_UpStream, AvgPol_xN_count_UpStream, x_target,
+	     xN_bounds, pol);
+      BinAvg(AvgPol_xPi_UpStream, AvgPol_xPi_count_UpStream, x_beam,
+	     xPi_bounds, pol);
+      BinAvg(AvgPol_xF_UpStream, AvgPol_xF_count_UpStream, x_feynman,
+	     xF_bounds, pol);
+      BinAvg(AvgPol_pT_UpStream, AvgPol_pT_count_UpStream, q_transverse,
+	     pT_bounds, pol);
+      BinAvg(AvgPol_M_UpStream, AvgPol_M_count_UpStream, Mmumu,
+	     M_bounds, pol);
+      BinAvg(AvgPol_rad_UpStream, AvgPol_rad_count_UpStream, radius,
+	     rad_bounds, pol);
+      BinAvg(AvgPol_vxZ_upstream,AvgPol_vxZ_count_UpStream, vx_z,
+	     vxZ_upstream_bounds, pol);
+      // }}}
+
+	if (Spin_0 > 0) {//Polarized Up
+	  //Dilution/Polarization
+	  // {{{
+	BinAvg(AvgDil_xN_UpStream_Up, AvgDil_xN_count_UpStream_Up, x_target,
+	       xN_bounds, correct_dil);
+	BinAvg(AvgDil_xPi_UpStream_Up, AvgDil_xPi_count_UpStream_Up, x_beam,
+	       xPi_bounds, correct_dil);
+	BinAvg(AvgDil_xF_UpStream_Up, AvgDil_xF_count_UpStream_Up, x_feynman,
+	       xF_bounds, correct_dil);
+	BinAvg(AvgDil_pT_UpStream_Up,AvgDil_pT_count_UpStream_Up,q_transverse,
+	       pT_bounds, correct_dil);  
+	BinAvg(AvgDil_M_UpStream_Up, AvgDil_M_count_UpStream_Up, Mmumu,
+	       M_bounds, correct_dil);
+	BinAvg(AvgDil_rad_UpStream_Up, AvgDil_rad_count_UpStream_Up, radius,
+	       rad_bounds, correct_dil);
+	BinAvg(AvgDil_vxZ_upstream_Up, AvgDil_vxZ_count_UpStream_Up, vx_z,
+	       vxZ_upstream_bounds, correct_dil);
+
+	BinAvg(AvgPol_xN_UpStream_Up, AvgPol_xN_count_UpStream_Up, x_target,
+	       xN_bounds, pol);
+	BinAvg(AvgPol_xPi_UpStream_Up, AvgPol_xPi_count_UpStream_Up, x_beam,
+	       xPi_bounds, pol);
+	BinAvg(AvgPol_xF_UpStream_Up, AvgPol_xF_count_UpStream_Up, x_feynman,
+	       xF_bounds, pol);
+	BinAvg(AvgPol_pT_UpStream_Up,AvgPol_pT_count_UpStream_Up,q_transverse,
+	       pT_bounds, pol);  
+	BinAvg(AvgPol_M_UpStream_Up, AvgPol_M_count_UpStream_Up, Mmumu,
+	       M_bounds, pol);
+	BinAvg(AvgPol_rad_UpStream_Up, AvgPol_rad_count_UpStream_Up, radius,
+	       rad_bounds, pol);
+	BinAvg(AvgPol_vxZ_upstream_Up, AvgPol_vxZ_count_UpStream_Up, vx_z,
+	       vxZ_upstream_bounds, pol);
+	// }}}
+	}
+	else if (Spin_0 < 0){//Polarized Down
+	  //Dilution/Polarization
+	  // {{{
+	BinAvg(AvgDil_xN_UpStream_Down, AvgDil_xN_count_UpStream_Down, 
+	       x_target, xN_bounds, correct_dil);
+	BinAvg(AvgDil_xPi_UpStream_Down, AvgDil_xPi_count_UpStream_Down, 
+	       x_beam, xPi_bounds, correct_dil);
+	BinAvg(AvgDil_xF_UpStream_Down, AvgDil_xF_count_UpStream_Down, 
+	       x_feynman, xF_bounds, correct_dil);
+	BinAvg(AvgDil_pT_UpStream_Down,AvgDil_pT_count_UpStream_Down,
+	       q_transverse, pT_bounds, correct_dil);  
+	BinAvg(AvgDil_M_UpStream_Down, AvgDil_M_count_UpStream_Down,
+	       Mmumu, M_bounds, correct_dil);
+	BinAvg(AvgDil_rad_UpStream_Down, AvgDil_rad_count_UpStream_Down, radius,
+	       rad_bounds, correct_dil);
+	BinAvg(AvgDil_vxZ_upstream_Down, AvgDil_vxZ_count_UpStream_Down, vx_z,
+	       vxZ_upstream_bounds, correct_dil);
+
+	BinAvg(AvgPol_xN_UpStream_Down, AvgPol_xN_count_UpStream_Down, 
+	       x_target, xN_bounds, pol);
+	BinAvg(AvgPol_xPi_UpStream_Down, AvgPol_xPi_count_UpStream_Down, 
+	       x_beam, xPi_bounds, pol);
+	BinAvg(AvgPol_xF_UpStream_Down, AvgPol_xF_count_UpStream_Down, 
+	       x_feynman, xF_bounds, pol);
+	BinAvg(AvgPol_pT_UpStream_Down,AvgPol_pT_count_UpStream_Down,
+	       q_transverse, pT_bounds, pol);  
+	BinAvg(AvgPol_M_UpStream_Down, AvgPol_M_count_UpStream_Down,
+	       Mmumu, M_bounds, pol);
+	BinAvg(AvgPol_rad_UpStream_Down, AvgPol_rad_count_UpStream_Down, radius,
+	       rad_bounds, pol);
+	BinAvg(AvgPol_vxZ_upstream_Down, AvgPol_vxZ_count_UpStream_Down, vx_z,
+	       vxZ_upstream_bounds, pol);
+	// }}}
+	}
+      }
+
       h_phi_UpStream->Fill(phi_photon_lab);
       h_phi->Fill(phi_photon_lab);
     }//End UpStream target
@@ -772,9 +933,154 @@ int main(int argc, char **argv){
 	// }}}
       }//End Right
 
+
+      if (binFlag){
+	//Dilution
+	// {{{
+      Double_t dil = TMath::Abs(dilutionFactor);
+      Double_t correct_dil = 0.91*dil;
+      AvgDilution += dil;
+      AvgDilution_corrected += correct_dil;
+      AvgDilution_count++;
+
+      BinAvg(AvgDil_xN, AvgDil_xN_count, x_target, xN_bounds, correct_dil);
+      BinAvg(AvgDil_xPi, AvgDil_xPi_count, x_beam, xPi_bounds, correct_dil);
+      BinAvg(AvgDil_xF, AvgDil_xF_count, x_feynman, xF_bounds, correct_dil);
+      BinAvg(AvgDil_pT, AvgDil_pT_count, q_transverse, pT_bounds, correct_dil);
+      BinAvg(AvgDil_M, AvgDil_M_count, Mmumu, M_bounds, correct_dil);
+      BinAvg(AvgDil_rad, AvgDil_rad_count, radius, rad_bounds, correct_dil);
+      BinAvg(AvgDil_vxZ_downstream, AvgDil_vxZ_count_DownStream, vx_z,
+	     vxZ_downstream_bounds, correct_dil);
+
+      BinAvg(AvgDil_xN_DownStream, AvgDil_xN_count_DownStream, x_target,
+	     xN_bounds, correct_dil);
+      BinAvg(AvgDil_xPi_DownStream, AvgDil_xPi_count_DownStream, x_beam,
+	     xPi_bounds, correct_dil);
+      BinAvg(AvgDil_xF_DownStream, AvgDil_xF_count_DownStream, x_feynman,
+	     xF_bounds, correct_dil);
+      BinAvg(AvgDil_pT_DownStream, AvgDil_pT_count_DownStream, q_transverse,
+	     pT_bounds, correct_dil);
+      BinAvg(AvgDil_M_DownStream, AvgDil_M_count_DownStream, Mmumu,
+	     M_bounds, correct_dil);
+      BinAvg(AvgDil_rad_DownStream, AvgDil_rad_count_DownStream, radius,
+	     rad_bounds, correct_dil);
+      BinAvg(AvgDil_vxZ_downstream,AvgDil_vxZ_count_DownStream, vx_z,
+	     vxZ_downstream_bounds, correct_dil);
+      // }}}
+
+	//Polarization
+	// {{{
+      Double_t pol = TMath::Abs(Polarization);
+      BinAvg(AvgPol_xN_DownStream, AvgPol_xN_count_DownStream, x_target,
+	     xN_bounds, pol);
+      BinAvg(AvgPol_xPi_DownStream, AvgPol_xPi_count_DownStream, x_beam,
+	     xPi_bounds, pol);
+      BinAvg(AvgPol_xF_DownStream, AvgPol_xF_count_DownStream, x_feynman,
+	     xF_bounds, pol);
+      BinAvg(AvgPol_pT_DownStream, AvgPol_pT_count_DownStream, q_transverse,
+	     pT_bounds, pol);
+      BinAvg(AvgPol_M_DownStream, AvgPol_M_count_DownStream, Mmumu,
+	     M_bounds, pol);
+      BinAvg(AvgPol_rad_DownStream, AvgPol_rad_count_DownStream, radius,
+	     rad_bounds, pol);
+      BinAvg(AvgPol_vxZ_downstream,AvgPol_vxZ_count_DownStream, vx_z,
+	     vxZ_downstream_bounds, pol);
+      // }}}
+
+	if (Spin_0 > 0) {//Polarized Up
+	  //Dilution/Polarization
+	  // {{{
+	BinAvg(AvgDil_xN_DownStream_Up, AvgDil_xN_count_DownStream_Up, 
+	       x_target, xN_bounds, correct_dil);
+	BinAvg(AvgDil_xPi_DownStream_Up, AvgDil_xPi_count_DownStream_Up, 
+	       x_beam, xPi_bounds, correct_dil);
+	BinAvg(AvgDil_xF_DownStream_Up, AvgDil_xF_count_DownStream_Up, 
+	       x_feynman, xF_bounds, correct_dil);
+	BinAvg(AvgDil_pT_DownStream_Up,AvgDil_pT_count_DownStream_Up,
+	       q_transverse, pT_bounds, correct_dil);  
+	BinAvg(AvgDil_M_DownStream_Up, AvgDil_M_count_DownStream_Up,
+	       Mmumu, M_bounds, correct_dil);
+	BinAvg(AvgDil_rad_DownStream_Up, AvgDil_rad_count_DownStream_Up, radius,
+	       rad_bounds, correct_dil);
+	BinAvg(AvgDil_vxZ_downstream_Up, AvgDil_vxZ_count_DownStream_Up, vx_z,
+	       vxZ_downstream_bounds, correct_dil);
+
+	BinAvg(AvgPol_xN_DownStream_Up, AvgPol_xN_count_DownStream_Up, 
+	       x_target, xN_bounds, pol);
+	BinAvg(AvgPol_xPi_DownStream_Up, AvgPol_xPi_count_DownStream_Up, 
+	       x_beam, xPi_bounds, pol);
+	BinAvg(AvgPol_xF_DownStream_Up, AvgPol_xF_count_DownStream_Up, 
+	       x_feynman, xF_bounds, pol);
+	BinAvg(AvgPol_pT_DownStream_Up,AvgPol_pT_count_DownStream_Up,
+	       q_transverse, pT_bounds, pol);  
+	BinAvg(AvgPol_M_DownStream_Up, AvgPol_M_count_DownStream_Up,
+	       Mmumu, M_bounds, pol);
+	BinAvg(AvgPol_rad_DownStream_Up, AvgPol_rad_count_DownStream_Up, radius,
+	       rad_bounds, pol);
+	BinAvg(AvgPol_vxZ_downstream_Up, AvgPol_vxZ_count_DownStream_Up, vx_z,
+	       vxZ_downstream_bounds, pol);
+	// }}}
+	}
+	else if (Spin_0 < 0){//Polarized Down
+	  //Dilution/Polarization
+	  // {{{
+	BinAvg(AvgDil_xN_DownStream_Down, AvgDil_xN_count_DownStream_Down, 
+	       x_target, xN_bounds, correct_dil);
+	BinAvg(AvgDil_xPi_DownStream_Down, AvgDil_xPi_count_DownStream_Down, 
+	       x_beam, xPi_bounds, correct_dil);
+	BinAvg(AvgDil_xF_DownStream_Down, AvgDil_xF_count_DownStream_Down, 
+	       x_feynman, xF_bounds, correct_dil);
+	BinAvg(AvgDil_pT_DownStream_Down,AvgDil_pT_count_DownStream_Down,
+	       q_transverse, pT_bounds, correct_dil);  
+	BinAvg(AvgDil_M_DownStream_Down, AvgDil_M_count_DownStream_Down,
+	       Mmumu, M_bounds, correct_dil);
+	BinAvg(AvgDil_rad_DownStream_Down, AvgDil_rad_count_DownStream_Down,
+	       radius, rad_bounds, correct_dil);
+	BinAvg(AvgDil_vxZ_downstream_Down, AvgDil_vxZ_count_DownStream_Down,
+	       vx_z, vxZ_downstream_bounds, correct_dil);
+
+	BinAvg(AvgPol_xN_DownStream_Down, AvgPol_xN_count_DownStream_Down, 
+	       x_target, xN_bounds, pol);
+	BinAvg(AvgPol_xPi_DownStream_Down, AvgPol_xPi_count_DownStream_Down, 
+	       x_beam, xPi_bounds, pol);
+	BinAvg(AvgPol_xF_DownStream_Down, AvgPol_xF_count_DownStream_Down, 
+	       x_feynman, xF_bounds, pol);
+	BinAvg(AvgPol_pT_DownStream_Down,AvgPol_pT_count_DownStream_Down,
+	       q_transverse, pT_bounds, pol);  
+	BinAvg(AvgPol_M_DownStream_Down, AvgPol_M_count_DownStream_Down,
+	       Mmumu, M_bounds, pol);
+	BinAvg(AvgPol_rad_DownStream_Down, AvgPol_rad_count_DownStream_Down,
+	       radius, rad_bounds, pol);
+	BinAvg(AvgPol_vxZ_downstream_Down, AvgPol_vxZ_count_DownStream_Down,
+	       vx_z, vxZ_downstream_bounds, pol);
+	// }}}
+	}
+      }
+
       h_phi_DownStream->Fill(phi_photon_lab);
       h_phi->Fill(phi_photon_lab);
     }//End DownStream target
+
+    if (binFlag){
+      //Average Polarization
+      // {{{
+      AvgPolarization += TMath::Abs(Polarization);
+      AvgPolarization_count++;
+      if(Polarization == 0.0 || dilutionFactor == 0.0){
+	cout << "Problems with Polarization or dilution value" << endl;
+	cout << "Polarization = " << Polarization << endl;
+	cout << "Dilution = " << dilutionFactor << endl;
+      }
+
+      Double_t pol = TMath::Abs(Polarization);
+      BinAvg(AvgPol_xN, AvgPol_xN_count, x_target, xN_bounds, pol);
+      BinAvg(AvgPol_xPi, AvgPol_xPi_count, x_beam, xPi_bounds, pol);
+      BinAvg(AvgPol_xF, AvgPol_xF_count, x_feynman, xF_bounds, pol);
+      BinAvg(AvgPol_pT, AvgPol_pT_count, q_transverse, pT_bounds, pol);
+      BinAvg(AvgPol_M, AvgPol_M_count, Mmumu, M_bounds, pol);
+      BinAvg(AvgPol_rad, AvgPol_rad_count, radius, rad_bounds, pol);
+      // }}}
+    }
 
   }//End tree loop
 
@@ -882,98 +1188,429 @@ int main(int argc, char **argv){
   //Correct for dilution factor and polarization
   ///////////////
   // {{{
+  //Dilution and polarization corrections
+  TVectorD Dil_int(1);
+  TVectorD Pol_int(1);
+
+  ////Binned Amplitudes
+  //Dilution and Polarization corrections
+  TVectorD Dil_xN(nBins);
+  TVectorD Dil_xPi(nBins);
+  TVectorD Dil_xF(nBins);
+  TVectorD Dil_pT(nBins);
+  TVectorD Dil_M(nBins);
+
+  TVectorD Dil_xN_UpStream(nBins);
+  TVectorD Dil_xPi_UpStream(nBins);
+  TVectorD Dil_xF_UpStream(nBins);
+  TVectorD Dil_pT_UpStream(nBins);
+  TVectorD Dil_M_UpStream(nBins);
+
+  TVectorD Dil_xN_UpStream_Up(nBins);
+  TVectorD Dil_xPi_UpStream_Up(nBins);
+  TVectorD Dil_xF_UpStream_Up(nBins);
+  TVectorD Dil_pT_UpStream_Up(nBins);
+  TVectorD Dil_M_UpStream_Up(nBins);
+
+  TVectorD Dil_xN_UpStream_Down(nBins);
+  TVectorD Dil_xPi_UpStream_Down(nBins);
+  TVectorD Dil_xF_UpStream_Down(nBins);
+  TVectorD Dil_pT_UpStream_Down(nBins);
+  TVectorD Dil_M_UpStream_Down(nBins);
+
+  TVectorD Dil_xN_DownStream(nBins);
+  TVectorD Dil_xPi_DownStream(nBins);
+  TVectorD Dil_xF_DownStream(nBins);
+  TVectorD Dil_pT_DownStream(nBins);
+  TVectorD Dil_M_DownStream(nBins);
+
+  TVectorD Dil_xN_DownStream_Up(nBins);
+  TVectorD Dil_xPi_DownStream_Up(nBins);
+  TVectorD Dil_xF_DownStream_Up(nBins);
+  TVectorD Dil_pT_DownStream_Up(nBins);
+  TVectorD Dil_M_DownStream_Up(nBins);
+
+  TVectorD Dil_xN_DownStream_Down(nBins);
+  TVectorD Dil_xPi_DownStream_Down(nBins);
+  TVectorD Dil_xF_DownStream_Down(nBins);
+  TVectorD Dil_pT_DownStream_Down(nBins);
+  TVectorD Dil_M_DownStream_Down(nBins);
+  
+  TVectorD Pol_xN(nBins);
+  TVectorD Pol_xPi(nBins);
+  TVectorD Pol_xF(nBins);
+  TVectorD Pol_pT(nBins);
+  TVectorD Pol_M(nBins);
+
+  TVectorD Pol_xN_UpStream(nBins);
+  TVectorD Pol_xPi_UpStream(nBins);
+  TVectorD Pol_xF_UpStream(nBins);
+  TVectorD Pol_pT_UpStream(nBins);
+  TVectorD Pol_M_UpStream(nBins);
+
+  TVectorD Pol_xN_UpStream_Up(nBins);
+  TVectorD Pol_xPi_UpStream_Up(nBins);
+  TVectorD Pol_xF_UpStream_Up(nBins);
+  TVectorD Pol_pT_UpStream_Up(nBins);
+  TVectorD Pol_M_UpStream_Up(nBins);
+
+  TVectorD Pol_xN_UpStream_Down(nBins);
+  TVectorD Pol_xPi_UpStream_Down(nBins);
+  TVectorD Pol_xF_UpStream_Down(nBins);
+  TVectorD Pol_pT_UpStream_Down(nBins);
+  TVectorD Pol_M_UpStream_Down(nBins);
+
+  TVectorD Pol_xN_DownStream(nBins);
+  TVectorD Pol_xPi_DownStream(nBins);
+  TVectorD Pol_xF_DownStream(nBins);
+  TVectorD Pol_pT_DownStream(nBins);
+  TVectorD Pol_M_DownStream(nBins);
+
+  TVectorD Pol_xN_DownStream_Up(nBins);
+  TVectorD Pol_xPi_DownStream_Up(nBins);
+  TVectorD Pol_xF_DownStream_Up(nBins);
+  TVectorD Pol_pT_DownStream_Up(nBins);
+  TVectorD Pol_M_DownStream_Up(nBins);
+
+  TVectorD Pol_xN_DownStream_Down(nBins);
+  TVectorD Pol_xPi_DownStream_Down(nBins);
+  TVectorD Pol_xF_DownStream_Down(nBins);
+  TVectorD Pol_pT_DownStream_Down(nBins);
+  TVectorD Pol_M_DownStream_Down(nBins);
+
+  if (!binFlag && !Pflag){
+    Dil_int = *( (TVectorD*)fdata->Get("Dil_int") );
+    Pol_int = *( (TVectorD*)fdata->Get("Pol_int") );
+
+    ////Binned Amplitudes
+    //Dilution and Polarization corrections
+    Dil_xN = *( (TVectorD*)fdata->Get("Dil_xN") );
+    Dil_xPi = *( (TVectorD*)fdata->Get("Dil_xPi") );
+    Dil_xF = *( (TVectorD*)fdata->Get("Dil_xF") );
+    Dil_pT = *( (TVectorD*)fdata->Get("Dil_pT") );
+    Dil_M = *( (TVectorD*)fdata->Get("Dil_M") );
+
+    Dil_xN_UpStream = *( (TVectorD*)fdata->Get("Dil_xN_UpStream") );
+    Dil_xPi_UpStream = *( (TVectorD*)fdata->Get("Dil_xPi_UpStream") );
+    Dil_xF_UpStream = *( (TVectorD*)fdata->Get("Dil_xF_UpStream") );
+    Dil_pT_UpStream = *( (TVectorD*)fdata->Get("Dil_pT_UpStream") );
+    Dil_M_UpStream = *( (TVectorD*)fdata->Get("Dil_M_UpStream") );
+
+    Dil_xN_UpStream_Up = *( (TVectorD*)fdata->Get("Dil_xN_UpStream_Up"));
+    Dil_xPi_UpStream_Up = *((TVectorD*)fdata->Get("Dil_xPi_UpStream_Up"));
+    Dil_xF_UpStream_Up = *( (TVectorD*)fdata->Get("Dil_xF_UpStream_Up"));
+    Dil_pT_UpStream_Up = *( (TVectorD*)fdata->Get("Dil_pT_UpStream_Up"));
+    Dil_M_UpStream_Up = *( (TVectorD*)fdata->Get("Dil_M_UpStream_Up") );
+
+    Dil_xN_UpStream_Down = *( (TVectorD*)fdata->Get("Dil_xN_UpStream_Down"));
+    Dil_xPi_UpStream_Down=*((TVectorD*)fdata->Get("Dil_xPi_UpStream_Down"));
+    Dil_xF_UpStream_Down = *( (TVectorD*)fdata->Get("Dil_xF_UpStream_Down"));
+    Dil_pT_UpStream_Down = *( (TVectorD*)fdata->Get("Dil_pT_UpStream_Down"));
+    Dil_M_UpStream_Down = *( (TVectorD*)fdata->Get("Dil_M_UpStream_Down") );
+
+    Dil_xN_DownStream = *( (TVectorD*)fdata->Get("Dil_xN_DownStream") );
+    Dil_xPi_DownStream = *( (TVectorD*)fdata->Get("Dil_xPi_DownStream"));
+    Dil_xF_DownStream = *( (TVectorD*)fdata->Get("Dil_xF_DownStream") );
+    Dil_pT_DownStream = *( (TVectorD*)fdata->Get("Dil_pT_DownStream") );
+    Dil_M_DownStream = *( (TVectorD*)fdata->Get("Dil_M_DownStream") );
+
+    Dil_xN_DownStream_Up = *( (TVectorD*)fdata->Get("Dil_xN_DownStream_Up"));
+    Dil_xPi_DownStream_Up=*((TVectorD*)fdata->Get("Dil_xPi_DownStream_Up"));
+    Dil_xF_DownStream_Up = *( (TVectorD*)fdata->Get("Dil_xF_DownStream_Up"));
+    Dil_pT_DownStream_Up = *( (TVectorD*)fdata->Get("Dil_pT_DownStream_Up"));
+    Dil_M_DownStream_Up = *( (TVectorD*)fdata->Get("Dil_M_DownStream_Up") );
+
+    Dil_xN_DownStream_Down = *((TVectorD*)fdata->Get("Dil_xN_DownStream_Down"));
+    Dil_xPi_DownStream_Down=*((TVectorD*)fdata->Get("Dil_xPi_DownStream_Down"));
+    Dil_xF_DownStream_Down = *((TVectorD*)fdata->Get("Dil_xF_DownStream_Down"));
+    Dil_pT_DownStream_Down = *((TVectorD*)fdata->Get("Dil_pT_DownStream_Down"));
+    Dil_M_DownStream_Down = *( (TVectorD*)fdata->Get("Dil_M_DownStream_Down") );
+  
+    Pol_xN = *( (TVectorD*)fdata->Get("Pol_xN") );
+    Pol_xPi = *( (TVectorD*)fdata->Get("Pol_xPi") );
+    Pol_xF = *( (TVectorD*)fdata->Get("Pol_xF") );
+    Pol_pT = *( (TVectorD*)fdata->Get("Pol_pT") );
+    Pol_M = *( (TVectorD*)fdata->Get("Pol_M") );
+
+    Pol_xN_UpStream = *( (TVectorD*)fdata->Get("Pol_xN_UpStream") );
+    Pol_xPi_UpStream = *( (TVectorD*)fdata->Get("Pol_xPi_UpStream") );
+    Pol_xF_UpStream = *( (TVectorD*)fdata->Get("Pol_xF_UpStream") );
+    Pol_pT_UpStream = *( (TVectorD*)fdata->Get("Pol_pT_UpStream") );
+    Pol_M_UpStream = *( (TVectorD*)fdata->Get("Pol_M_UpStream") );
+
+    Pol_xN_UpStream_Up = *( (TVectorD*)fdata->Get("Pol_xN_UpStream_Up") );
+    Pol_xPi_UpStream_Up = *( (TVectorD*)fdata->Get("Pol_xPi_UpStream_Up") );
+    Pol_xF_UpStream_Up = *( (TVectorD*)fdata->Get("Pol_xF_UpStream_Up") );
+    Pol_pT_UpStream_Up = *( (TVectorD*)fdata->Get("Pol_pT_UpStream_Up") );
+    Pol_M_UpStream_Up = *( (TVectorD*)fdata->Get("Pol_M_UpStream_Up") );
+
+    Pol_xN_UpStream_Down = *( (TVectorD*)fdata->Get("Pol_xN_UpStream_Down") );
+    Pol_xPi_UpStream_Down = *( (TVectorD*)fdata->Get("Pol_xPi_UpStream_Down") );
+    Pol_xF_UpStream_Down = *( (TVectorD*)fdata->Get("Pol_xF_UpStream_Down") );
+    Pol_pT_UpStream_Down = *( (TVectorD*)fdata->Get("Pol_pT_UpStream_Down") );
+    Pol_M_UpStream_Down = *( (TVectorD*)fdata->Get("Pol_M_UpStream_Down") );
+
+    Pol_xN_DownStream = *( (TVectorD*)fdata->Get("Pol_xN_DownStream") );
+    Pol_xPi_DownStream = *( (TVectorD*)fdata->Get("Pol_xPi_DownStream"));
+    Pol_xF_DownStream = *( (TVectorD*)fdata->Get("Pol_xF_DownStream") );
+    Pol_pT_DownStream = *( (TVectorD*)fdata->Get("Pol_pT_DownStream") );
+    Pol_M_DownStream = *( (TVectorD*)fdata->Get("Pol_M_DownStream") );
+
+    Pol_xN_DownStream_Up = *( (TVectorD*)fdata->Get("Pol_xN_DownStream_Up") );
+    Pol_xPi_DownStream_Up = *( (TVectorD*)fdata->Get("Pol_xPi_DownStream_Up") );
+    Pol_xF_DownStream_Up = *( (TVectorD*)fdata->Get("Pol_xF_DownStream_Up") );
+    Pol_pT_DownStream_Up = *( (TVectorD*)fdata->Get("Pol_pT_DownStream_Up") );
+    Pol_M_DownStream_Up = *( (TVectorD*)fdata->Get("Pol_M_DownStream_Up") );
+
+    Pol_xN_DownStream_Down = *((TVectorD*)fdata->Get("Pol_xN_DownStream_Down"));
+    Pol_xPi_DownStream_Down=*((TVectorD*)fdata->Get("Pol_xPi_DownStream_Down"));
+    Pol_xF_DownStream_Down= *( (TVectorD*)fdata->Get("Pol_xF_DownStream_Down"));
+    Pol_pT_DownStream_Down= *( (TVectorD*)fdata->Get("Pol_pT_DownStream_Down"));
+    Pol_M_DownStream_Down = *( (TVectorD*)fdata->Get("Pol_M_DownStream_Down") );
+  }//no binFlag
+  else if (!Pflag) {
+    for (Int_t i=0; i<nBins; i++) {
+      //Dilution
+      ///////////////
+      Dil_xN[i] = AvgDil_xN[i]/AvgDil_xN_count[i];
+      Dil_xPi[i] = AvgDil_xPi[i]/AvgDil_xPi_count[i];
+      Dil_xF[i] = AvgDil_xF[i]/AvgDil_xF_count[i];
+      Dil_pT[i] = AvgDil_pT[i]/AvgDil_pT_count[i];
+      Dil_M[i] = AvgDil_M[i]/AvgDil_M_count[i];
+
+      //UpStream
+      Dil_xN_UpStream[i] = AvgDil_xN_UpStream[i]/AvgDil_xN_count_UpStream[i];
+      Dil_xPi_UpStream[i] = AvgDil_xPi_UpStream[i]/AvgDil_xPi_count_UpStream[i];
+      Dil_xF_UpStream[i] = AvgDil_xF_UpStream[i]/AvgDil_xF_count_UpStream[i];
+      Dil_pT_UpStream[i] = AvgDil_pT_UpStream[i]/AvgDil_pT_count_UpStream[i];
+      Dil_M_UpStream[i] = AvgDil_M_UpStream[i]/AvgDil_M_count_UpStream[i];
+
+      //UpStream Polarized Up
+      Dil_xN_UpStream_Up[i] = 
+	AvgDil_xN_UpStream_Up[i]/AvgDil_xN_count_UpStream_Up[i];
+      Dil_xPi_UpStream_Up[i] = 
+	AvgDil_xPi_UpStream_Up[i]/AvgDil_xPi_count_UpStream_Up[i];
+      Dil_xF_UpStream_Up[i] = 
+	AvgDil_xF_UpStream_Up[i]/AvgDil_xF_count_UpStream_Up[i];
+      Dil_pT_UpStream_Up[i] = 
+	AvgDil_pT_UpStream_Up[i]/AvgDil_pT_count_UpStream_Up[i];
+      Dil_M_UpStream_Up[i] = 
+	AvgDil_M_UpStream_Up[i]/AvgDil_M_count_UpStream_Up[i];
+      
+      //UpStream Polarized Down
+      Dil_xN_UpStream_Down[i] = 
+	AvgDil_xN_UpStream_Down[i]/AvgDil_xN_count_UpStream_Down[i];
+      Dil_xPi_UpStream_Down[i] = 
+	AvgDil_xPi_UpStream_Down[i]/AvgDil_xPi_count_UpStream_Down[i];
+      Dil_xF_UpStream_Down[i] = 
+	AvgDil_xF_UpStream_Down[i]/AvgDil_xF_count_UpStream_Down[i];
+      Dil_pT_UpStream_Down[i] =
+	AvgDil_pT_UpStream_Down[i]/AvgDil_pT_count_UpStream_Down[i];
+      Dil_M_UpStream_Down[i] =
+	AvgDil_M_UpStream_Down[i]/AvgDil_M_count_UpStream_Down[i];
+      
+      //DownStream
+      Dil_xN_DownStream[i] =AvgDil_xN_DownStream[i]/AvgDil_xN_count_DownStream[i];
+      Dil_xPi_DownStream[i]=
+	AvgDil_xPi_DownStream[i]/AvgDil_xPi_count_DownStream[i];
+      Dil_xF_DownStream[i] =AvgDil_xF_DownStream[i]/AvgDil_xF_count_DownStream[i];
+      Dil_pT_DownStream[i] =AvgDil_pT_DownStream[i]/AvgDil_pT_count_DownStream[i];
+      Dil_M_DownStream[i] = AvgDil_M_DownStream[i]/AvgDil_M_count_DownStream[i];
+      
+      //DownStream Polarized Up
+      Dil_xN_DownStream_Up[i] =
+	AvgDil_xN_DownStream_Up[i]/AvgDil_xN_count_DownStream_Up[i];
+      Dil_xPi_DownStream_Up[i]=
+	AvgDil_xPi_DownStream_Up[i]/AvgDil_xPi_count_DownStream_Up[i];
+      Dil_xF_DownStream_Up[i] =
+	AvgDil_xF_DownStream_Up[i]/AvgDil_xF_count_DownStream_Up[i];
+      Dil_pT_DownStream_Up[i] =
+	AvgDil_pT_DownStream_Up[i]/AvgDil_pT_count_DownStream_Up[i];
+      Dil_M_DownStream_Up[i] =
+	AvgDil_M_DownStream_Up[i]/AvgDil_M_count_DownStream_Up[i];
+      	
+      //DownStream Polarized Down
+      Dil_xN_DownStream_Down[i] =
+	AvgDil_xN_DownStream_Down[i]/AvgDil_xN_count_DownStream_Down[i];
+      Dil_xPi_DownStream_Down[i]=
+	AvgDil_xPi_DownStream_Down[i]/AvgDil_xPi_count_DownStream_Down[i];
+      Dil_xF_DownStream_Down[i] =
+	AvgDil_xF_DownStream_Down[i]/AvgDil_xF_count_DownStream_Down[i];
+      Dil_pT_DownStream_Down[i] =
+	AvgDil_pT_DownStream_Down[i]/AvgDil_pT_count_DownStream_Down[i];
+      Dil_M_DownStream_Down[i] =
+	AvgDil_M_DownStream_Down[i]/AvgDil_M_count_DownStream_Down[i];
+      
+      //Polarization
+      ////////////////
+      Pol_xN[i] = AvgPol_xN[i]/AvgPol_xN_count[i];
+      Pol_xPi[i] = AvgPol_xPi[i]/AvgPol_xPi_count[i];
+      Pol_xF[i] = AvgPol_xF[i]/AvgPol_xF_count[i];
+      Pol_pT[i] = AvgPol_pT[i]/AvgPol_pT_count[i];
+      Pol_M[i] = AvgPol_M[i]/AvgPol_M_count[i];
+      
+      //UpStream////////////
+      Pol_xN_UpStream[i] = AvgPol_xN_UpStream[i]/AvgPol_xN_count_UpStream[i];
+      Pol_xPi_UpStream[i] = AvgPol_xPi_UpStream[i]/AvgPol_xPi_count_UpStream[i];
+      Pol_xF_UpStream[i] = AvgPol_xF_UpStream[i]/AvgPol_xF_count_UpStream[i];
+      Pol_pT_UpStream[i] = AvgPol_pT_UpStream[i]/AvgPol_pT_count_UpStream[i];
+      Pol_M_UpStream[i] = AvgPol_M_UpStream[i]/AvgPol_M_count_UpStream[i];
+      
+      //UpStream Polarized Up
+      Pol_xN_UpStream_Up[i] = 
+	AvgPol_xN_UpStream_Up[i]/AvgPol_xN_count_UpStream_Up[i];
+      Pol_xPi_UpStream_Up[i] = 
+	AvgPol_xPi_UpStream_Up[i]/AvgPol_xPi_count_UpStream_Up[i];
+      Pol_xF_UpStream_Up[i] = 
+	AvgPol_xF_UpStream_Up[i]/AvgPol_xF_count_UpStream_Up[i];
+      Pol_pT_UpStream_Up[i] = 
+	AvgPol_pT_UpStream_Up[i]/AvgPol_pT_count_UpStream_Up[i];
+      Pol_M_UpStream_Up[i] = 
+	AvgPol_M_UpStream_Up[i]/AvgPol_M_count_UpStream_Up[i];
+
+      //UpStream Polarized Down
+      Pol_xN_UpStream_Down[i] = 
+	AvgPol_xN_UpStream_Down[i]/AvgPol_xN_count_UpStream_Down[i];
+      Pol_xPi_UpStream_Down[i] = 
+	AvgPol_xPi_UpStream_Down[i]/AvgPol_xPi_count_UpStream_Down[i];
+      Pol_xF_UpStream_Down[i] = 
+	AvgPol_xF_UpStream_Down[i]/AvgPol_xF_count_UpStream_Down[i];
+      Pol_pT_UpStream_Down[i] =
+	AvgPol_pT_UpStream_Down[i]/AvgPol_pT_count_UpStream_Down[i];
+      Pol_M_UpStream_Down[i] =
+	AvgPol_M_UpStream_Down[i]/AvgPol_M_count_UpStream_Down[i];
+	
+      //DownStream////////////
+      Pol_xN_DownStream[i] =AvgPol_xN_DownStream[i]/AvgPol_xN_count_DownStream[i];
+      Pol_xPi_DownStream[i]=
+	AvgPol_xPi_DownStream[i]/AvgPol_xPi_count_DownStream[i];
+      Pol_xF_DownStream[i] =AvgPol_xF_DownStream[i]/AvgPol_xF_count_DownStream[i];
+      Pol_pT_DownStream[i] =AvgPol_pT_DownStream[i]/AvgPol_pT_count_DownStream[i];
+      Pol_M_DownStream[i] = AvgPol_M_DownStream[i]/AvgPol_M_count_DownStream[i];
+
+      //DownStream Polarized Up
+      Pol_xN_DownStream_Up[i] =
+	AvgPol_xN_DownStream_Up[i]/AvgPol_xN_count_DownStream_Up[i];
+      Pol_xPi_DownStream_Up[i]=
+	AvgPol_xPi_DownStream_Up[i]/AvgPol_xPi_count_DownStream_Up[i];
+      Pol_xF_DownStream_Up[i] =
+	AvgPol_xF_DownStream_Up[i]/AvgPol_xF_count_DownStream_Up[i];
+      Pol_pT_DownStream_Up[i] =
+	AvgPol_pT_DownStream_Up[i]/AvgPol_pT_count_DownStream_Up[i];
+      Pol_M_DownStream_Up[i] =
+	AvgPol_M_DownStream_Up[i]/AvgPol_M_count_DownStream_Up[i];
+	
+      //DownStream Polarized Down
+      Pol_xN_DownStream_Down[i] =
+	AvgPol_xN_DownStream_Down[i]/AvgPol_xN_count_DownStream_Down[i];
+      Pol_xPi_DownStream_Down[i]=
+	AvgPol_xPi_DownStream_Down[i]/AvgPol_xPi_count_DownStream_Down[i];
+      Pol_xF_DownStream_Down[i] =
+	AvgPol_xF_DownStream_Down[i]/AvgPol_xF_count_DownStream_Down[i];
+      Pol_pT_DownStream_Down[i] =
+	AvgPol_pT_DownStream_Down[i]/AvgPol_pT_count_DownStream_Down[i];
+      Pol_M_DownStream_Down[i] =
+	AvgPol_M_DownStream_Down[i]/AvgPol_M_count_DownStream_Down[i];
+
+    }//Dilution and polariztion setup loop
+
+    Dil_int[0] = AvgDilution_corrected/AvgDilution_count;
+    Pol_int[0] = AvgPolarization/AvgPolarization_count;
+  }//has binFlag
+    
+  
   if(Pflag) {
-    cout << " " << endl;
-    cout << "!!!!!!!!!!!!!!!" << endl;
-    cout << "No dilution factor or polarization corrections" << endl;
-    cout << "!!!!!!!!!!!!!!!" << endl;
-    cout << " " << endl;
+  cout << " " << endl;
+  cout << "!!!!!!!!!!!!!!!" << endl;
+  cout << "No dilution factor or polarization corrections" << endl;
+  cout << "!!!!!!!!!!!!!!!" << endl;
+  cout << " " << endl;
   }
   else {
-    cout << " " << endl;
-    cout << "!!!!!!!!!!!!!!!" << endl;
-    cout << "Dilution factor and polarization corrections are made" << endl;
-    cout << " " << endl;
+  cout << " " << endl;
+  cout << "!!!!!!!!!!!!!!!" << endl;
+  cout << "Dilution factor and polarization corrections are made" << endl;
+  cout << " " << endl;
     
-    CorrectDilPol(xN_Asym_UpStream, e_xN_Asym_UpStream,
-		  Dil_xN_UpStream, Pol_xN_UpStream, nBins);
-    CorrectDilPol(xN_Asym_DownStream, e_xN_Asym_DownStream,
-		  Dil_xN_DownStream, Pol_xN_DownStream, nBins);
-    CorrectDilPol(xN_Asym, e_xN_Asym,
-		  Dil_xN, Pol_xN, nBins);
-    CorrectDilPol(xPi_Asym_UpStream, e_xPi_Asym_UpStream,
-		  Dil_xPi_UpStream, Pol_xPi_UpStream, nBins);
-    CorrectDilPol(xPi_Asym_DownStream, e_xPi_Asym_DownStream,
-		  Dil_xPi_DownStream, Pol_xPi_DownStream, nBins);
-    CorrectDilPol(xPi_Asym, e_xPi_Asym,
-		  Dil_xPi, Pol_xPi, nBins);
-    CorrectDilPol(xF_Asym_UpStream, e_xF_Asym_UpStream,
-		  Dil_xF_UpStream, Pol_xF_UpStream, nBins);
-    CorrectDilPol(xF_Asym_DownStream, e_xF_Asym_DownStream,
-		  Dil_xF_DownStream, Pol_xF_DownStream, nBins);
-    CorrectDilPol(xF_Asym, e_xF_Asym,
-		  Dil_xF, Pol_xF, nBins);
-    CorrectDilPol(pT_Asym_UpStream, e_pT_Asym_UpStream,
-		  Dil_pT_UpStream, Pol_pT_UpStream, nBins);
-    CorrectDilPol(pT_Asym_DownStream, e_pT_Asym_DownStream,
-		  Dil_pT_DownStream, Pol_pT_DownStream, nBins);
-    CorrectDilPol(pT_Asym, e_pT_Asym,
-		  Dil_pT, Pol_pT, nBins);
-    CorrectDilPol(M_Asym_UpStream, e_M_Asym_UpStream,
-		  Dil_M_UpStream, Pol_M_UpStream, nBins);
-    CorrectDilPol(M_Asym_DownStream, e_M_Asym_DownStream,
-		  Dil_M_DownStream, Pol_M_DownStream, nBins);
-    CorrectDilPol(M_Asym, e_M_Asym,
-		  Dil_M, Pol_M, nBins);
+  CorrectDilPol(xN_Asym_UpStream, e_xN_Asym_UpStream,
+  Dil_xN_UpStream, Pol_xN_UpStream, nBins);
+  CorrectDilPol(xN_Asym_DownStream, e_xN_Asym_DownStream,
+  Dil_xN_DownStream, Pol_xN_DownStream, nBins);
+  CorrectDilPol(xN_Asym, e_xN_Asym,
+  Dil_xN, Pol_xN, nBins);
+  CorrectDilPol(xPi_Asym_UpStream, e_xPi_Asym_UpStream,
+  Dil_xPi_UpStream, Pol_xPi_UpStream, nBins);
+  CorrectDilPol(xPi_Asym_DownStream, e_xPi_Asym_DownStream,
+  Dil_xPi_DownStream, Pol_xPi_DownStream, nBins);
+  CorrectDilPol(xPi_Asym, e_xPi_Asym,
+  Dil_xPi, Pol_xPi, nBins);
+  CorrectDilPol(xF_Asym_UpStream, e_xF_Asym_UpStream,
+  Dil_xF_UpStream, Pol_xF_UpStream, nBins);
+  CorrectDilPol(xF_Asym_DownStream, e_xF_Asym_DownStream,
+  Dil_xF_DownStream, Pol_xF_DownStream, nBins);
+  CorrectDilPol(xF_Asym, e_xF_Asym,
+  Dil_xF, Pol_xF, nBins);
+  CorrectDilPol(pT_Asym_UpStream, e_pT_Asym_UpStream,
+  Dil_pT_UpStream, Pol_pT_UpStream, nBins);
+  CorrectDilPol(pT_Asym_DownStream, e_pT_Asym_DownStream,
+  Dil_pT_DownStream, Pol_pT_DownStream, nBins);
+  CorrectDilPol(pT_Asym, e_pT_Asym,
+  Dil_pT, Pol_pT, nBins);
+  CorrectDilPol(M_Asym_UpStream, e_M_Asym_UpStream,
+  Dil_M_UpStream, Pol_M_UpStream, nBins);
+  CorrectDilPol(M_Asym_DownStream, e_M_Asym_DownStream,
+  Dil_M_DownStream, Pol_M_DownStream, nBins);
+  CorrectDilPol(M_Asym, e_M_Asym,
+  Dil_M, Pol_M, nBins);
 
-    //Correct dilution/polarization by target
-    CorrectDilPol(xN_Asym_UpStream_Up, e_xN_Asym_UpStream_Up, Dil_xN_UpStream_Up,
-		  Pol_xN_UpStream_Up, nBins);
-    CorrectDilPol(xN_Asym_UpStream_Down, e_xN_Asym_UpStream_Down,
-		  Dil_xN_UpStream_Down, Pol_xN_UpStream_Down, nBins);
-    CorrectDilPol(xN_Asym_DownStream_Up, e_xN_Asym_DownStream_Up,
-		  Dil_xN_DownStream_Up, Pol_xN_DownStream_Up, nBins);
-    CorrectDilPol(xN_Asym_DownStream_Down, e_xN_Asym_DownStream_Down,
-		  Dil_xN_DownStream_Down, Pol_xN_DownStream_Down, nBins);
+  //Correct dilution/polarization by target
+  CorrectDilPol(xN_Asym_UpStream_Up, e_xN_Asym_UpStream_Up, Dil_xN_UpStream_Up,
+  Pol_xN_UpStream_Up, nBins);
+  CorrectDilPol(xN_Asym_UpStream_Down, e_xN_Asym_UpStream_Down,
+  Dil_xN_UpStream_Down, Pol_xN_UpStream_Down, nBins);
+  CorrectDilPol(xN_Asym_DownStream_Up, e_xN_Asym_DownStream_Up,
+  Dil_xN_DownStream_Up, Pol_xN_DownStream_Up, nBins);
+  CorrectDilPol(xN_Asym_DownStream_Down, e_xN_Asym_DownStream_Down,
+  Dil_xN_DownStream_Down, Pol_xN_DownStream_Down, nBins);
 
-    CorrectDilPol(xPi_Asym_UpStream_Up, e_xPi_Asym_UpStream_Up, Dil_xPi_UpStream_Up,
-		  Pol_xPi_UpStream_Up, nBins);
-    CorrectDilPol(xPi_Asym_UpStream_Down, e_xPi_Asym_UpStream_Down,
-		  Dil_xPi_UpStream_Down, Pol_xPi_UpStream_Down, nBins);
-    CorrectDilPol(xPi_Asym_DownStream_Up, e_xPi_Asym_DownStream_Up,
-		  Dil_xPi_DownStream_Up, Pol_xPi_DownStream_Up, nBins);
-    CorrectDilPol(xPi_Asym_DownStream_Down, e_xPi_Asym_DownStream_Down,
-		  Dil_xPi_DownStream_Down, Pol_xPi_DownStream_Down, nBins);
+  CorrectDilPol(xPi_Asym_UpStream_Up, e_xPi_Asym_UpStream_Up, Dil_xPi_UpStream_Up,
+  Pol_xPi_UpStream_Up, nBins);
+  CorrectDilPol(xPi_Asym_UpStream_Down, e_xPi_Asym_UpStream_Down,
+  Dil_xPi_UpStream_Down, Pol_xPi_UpStream_Down, nBins);
+  CorrectDilPol(xPi_Asym_DownStream_Up, e_xPi_Asym_DownStream_Up,
+  Dil_xPi_DownStream_Up, Pol_xPi_DownStream_Up, nBins);
+  CorrectDilPol(xPi_Asym_DownStream_Down, e_xPi_Asym_DownStream_Down,
+  Dil_xPi_DownStream_Down, Pol_xPi_DownStream_Down, nBins);
 
-    CorrectDilPol(xF_Asym_UpStream_Up, e_xF_Asym_UpStream_Up, Dil_xF_UpStream_Up,
-		  Pol_xF_UpStream_Up, nBins);
-    CorrectDilPol(xF_Asym_UpStream_Down, e_xF_Asym_UpStream_Down,
-		  Dil_xF_UpStream_Down, Pol_xF_UpStream_Down, nBins);
-    CorrectDilPol(xF_Asym_DownStream_Up, e_xF_Asym_DownStream_Up,
-		  Dil_xF_DownStream_Up, Pol_xF_DownStream_Up, nBins);
-    CorrectDilPol(xF_Asym_DownStream_Down, e_xF_Asym_DownStream_Down,
-		  Dil_xF_DownStream_Down, Pol_xF_DownStream_Down, nBins);
+  CorrectDilPol(xF_Asym_UpStream_Up, e_xF_Asym_UpStream_Up, Dil_xF_UpStream_Up,
+  Pol_xF_UpStream_Up, nBins);
+  CorrectDilPol(xF_Asym_UpStream_Down, e_xF_Asym_UpStream_Down,
+  Dil_xF_UpStream_Down, Pol_xF_UpStream_Down, nBins);
+  CorrectDilPol(xF_Asym_DownStream_Up, e_xF_Asym_DownStream_Up,
+  Dil_xF_DownStream_Up, Pol_xF_DownStream_Up, nBins);
+  CorrectDilPol(xF_Asym_DownStream_Down, e_xF_Asym_DownStream_Down,
+  Dil_xF_DownStream_Down, Pol_xF_DownStream_Down, nBins);
 
-    CorrectDilPol(pT_Asym_UpStream_Up, e_pT_Asym_UpStream_Up, Dil_pT_UpStream_Up,
-		  Pol_pT_UpStream_Up, nBins);
-    CorrectDilPol(pT_Asym_UpStream_Down, e_pT_Asym_UpStream_Down,
-		  Dil_pT_UpStream_Down, Pol_pT_UpStream_Down, nBins);
-    CorrectDilPol(pT_Asym_DownStream_Up, e_pT_Asym_DownStream_Up,
-		  Dil_pT_DownStream_Up, Pol_pT_DownStream_Up, nBins);
-    CorrectDilPol(pT_Asym_DownStream_Down, e_pT_Asym_DownStream_Down,
-		  Dil_pT_DownStream_Down, Pol_pT_DownStream_Down, nBins);
+  CorrectDilPol(pT_Asym_UpStream_Up, e_pT_Asym_UpStream_Up, Dil_pT_UpStream_Up,
+  Pol_pT_UpStream_Up, nBins);
+  CorrectDilPol(pT_Asym_UpStream_Down, e_pT_Asym_UpStream_Down,
+  Dil_pT_UpStream_Down, Pol_pT_UpStream_Down, nBins);
+  CorrectDilPol(pT_Asym_DownStream_Up, e_pT_Asym_DownStream_Up,
+  Dil_pT_DownStream_Up, Pol_pT_DownStream_Up, nBins);
+  CorrectDilPol(pT_Asym_DownStream_Down, e_pT_Asym_DownStream_Down,
+  Dil_pT_DownStream_Down, Pol_pT_DownStream_Down, nBins);
 
-    CorrectDilPol(M_Asym_UpStream_Up, e_M_Asym_UpStream_Up, Dil_M_UpStream_Up,
-		  Pol_M_UpStream_Up, nBins);
-    CorrectDilPol(M_Asym_UpStream_Down, e_M_Asym_UpStream_Down,
-		  Dil_M_UpStream_Down, Pol_M_UpStream_Down, nBins);
-    CorrectDilPol(M_Asym_DownStream_Up, e_M_Asym_DownStream_Up,
-		  Dil_M_DownStream_Up, Pol_M_DownStream_Up, nBins);
-    CorrectDilPol(M_Asym_DownStream_Down, e_M_Asym_DownStream_Down,
-		  Dil_M_DownStream_Down, Pol_M_DownStream_Down, nBins);
+  CorrectDilPol(M_Asym_UpStream_Up, e_M_Asym_UpStream_Up, Dil_M_UpStream_Up,
+  Pol_M_UpStream_Up, nBins);
+  CorrectDilPol(M_Asym_UpStream_Down, e_M_Asym_UpStream_Down,
+  Dil_M_UpStream_Down, Pol_M_UpStream_Down, nBins);
+  CorrectDilPol(M_Asym_DownStream_Up, e_M_Asym_DownStream_Up,
+  Dil_M_DownStream_Up, Pol_M_DownStream_Up, nBins);
+  CorrectDilPol(M_Asym_DownStream_Down, e_M_Asym_DownStream_Down,
+  Dil_M_DownStream_Down, Pol_M_DownStream_Down, nBins);
   }
   // }}}
-    
+
   //Phi Left/Right
   ///////////////
   // {{{
