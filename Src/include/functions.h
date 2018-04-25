@@ -4,6 +4,7 @@
 
 Double_t AsymmetryError(long long A, long long B);
 
+
 Bool_t BinDataCounts(unsigned long long *counts, Int_t nBins, Double_t binVal,
 		     Double_t *binValBounds);
 
@@ -12,6 +13,7 @@ Bool_t BinDataCounts(unsigned long long *counts, Int_t nBins, Double_t binVal,
 
 Bool_t BinDataCounts(unsigned long long *counts, Double_t binVal,
 		     std::vector<Double_t> &binValBounds, Int_t noprint=0);
+
 
 Bool_t BinDataFill(TH1D** h1, Double_t fillVal, Int_t nBins, Double_t binVal,
 		   Double_t *binValBounds);

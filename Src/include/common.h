@@ -61,6 +61,7 @@
   #include "TMatrixDSym.h"
   #include "TSystemDirectory.h"
   #include "TVectorT.h"
+  #include "TKey.h"
 
 #endif // #ifndef common_h
 

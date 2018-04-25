@@ -2,30 +2,24 @@ void DrawSame(){
 
   const Int_t nGr = 15;
   TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/";
-  TFile* f_rec =
-    TFile::Open(path+"March27/Data/ByTarget/YuShiangMC_HM_run1.1_7bins.root");
-  TGraphErrors* g_rec[nGr];
+  TFile* f_new =
+    TFile::Open(path+"April17/Yu_Wall_AMDY_gt4_3bins.root");
+  TGraphErrors* g_new[nGr];
 
-  TFile* f_GenWrec =
-    TFile::Open(path+"March27/Data/ByTarget/YuShiangMC_HM_run1.1_GenPhiS_7bins.root");
-  TGraphErrors* g_GenWrec[nGr];
+  TFile* f_downFlip =
+    TFile::Open(path+"April17/Yu_Wall_AMDY_gt3_3bins_downSflip.root");
+  TGraphErrors* g_downFlip[nGr];
 
-  TFile* f_Gen = //Not drawn
-    TFile::Open(path+"March13/Data/Generated/ByTarget/gen_Charles_HMDY_byTarget_PhiS_3bins.root");
-  TGraphErrors* g_Gen[nGr];
+  TFile* f_upFlip =
+    TFile::Open(path+"April17/Yu_Wall_AMDY_gt3_3bins_upSflip.root");
+  TGraphErrors* g_upFlip[nGr];
 
-  const Int_t nGr_real = 35;
-  TFile* f_Real = //Not drawn
-    //TFile::Open(path+"March13/Data/RealData/ByTarget/Wall_HM_SpinInfluenced_noCorrections_LR_3bins.root");
-    TFile::Open(path+"March13/Data/RealData/ByTarget/Wall_HM_SpinInfluenced_LR_3bins.root");
-  TGraphErrors* g_Real[nGr_real];
-
-  TFile *f_Real_int =
-    TFile::Open(path+"March27/Data/RealData/ByTarget/Wall_HM_1bin_SpinLR_withCorr.root");
-  TGraphErrors* g_Real_int[nGr_real];
+  TFile* f_old =
+    TFile::Open(path+"April3/Data/MC_Data/Yu_BW/Wall_AMDY_gt4GeV_3bins_2.root");
+  TGraphErrors* g_old[nGr];
 
   //Basic file checks
-  if (!(f_rec) || !(f_GenWrec) || !(f_Gen) || !(f_Real) ){
+  if (!(f_new) || !(f_downFlip) || !(f_upFlip) || !(f_old) ){
     cout << "Error:" << endl;
     cout << "One of the files did not open" << endl;
     cout << " " << endl;
@@ -48,40 +42,44 @@ void DrawSame(){
   for (Int_t i=0, ipad=1; i<nGr; i++) {
 
     //Get Graphs
-    g_rec[i] = (TGraphErrors*)f_rec->Get("gr_"+gr_Titles[i]);
-    g_rec[i]->SetMarkerColor(kGreen);
+    g_new[i] = (TGraphErrors*)f_new->Get("gr_"+gr_Titles[i]);
+    //g_new[i]->SetMarkerColor(kGreen);
 
-    g_GenWrec[i] = (TGraphErrors*)f_GenWrec->Get("gr_"+gr_Titles[i]);
-    g_GenWrec[i]->SetMarkerColor(kRed);
-    
-    g_Gen[i] = (TGraphErrors*)f_Gen->Get("gr_"+gr_Titles[i]);
-    g_Gen[i]->SetMarkerColor(kBlue);
+    g_old[i] = (TGraphErrors*)f_old->Get("gr_"+gr_Titles[i]);
+    g_old[i]->SetMarkerColor(kGreen);
 
-    g_Real[i] = (TGraphErrors*)f_Real->Get("gr_"+gr_Titles[i]);
-    //g_Real[i]->SetMarkerColor(kBlue);
+    g_downFlip[i] = (TGraphErrors*)f_downFlip->Get("gr_"+gr_Titles[i]);
+    g_downFlip[i]->SetMarkerColor(kRed);
 
-    g_Real_int[i] = (TGraphErrors*)f_Real_int->Get("gr_"+gr_Titles[i]);
+    g_upFlip[i] = (TGraphErrors*)f_upFlip->Get("gr_"+gr_Titles[i]);
+    g_upFlip[i]->SetMarkerColor(kBlue);
     
     //Add x-val offset
     if (ipad<4){
-      Double_t *xvals = g_GenWrec[i]->GetX();
-      for (Int_t nb=0; nb<g_GenWrec[i]->GetN(); nb++) xvals[nb] += offset;
-    
-      xvals = g_Gen[i]->GetX();
-      for (Int_t nb=0; nb<g_Gen[i]->GetN(); nb++) xvals[nb] += 2*offset;
+      Double_t *xvals = g_downFlip[i]->GetX();
+      for (Int_t nb=0; nb<g_downFlip[i]->GetN(); nb++) xvals[nb] += offset;
 
-      //xvals = g_rec[i]->GetX();
-      //for (Int_t nb=0; nb<g_rec[i]->GetN(); nb++) xvals[nb] += 3*offset;
+      xvals = g_upFlip[i]->GetX();
+      for (Int_t nb=0; nb<g_upFlip[i]->GetN(); nb++) xvals[nb] += 2*offset;
+
+      xvals = g_old[i]->GetX();
+      for (Int_t nb=0; nb<g_old[i]->GetN(); nb++) xvals[nb] += 2*offset;
+    
+      //xvals = g_new[i]->GetX();
+      //for (Int_t nb=0; nb<g_new[i]->GetN(); nb++) xvals[nb] += 3*offset;
     }
     else{
-      Double_t *xvals = g_GenWrec[i]->GetX();
-      for (Int_t nb=0; nb<g_GenWrec[i]->GetN(); nb++) xvals[nb] += offset2;
-    
-      xvals = g_Gen[i]->GetX();
-      for (Int_t nb=0; nb<g_Gen[i]->GetN(); nb++) xvals[nb] += 2*offset2;
+      Double_t *xvals = g_downFlip[i]->GetX();
+      for (Int_t nb=0; nb<g_downFlip[i]->GetN(); nb++) xvals[nb] += offset2;
 
-      //xvals = g_rec[i]->GetX();
-      //for (Int_t nb=0; nb<g_rec[i]->GetN(); nb++) xvals[nb] += 3*offset2;
+      xvals = g_upFlip[i]->GetX();
+      for (Int_t nb=0; nb<g_upFlip[i]->GetN(); nb++) xvals[nb] += 2*offset2;
+
+      xvals = g_old[i]->GetX();
+      for (Int_t nb=0; nb<g_old[i]->GetN(); nb++) xvals[nb] += 2*offset2;
+    
+      //xvals = g_new[i]->GetX();
+      //for (Int_t nb=0; nb<g_new[i]->GetN(); nb++) xvals[nb] += 3*offset2;
     }
     
 
@@ -93,24 +91,16 @@ void DrawSame(){
       
       c1->cd(ipad); ipad++;
       
-      g_rec[i]->Draw("AP");
-      g_rec[i]->GetYaxis()->SetRangeUser(-0.2, 0.2);
-      //g_rec[i]->GetYaxis()->SetRangeUser(-0.035, 0.035);
-      //g_rec[i]->GetYaxis()->SetRangeUser(-0.045, 0.045);
+      g_new[i]->Draw("AP");
+      Double_t yMax = 0.05;
+      g_new[i]->GetYaxis()->SetRangeUser(-yMax, yMax);
       
-      
-      g_GenWrec[i]->Draw("Psame");
-      g_Real[i]->Draw("Psame");
-      //g_Gen[i]->Draw("Psame");
-      //g_Real[i]->Draw("Psame");
-      
-      //Draw Gen only and fit 
-      //g_Gen[i]->Draw("AP");
-      //g_Gen[i]->GetYaxis()->SetRangeUser(-0.03, 0.03);
-      //g_Gen[i]->Fit("pol0");
+      //g_downFlip[i]->Draw("Psame");
+      //g_upFlip[i]->Draw("Psame");
+      g_old[i]->Draw("Psame");
  
-      Double_t xmin = g_rec[i]->GetXaxis()->GetXmin();
-      Double_t xmax = g_rec[i]->GetXaxis()->GetXmax();
+      Double_t xmin = g_new[i]->GetXaxis()->GetXmin();
+      Double_t xmax = g_new[i]->GetXaxis()->GetXmax();
       TLine *li = new TLine(xmin, 0.0, xmax, 0.0);
       li->SetLineColor(kBlack);
       li->SetLineStyle(8);
@@ -118,15 +108,5 @@ void DrawSame(){
     }
     
   }//Loop over nGr
-
-  c1->cd(6);
-  g_Real_int[3]->Draw("AP");
-  g_Real_int[3]->GetYaxis()->SetRangeUser(-0.2, 0.2);
-  Double_t xmin = g_Real_int[3]->GetXaxis()->GetXmin();
-  Double_t xmax = g_Real_int[3]->GetXaxis()->GetXmax();
-  TLine *li = new TLine(xmin, 0.0, xmax, 0.0);
-  li->SetLineColor(kBlack);
-  li->SetLineStyle(8);
-  li->Draw("same");
 
 }

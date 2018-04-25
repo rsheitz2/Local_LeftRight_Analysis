@@ -1,6 +1,11 @@
 #include "common.h"
 
 Double_t AsymmetryError(long long A, long long B){
+  //if (TMath::Abs(4.0*A*B/( (A+B)*(A+B)*(A+B) ) ) < 10e-6 ){
+  //  std::cout << "Errors approximated as Sqrt(1/N)" << std::endl;
+  //  return TMath::Sqrt( 1.0/(A+B) );
+  //}//might be needed for generated errors
+
   return TMath::Sqrt( 4.0*A*B/( (A+B)*(A+B)*(A+B) ) );
 }
 
