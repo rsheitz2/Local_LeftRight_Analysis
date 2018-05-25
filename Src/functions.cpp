@@ -193,9 +193,6 @@ Bool_t BinnedLeftRight(unsigned long long *Left_UpStream,
 		 DownStream_diff)/(1.0*(UpStream_sum + DownStream_sum));
       e_Asym[i] = AsymmetryError(UpStream_sum, DownStream_sum);
     }
-
-            
-    
 			       
   }
 
