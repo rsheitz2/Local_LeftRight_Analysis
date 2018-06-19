@@ -26,6 +26,24 @@ protected:
   std::vector<double> avgPol_downstream_down, avgDil_downstream_down;
   std::vector<int> avgPol_count_downstream_down, avgDil_count_downstream_down;
 
+  std::vector<double> avgPol_upstream_left, avgDil_upstream_left;
+  std::vector<int> avgPol_count_upstream_left, avgDil_count_upstream_left;
+  std::vector<double> avgPol_upstream_right, avgDil_upstream_right;
+  std::vector<int> avgPol_count_upstream_right, avgDil_count_upstream_right;
+  std::vector<double> avgPol_downstream_left, avgDil_downstream_left;
+  std::vector<int> avgPol_count_downstream_left, avgDil_count_downstream_left;
+  std::vector<double> avgPol_downstream_right, avgDil_downstream_right;
+  std::vector<int> avgPol_count_downstream_right, avgDil_count_downstream_right;
+
+  std::vector<double> avgPol_updown_left, avgDil_updown_left;
+  std::vector<int> avgPol_count_updown_left, avgDil_count_updown_left;
+  std::vector<double> avgPol_updown_right, avgDil_updown_right;
+  std::vector<int> avgPol_count_updown_right, avgDil_count_updown_right;
+  std::vector<double> avgPol_downup_left, avgDil_downup_left;
+  std::vector<int> avgPol_count_downup_left, avgDil_count_downup_left;
+  std::vector<double> avgPol_downup_right, avgDil_downup_right;
+  std::vector<int> avgPol_count_downup_right, avgDil_count_downup_right;
+
   //Helper functions
   void setOneCorr(TFile *f1, std::vector<double> &corr, TString corrType);
   bool binOneAvg(std::vector<double> &Avg, std::vector<int> &count, 
@@ -34,6 +52,9 @@ protected:
 		  TString target);
   bool correctOneDilPol(std::vector<double> &asym, std::vector<double> &e_asym,
 			std::vector<double> &pol, std::vector<double> &dil);
+
+private:
+  void setZero(Int_t nBins);
 
 public:
   lrSpinCorr() : twotargets(){}
@@ -44,7 +65,7 @@ public:
   lrSpinCorr (TFile *f1, TString type, TString thisName="noName");
 
   bool SetCorr(TFile *f1, TString type);
-  bool SetCorr(TString target, double binVal, double avgVal);
+  bool SetCorr(TString target, double binVal, double avgVal, bool left);
   void AvgCorr();
   void CorrectDilPol();
 

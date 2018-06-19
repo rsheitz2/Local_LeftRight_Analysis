@@ -1,0 +1,501 @@
+void SetUpTGraph(TGraphErrors* g, Double_t offset, Int_t nCounts){
+  g->SetMarkerStyle(21);
+  g->SetMarkerSize(1.4);
+  
+  g->GetYaxis()->SetNdivisions(504);
+  g->GetYaxis()->SetLabelFont(22);
+  g->GetYaxis()->SetLabelSize(0.08);
+  //g->GetYaxis()->SetRangeUser(-3, 3);
+
+  g->GetXaxis()->SetNdivisions(504);
+  g->GetXaxis()->SetLabelFont(22);
+  g->GetXaxis()->SetLabelSize(0.08);
+
+  Double_t *xvals = g->GetX();
+  for (Int_t i=0; i<nCounts; i++) xvals[i] += offset;
+}
+
+
+void SetUpTH1(TH1D* h){
+  h->GetYaxis()->SetNdivisions(504);
+  h->GetYaxis()->SetLabelFont(22);
+  h->GetYaxis()->SetLabelSize(0.08);
+
+  h->GetXaxis()->SetNdivisions(504);
+  h->GetXaxis()->SetLabelFont(22);
+  h->GetXaxis()->SetLabelSize(0.08);
+
+  h->SetLineWidth(3);
+}
+
+
+Bool_t BinDataCounts(unsigned long long *counts, Double_t binVal,
+		     std::vector<Double_t> &binValBounds){
+
+  Int_t iter=-1;
+  for (std::vector<Double_t>::iterator it=binValBounds.begin();
+       it!=binValBounds.end(); it++, iter++){
+    if(binVal <= *it ) {
+      if(iter==-1){
+	std::cout << "bin value too low!!!!" << std::endl;
+	std::cout << *it << " " << binVal << std::endl;
+	std::cout << " " << std::endl;
+	return false;
+      }
+      
+      counts[iter]++;
+      return true;
+    }
+  }
+
+  std::cout << "bin value too high!!!!" << std::endl;
+  std::cout << binValBounds.back() << " " << binVal << std::endl;
+  std::cout << " " << std::endl;
+  return false;
+}
+
+
+Double_t RatioError(long long A, long long B){
+  Double_t ratio = 1.0*A/(1.0*B);
+  Double_t error = TMath::Sqrt( 1.0/(1.0*A) + 1.0/(1.0*B) );
+  cout << ratio << " " << error << endl;//cleanup
+  return ratio*error;
+}
+
+
+Bool_t BinAcc(unsigned long long *Top, unsigned long long *Bottom,
+		       Double_t* Acc, Double_t *e_Acc, Int_t nBins){
+  
+  for (Int_t i=0; i<nBins; i++) {
+    Acc[i] = 1.0*Top[i]/( 1.0*Bottom[i] );
+    e_Acc[i] = RatioError(Top[i], Bottom[i]);
+  }
+
+  return true;
+}//BinAcc
+
+
+void Acceptance(){
+  TString period = "W07";//Changes
+  TString subper = "sp1";
+  if (period=="W09"||period=="W10") period += Form("_%s", subper.Data() );
+  Bool_t toWrite=false;
+  
+  TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Presents/DATA/";
+  TFile* f_phast = TFile::Open(path+"MC_Data/YuShiangMC/HMDY/\
+Yu_HMDY_"+period+"_3bins.root");
+  TFile* f_gen =
+    TFile::Open(path+"Gen_MC_Data/Yu_BW/HMDY/HMDY_"+period+"_run0.root");
+  if ( !(f_phast) || !(f_gen) ){//Basic file checks
+    cout << "Error:" << endl;
+    cout << "One of the files did not open" << endl;
+    cout << " " << endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  TTree *T_phast = (TTree*)f_phast->Get("pT_Weighted");
+  Double_t ph_x_beam, ph_x_target, ph_x_feynman, ph_pT, ph_Mmumu;
+  Double_t ph_vx_z, ph_PhiS_simple;
+  Int_t ph_trigMask;
+  T_phast->SetBranchAddress("x_beam", &ph_x_beam);
+  T_phast->SetBranchAddress("x_target", &ph_x_target);
+  T_phast->SetBranchAddress("x_feynman", &ph_x_feynman);
+  T_phast->SetBranchAddress("q_transverse", &ph_pT);
+  T_phast->SetBranchAddress("Mmumu", &ph_Mmumu);
+  T_phast->SetBranchAddress("vx_z", &ph_vx_z);
+  T_phast->SetBranchAddress("PhiS_simple", &ph_PhiS_simple);
+  T_phast->SetBranchAddress("trigMask", &ph_trigMask);
+
+    
+  TTree *T_gen = (TTree*)f_gen->Get("Event");
+  Double_t gen_x_beam, gen_x_target, gen_x_feynman, gen_pT, gen_Mmumu;
+  Double_t gen_vx_z, gen_vx_x, gen_vx_y;
+  Double_t gen_PhiS_simple;
+  T_gen->SetBranchAddress("x_beam", &gen_x_beam);
+  T_gen->SetBranchAddress("x_target", &gen_x_target);
+  T_gen->SetBranchAddress("x_feynman", &gen_x_feynman);
+  T_gen->SetBranchAddress("q_transverse", &gen_pT);
+  T_gen->SetBranchAddress("Mmumu", &gen_Mmumu);
+  T_gen->SetBranchAddress("vx_z", &gen_vx_z);
+  T_gen->SetBranchAddress("vx_x", &gen_vx_x);
+  T_gen->SetBranchAddress("vx_y", &gen_vx_y);
+  T_gen->SetBranchAddress("PhiS_simple", &gen_PhiS_simple);
+
+
+  //Stupid quick Changes
+  const Int_t nCounts=3;
+  Double_t b_xN[] = {0., 0.129814, 0.18812, 1.};
+  Double_t b_xPi[] = {0., 0.402282, 0.560041, 1.};
+  Double_t b_xF[] = {-1., 0.220098, 0.417865, 1.};
+  Double_t b_pT[] = {0.4, 0.870791, 1.38214, 5.};
+  Double_t b_M[] = {4.3, 4.73784, 5.51497, 8.5};
+  Double_t x_xN[] = {0.102138, 0.157343, 0.247397};
+  Double_t x_xPi[] = {0.316269, 0.478449, 0.68709};
+  Double_t x_xF[] = {0.0948135, 0.31752, 0.562391};
+  Double_t x_pT[] = {0.645781, 1.10941, 1.95049};
+  Double_t x_M[] = {4.50083, 5.08035, 6.44104};//*/
+
+  /*const Int_t nCounts=1;
+  Double_t b_xN[] = {0., 1.};
+  Double_t b_xPi[] = {0., 1.};
+  Double_t b_xF[] = {-1., 1.};
+  Double_t b_pT[] = {0.4, 5.};
+  Double_t b_M[] = {4.3, 8.5};
+  Double_t x_xN[] = {0.157343};
+  Double_t x_xPi[] = {0.478449};
+  Double_t x_xF[] = {0.31752};
+  Double_t x_pT[] = {1.10941};
+  Double_t x_M[] = {5.08035};//*/
+  
+  vector<Double_t> Bounds;
+  
+  ////////////////
+  //Changes Here//
+  Double_t *ph_phys=&ph_x_feynman, *gen_phys=&gen_x_feynman, *physB=b_xF, *xval=x_xF;
+  Double_t xMin =-0.2, xMax =0.8; TString physType="xF";//x_feynman
+  Int_t nBins = 100;
+  
+
+  for (Int_t i=0; i<nCounts+1; i++, physB++) Bounds.push_back(*physB);
+  const Int_t nHist = 18;
+  TString accType[nHist] = {"", "UpS", "DownS", "Left", "Right",
+			    "UpS_Left", "UpS_Right",
+			    "DownS_Left", "DownS_Right",
+			    "LL", "LO", "LL_LO",
+			    "LL_Left", "LL_Right",
+			    "LO_Left", "LO_Right",
+			    "LL_LO_Left", "LL_LO_Right"};
+  TH1D* h_phast[nHist]; TH1D* h_gen[nHist];
+  for (Int_t i=0; i<nHist; i++) {
+    h_phast[i] = new TH1D(Form("h_phast%s",accType[i].Data() ),
+			  Form("h_phast%s",accType[i].Data() ),
+			  nBins, xMin, xMax);
+    h_gen[i] = new TH1D(Form("h_gen%s",accType[i].Data() ),
+			Form("h_gen%s",accType[i].Data() ),
+			nBins, xMin, xMax);
+  }
+
+  unsigned long long ph_counts[nHist][nCounts] = {0};
+  Int_t ph_entries = T_phast->GetEntries();
+  for (Int_t ev=0; ev<ph_entries; ev++) {
+    T_phast->GetEntry(ev);
+    h_phast[0]->Fill(*ph_phys);//""
+    BinDataCounts(ph_counts[0], *ph_phys, Bounds);
+
+    Bool_t upStream=false, downStream=false;
+    if (ph_vx_z>-294.5 && ph_vx_z<-239.3)                         upStream=true;
+    else if (ph_vx_z>-219.5 && ph_vx_z<-164.3)                  downStream=true;
+
+    Bool_t left=false, right=false;
+    if (ph_PhiS_simple>0 && ph_PhiS_simple<=TMath::Pi() )             left=true;
+    else if (ph_PhiS_simple>-1.0*TMath::Pi() &&ph_PhiS_simple<=0.0 ) right=true;
+
+    Bool_t LL=false, LO=false;
+    if ( ((ph_trigMask >> 8) & 1) )                                   LL = true;
+    if ( ((ph_trigMask >> 2) & 1) )                                   LO = true;
+    
+
+    if (upStream){ h_phast[1]->Fill(*ph_phys);//UpS
+      BinDataCounts(ph_counts[1], *ph_phys, Bounds);
+      
+      if (left) {
+	h_phast[5]->Fill(*ph_phys);//UpS_Left
+	BinDataCounts(ph_counts[5], *ph_phys, Bounds);
+      }
+      else if (right) {
+	h_phast[6]->Fill(*ph_phys);//UpS_Right
+	BinDataCounts(ph_counts[6], *ph_phys, Bounds);
+      }
+    }
+    else if (downStream){ h_phast[2]->Fill(*ph_phys);//DownS
+      BinDataCounts(ph_counts[2], *ph_phys, Bounds);
+      
+      if (left) {
+	h_phast[7]->Fill(*ph_phys);//DownS_Left
+	BinDataCounts(ph_counts[7], *ph_phys, Bounds);
+      }
+      else if (right) {
+	h_phast[8]->Fill(*ph_phys);//DownS_Right
+	BinDataCounts(ph_counts[8], *ph_phys, Bounds);
+      }
+    }
+
+    if (left) {
+      h_phast[3]->Fill(*ph_phys);//Left
+      BinDataCounts(ph_counts[3], *ph_phys, Bounds);
+    }
+    else if (right) {
+      h_phast[4]->Fill(*ph_phys);//Right
+      BinDataCounts(ph_counts[4], *ph_phys, Bounds);
+    }
+
+    if (LL && !LO) {//LAST_LAST only
+      h_phast[9]->Fill(*ph_phys);
+      BinDataCounts(ph_counts[9], *ph_phys, Bounds);
+      
+      if (left){
+	h_phast[12]->Fill(*ph_phys);//Left
+	BinDataCounts(ph_counts[12], *ph_phys, Bounds);
+      }
+      else if (right){
+	h_phast[13]->Fill(*ph_phys);//Right
+	BinDataCounts(ph_counts[13], *ph_phys, Bounds);
+      }
+    }
+    else if (LO && !LL){//LAST_Outer only
+      h_phast[10]->Fill(*ph_phys);
+      BinDataCounts(ph_counts[10], *ph_phys, Bounds);
+
+      if (left){
+	h_phast[14]->Fill(*ph_phys);//Left
+	BinDataCounts(ph_counts[14], *ph_phys, Bounds);
+      }
+      else if (right){
+	h_phast[15]->Fill(*ph_phys);//Right
+	BinDataCounts(ph_counts[15], *ph_phys, Bounds);
+      }
+    }
+
+    if (LL && LO){//LAST_LAST and LAST_Outer
+      h_phast[11]->Fill(*ph_phys);
+      BinDataCounts(ph_counts[11], *ph_phys, Bounds);
+
+      if (left){
+	h_phast[16]->Fill(*ph_phys);//Left
+	BinDataCounts(ph_counts[16], *ph_phys, Bounds);
+      }
+      else if (right){
+	h_phast[17]->Fill(*ph_phys);//Right
+	BinDataCounts(ph_counts[17], *ph_phys, Bounds);
+      }
+    }
+  }
+  
+
+  unsigned long long gen_counts[nHist][nCounts] = {0};
+  Int_t gen_entries = T_gen->GetEntries();
+  for (Int_t ev=0; ev<gen_entries; ev++) {
+    T_gen->GetEntry(ev);
+
+    if ((gen_vx_z<-294.5||gen_vx_z>-239.3) &&(gen_vx_z<-219.5||gen_vx_z>-164.3))
+      continue;
+    if (gen_vx_x*gen_vx_x + gen_vx_y*gen_vx_y > 1.9*1.9) continue;
+    if (gen_pT<0.4 || gen_pT>5.0) continue;
+    if (gen_Mmumu<4.3 || gen_Mmumu>8.5) continue;
+    
+    h_gen[0]->Fill(*gen_phys);//""
+    BinDataCounts(gen_counts[0], *gen_phys, Bounds);
+
+    Bool_t upStream=false, downStream=false;
+    if (gen_vx_z>-294.5 && gen_vx_z<-239.3)                       upStream=true;
+    else if (gen_vx_z>-219.5 && gen_vx_z<-164.3)                downStream=true;
+
+    Bool_t left=false, right=false;
+    if (gen_PhiS_simple>0 && gen_PhiS_simple<=TMath::Pi() )           left=true;
+    else if (gen_PhiS_simple>-1.0*TMath::Pi()&&gen_PhiS_simple<=0.0) right=true;
+
+
+    if (upStream){ h_gen[1]->Fill(*gen_phys);//UpS
+      BinDataCounts(gen_counts[1], *gen_phys, Bounds);
+      
+      if (left) {
+	h_gen[5]->Fill(*gen_phys);//UpS_Left
+	BinDataCounts(gen_counts[5], *gen_phys, Bounds);
+      }
+      else if (right) {
+	h_gen[6]->Fill(*gen_phys);//UpS_Right
+	BinDataCounts(gen_counts[6], *gen_phys, Bounds);
+      }
+    }
+    else if (downStream){ h_gen[2]->Fill(*gen_phys);//DownS
+      BinDataCounts(gen_counts[2], *gen_phys, Bounds);
+      
+      if (left) {
+	h_gen[7]->Fill(*gen_phys);//DownS_Left
+	BinDataCounts(gen_counts[7], *gen_phys, Bounds);
+      }
+      else if (right) {
+	h_gen[8]->Fill(*gen_phys);//DownS_Right
+	BinDataCounts(gen_counts[8], *gen_phys, Bounds);
+      }
+    }
+
+    if (left) {
+      h_gen[3]->Fill(*gen_phys);//Left
+      BinDataCounts(gen_counts[3], *gen_phys, Bounds);
+
+      h_gen[12]->Fill(*gen_phys);//LAST_LAST only Left 
+      BinDataCounts(gen_counts[12], *gen_phys, Bounds);
+      h_gen[14]->Fill(*gen_phys);//LAST_Outer only Left
+      BinDataCounts(gen_counts[14], *gen_phys, Bounds);
+      h_gen[16]->Fill(*gen_phys);//LAST_LAST and LAST_Outer Left
+      BinDataCounts(gen_counts[16], *gen_phys, Bounds);
+    }
+    else if (right) {
+      h_gen[4]->Fill(*gen_phys);//Right
+      BinDataCounts(gen_counts[4], *gen_phys, Bounds);
+
+      h_gen[13]->Fill(*gen_phys);//LAST_LAST only Right 
+      BinDataCounts(gen_counts[13], *gen_phys, Bounds);
+      h_gen[15]->Fill(*gen_phys);//LAST_Outer only Right
+      BinDataCounts(gen_counts[15], *gen_phys, Bounds);
+      h_gen[17]->Fill(*gen_phys);//LAST_LAST and LAST_Outer Right
+      BinDataCounts(gen_counts[17], *gen_phys, Bounds);
+    }
+
+    h_gen[9]->Fill(*gen_phys);//LAST_LAST only
+    BinDataCounts(gen_counts[9], *gen_phys, Bounds);
+    h_gen[10]->Fill(*gen_phys);//LAST_Outer only
+    BinDataCounts(gen_counts[10], *gen_phys, Bounds);
+    h_gen[11]->Fill(*gen_phys);//LAST_LAST and LAST_Outer
+    BinDataCounts(gen_counts[11], *gen_phys, Bounds);
+  }
+
+  
+  TH1D *h_acc[nHist];
+  for (Int_t i=0; i<nHist; i++) {
+    h_phast[i]->Sumw2();
+    h_acc[i] = (TH1D*)h_phast[i]->Clone();
+
+    h_acc[i]->Divide(h_gen[i]);
+    SetUpTH1(h_acc[i]); SetUpTH1(h_gen[i]); SetUpTH1(h_phast[i]);
+    h_acc[i]->GetYaxis()->SetRangeUser(0, 1);
+  }
+  
+  
+  gStyle->SetOptStat(1111); gStyle->SetStatFont(22);
+  TCanvas* c1 = new TCanvas();
+  c1->Divide(2);
+
+  c1->cd(1);
+  h_gen[0]->SetLineColor(kBlack); h_gen[0]->Draw();
+  h_phast[0]->Draw("sames");
+  h_phast[9]->SetLineColor(kRed); h_phast[9]->Draw("same");
+  h_phast[10]->SetLineColor(kGreen); h_phast[10]->Draw("same");
+  h_phast[11]->SetLineColor(6); h_phast[11]->Draw("same");
+  gPad->SetLogy();
+  
+  c1->cd(2); h_acc[0]->Draw();
+  h_acc[9]->SetLineColor(kRed); h_acc[9]->Draw("same");
+  h_acc[10]->SetLineColor(kGreen); h_acc[10]->Draw("same");
+  h_acc[11]->SetLineColor(6); h_acc[11]->Draw("same");
+
+
+  TCanvas* cR = new TCanvas("updown_lr"); cR->Divide(2);
+  TRatioPlot *r_updown = new TRatioPlot(h_acc[1], h_acc[2] );
+  cR->cd(1);  r_updown->Draw();
+
+  TRatioPlot *r_lr = new TRatioPlot(h_acc[3], h_acc[4] );
+  cR->cd(2);  r_lr->Draw();
+
+
+  TCanvas* cS = new TCanvas(); cS->Divide(2);
+  TRatioPlot *r_ups_lr = new TRatioPlot(h_acc[5], h_acc[6] );
+  cS->cd(1);  r_ups_lr->Draw();
+
+  TRatioPlot *r_ds_lr = new TRatioPlot(h_acc[7], h_acc[8] );
+  cS->cd(2);  r_ds_lr->Draw();
+
+  
+  TCanvas* c4 = new TCanvas(); c4->Divide(2,2);
+  TRatioPlot *r_ud_l = new TRatioPlot(h_acc[5], h_acc[7] );
+  c4->cd(1); r_ud_l->Draw();
+
+  TRatioPlot *r_ud_r = new TRatioPlot(h_acc[6], h_acc[8] );
+  c4->cd(2); r_ud_r->Draw();
+
+
+  TRatioPlot *r_ud_lr = new TRatioPlot(h_acc[5], h_acc[8] );
+  c4->cd(3); r_ud_lr->Draw();
+
+  TRatioPlot *r_ud_rl = new TRatioPlot(h_acc[6], h_acc[7] );
+  c4->cd(4);  r_ud_rl->Draw();
+
+
+  Double_t b_acc[nHist][nCounts], eb_acc[nHist][nCounts];
+  Double_t ex[nCounts]={0.};
+  Double_t dx = 0.02;
+  Double_t offset[nHist] = {0., 0., 0., 0., dx,
+			    0., 0.,
+			    0., 0.,
+			    0., 0., 0.,
+			    0., dx,
+			    0., dx,
+			    0., dx};
+  TGraphErrors *g_acc[nHist], *g_acc_ratio[6];
+  Double_t acc_ratio[6][nCounts], e_acc_ratio[6][nCounts];
+  for (Int_t i=0, r=0; i<nHist; i++) {
+    BinAcc(ph_counts[i], gen_counts[i], b_acc[i], eb_acc[i], nCounts);
+    g_acc[i] = new TGraphErrors(nCounts, xval, b_acc[i], ex, eb_acc[i]);
+    SetUpTGraph(g_acc[i], offset[i], nCounts);
+
+    if ( accType[i].Contains("Left") ){
+      Double_t *yvals = g_acc[i]->GetY();
+      for (Int_t j=0; j<nCounts; j++) acc_ratio[r][j] = yvals[j];
+    }
+    else if ( accType[i].Contains("Right") ){
+      Double_t *yvals = g_acc[i]->GetY();
+      for (Int_t j=0; j<nCounts; j++) {
+	e_acc_ratio[r][j] = RatioError(acc_ratio[r][j], yvals[j]);
+	acc_ratio[r][j] = acc_ratio[r][j]/yvals[j];
+      }
+      
+      g_acc_ratio[r] = new TGraphErrors(nCounts, xval, acc_ratio[r], ex,
+					e_acc_ratio[r]);
+      SetUpTGraph(g_acc_ratio[r], r*dx/5.0, nCounts);
+      g_acc_ratio[r]->GetYaxis()->SetRangeUser(0.85, 1.15);
+      r++;
+    }
+  }
+
+  TCanvas* cG = new TCanvas();
+  g_acc[0]->Draw("AP");
+
+  TCanvas* cAlr = new TCanvas(); cAlr->Divide(1,2);
+  cAlr->cd(1);
+  g_acc[3]->Draw("AP"); g_acc[3]->SetMarkerColor(kBlue);
+  g_acc[4]->Draw("Psame"); g_acc[4]->SetMarkerColor(kBlue);
+  g_acc[12]->Draw("Psame"); g_acc[12]->SetMarkerColor(kRed);
+  g_acc[13]->Draw("Psame"); g_acc[13]->SetMarkerColor(kRed);
+  g_acc[14]->Draw("Psame"); g_acc[14]->SetMarkerColor(kGreen);
+  g_acc[15]->Draw("Psame"); g_acc[15]->SetMarkerColor(kGreen);
+  g_acc[16]->Draw("Psame"); g_acc[16]->SetMarkerColor(6);
+  g_acc[17]->Draw("Psame"); g_acc[17]->SetMarkerColor(6);
+  cAlr->cd(2);
+  g_acc_ratio[0]->Draw("AP"); g_acc_ratio[0]->SetMarkerColor(kBlue);
+  g_acc_ratio[3]->Draw("Psame"); g_acc_ratio[3]->SetMarkerColor(kRed);
+  g_acc_ratio[4]->Draw("Psame"); g_acc_ratio[4]->SetMarkerColor(kGreen);
+  g_acc_ratio[5]->Draw("Psame"); g_acc_ratio[5]->SetMarkerColor(6);
+
+  Double_t min_x = g_acc_ratio[0]->GetXaxis()->GetXmin();	
+  Double_t max_x = g_acc_ratio[0]->GetXaxis()->GetXmax();	
+  TLine* li_acc_ratio = new TLine(min_x, 1.0, max_x, 1.0);
+  li_acc_ratio->SetLineColor(1);
+  li_acc_ratio->SetLineStyle(8);
+  li_acc_ratio->Draw("same");
+  
+  
+  TString fname = "Accept/Acceptance_"; fname += physType; fname += "_";
+  fname+= period; fname += "_"; fname += Form("%i", nCounts); fname+= ".root";
+  if (toWrite){
+    TFile *fOutput = new TFile(fname, "RECREATE");
+    for (Int_t i=0; i<nHist; i++) {
+      g_acc[i]->Write(Form("acc_%s", accType[i].Data() ) );
+    }
+    fOutput->Close();
+    cout <<" " << endl;
+    cout << fname << "    was written" << endl;
+  }
+  else{
+    cout <<" " << endl;
+    cout << fname << "    was NOT written" << endl;
+  }
+  
+  cout << " " << endl;
+  cout << "Period is:    "  << period << endl;
+  cout << "Acceptance from:  " << physType << endl;
+  cout  << "xMin: " << xMin << "     xMax: " << xMax << endl;
+  cout << "Number of output bins is:  " << nCounts << endl;
+  cout << " " << endl;
+}

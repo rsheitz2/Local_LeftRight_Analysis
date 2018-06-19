@@ -38,6 +38,7 @@ public:
 
   bool BinDataCounts(int whichTarget, TString target, double binVal,
 		     int noprint=0);
+
 };
 
 #endif

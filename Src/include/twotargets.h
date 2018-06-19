@@ -24,6 +24,22 @@ protected:
   std::vector<double> asym_downstream_up, asym_downstream_down;
   std::vector<double> e_asym_downstream_up, e_asym_downstream_down;
 
+  //1 Period asymmetries
+  std::vector<double> asym_upstream_left, asym_upstream_right;
+  std::vector<double> e_asym_upstream_left, e_asym_upstream_right;
+  std::vector<double> asym_downstream_left, asym_downstream_right;
+  std::vector<double> e_asym_downstream_left, e_asym_downstream_right;
+
+  //sub Period asymmetries
+  std::vector<double> asym_updown_left, asym_downup_right;
+  std::vector<double> e_asym_updown_left, e_asym_downup_right;
+  std::vector<double> asym_downup_left, asym_updown_right;
+  std::vector<double> e_asym_downup_left, e_asym_updown_right;
+
+private:  
+  //Helper functions
+  void setZero(Int_t nBins);
+
 public:
   twotargets() : leftright(){}
   twotargets(int nBins, TString name="noName");

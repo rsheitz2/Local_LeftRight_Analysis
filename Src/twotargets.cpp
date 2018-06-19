@@ -3,62 +3,30 @@
 
 twotargets::twotargets (int nBins, TString thisName)
   : leftright (nBins, thisName){
-  for (Int_t i=0; i<nBins; i++) {
-    left_upstream.push_back(0); right_upstream.push_back(0);
-    left_downstream.push_back(0); right_downstream.push_back(0);
 
-    left_upstream_up.push_back(0); right_upstream_up.push_back(0);
-    left_upstream_down.push_back(0); right_upstream_down.push_back(0);
-
-    left_downstream_up.push_back(0); right_downstream_up.push_back(0);
-    left_downstream_down.push_back(0); right_downstream_down.push_back(0);
-  }
+  twotargets::setZero(nBins);
 }
 
 
 twotargets::twotargets (int nBins, std::vector<Double_t> &in_bounds,
 			std::vector<Double_t> &in_xval, TString thisName)
   : leftright(nBins, in_bounds, in_xval, thisName){
-  for (Int_t i=0; i<nBins; i++) {
-    left_upstream.push_back(0); right_upstream.push_back(0);
-    left_downstream.push_back(0); right_downstream.push_back(0);
 
-    left_upstream_up.push_back(0); right_upstream_up.push_back(0);
-    left_upstream_down.push_back(0); right_upstream_down.push_back(0);
-
-    left_downstream_up.push_back(0); right_downstream_up.push_back(0);
-    left_downstream_down.push_back(0); right_downstream_down.push_back(0);
-  }
+  twotargets::setZero(nBins);
 }
 
 
 twotargets::twotargets (TString binfile, TString type, TString thisName)
   : leftright(binfile, type, thisName){
-  for (Int_t i=0; i<nBins; i++) {
-    left_upstream.push_back(0); right_upstream.push_back(0);
-    left_downstream.push_back(0); right_downstream.push_back(0);
 
-    left_upstream_up.push_back(0); right_upstream_up.push_back(0);
-    left_upstream_down.push_back(0); right_upstream_down.push_back(0);
-
-    left_downstream_up.push_back(0); right_downstream_up.push_back(0);
-    left_downstream_down.push_back(0); right_downstream_down.push_back(0);
-  }
+  twotargets::setZero(nBins);
 }
 
 
 twotargets::twotargets (TFile *f1, TString type, TString thisName)
   : leftright(f1, type, thisName){
-  for (Int_t i=0; i<nBins; i++) {
-    left_upstream.push_back(0); right_upstream.push_back(0);
-    left_downstream.push_back(0); right_downstream.push_back(0);
 
-    left_upstream_up.push_back(0); right_upstream_up.push_back(0);
-    left_upstream_down.push_back(0); right_upstream_down.push_back(0);
-
-    left_downstream_up.push_back(0); right_downstream_up.push_back(0);
-    left_downstream_down.push_back(0); right_downstream_down.push_back(0);
-  }
+  twotargets::setZero(nBins);
 }
 
 
@@ -226,6 +194,34 @@ Bool_t twotargets::BinLeftRight(){
 		   this->asym_downstream_down, this->e_asym_downstream_down,
 		   "downstream_down");
 
+  //1 Period asymmetries
+  BinOne_LeftRight(this->left_upstream_up, this->right_upstream_down,
+		   this->asym_upstream_left, this->e_asym_upstream_left,
+		   "upstream_left");
+  BinOne_LeftRight(this->left_upstream_down, this->right_upstream_up,
+		   this->asym_upstream_right, this->e_asym_upstream_right,
+		   "upstream_right");
+  BinOne_LeftRight(this->left_downstream_up, this->right_downstream_down,
+		   this->asym_downstream_left, this->e_asym_downstream_left,
+		   "downstream_left");
+  BinOne_LeftRight(this->left_downstream_down, this->right_downstream_up,
+		   this->asym_downstream_right, this->e_asym_downstream_right,
+		   "downstream_right");
+
+  //sub Period asymmetries
+  BinOne_LeftRight(this->left_upstream_up, this->right_downstream_down,
+		   this->asym_updown_left, this->e_asym_updown_left,
+		   "updown_left");
+  BinOne_LeftRight(this->left_upstream_down, this->right_downstream_up,
+		   this->asym_downup_right, this->e_asym_downup_right,
+		   "downup_right");
+  BinOne_LeftRight(this->left_downstream_up, this->right_upstream_down,
+		   this->asym_downup_left, this->e_asym_downup_left,
+		   "downup_left");
+  BinOne_LeftRight(this->left_downstream_down, this->right_upstream_up,
+		   this->asym_updown_right, this->e_asym_updown_right,
+		   "updown_right");
+
   return true;
 }//BinLeftRight
 
@@ -274,6 +270,8 @@ void twotargets::Print_Asym(TString asymName){
 						    asymName);
   else if (asymName=="asym_downstream_down")CoutLoop(this->asym_downstream_down,
 						     asymName);
+  else if (asymName=="asym_upstream_left")CoutLoop(this->asym_upstream_left,
+						     asymName);
   else if (asymName=="e_asym") CoutLoop(this->e_asym, asymName);
   else if (asymName=="e_asym_upstream") CoutLoop(this->e_asym_upstream, asymName);
   else if (asymName=="e_asym_downstream") CoutLoop(this->e_asym_downstream,
@@ -286,6 +284,8 @@ void twotargets::Print_Asym(TString asymName){
 						    asymName);
   else if (asymName=="e_asym_downstream_down")CoutLoop(this->e_asym_downstream_down,
 						     asymName);
+  else if (asymName=="e_asym_upstream_left")CoutLoop(this->e_asym_upstream_left,
+						     asymName);
   else {
     std::cout << "Wrong option " << asymName << " to twotargets::Print_Asym"
 	      << std::endl;
@@ -293,3 +293,22 @@ void twotargets::Print_Asym(TString asymName){
 }
 
 
+//Helper functions
+void twotargets::setZero(Int_t nBins){
+  for (Int_t i=0; i<nBins; i++) {
+    this->left_upstream.push_back(0);
+    this->right_upstream.push_back(0);
+    this->left_downstream.push_back(0);
+    this->right_downstream.push_back(0);
+
+    this->left_upstream_up.push_back(0);
+    this->right_upstream_up.push_back(0);
+    this->left_upstream_down.push_back(0);
+    this->right_upstream_down.push_back(0);
+
+    this->left_downstream_up.push_back(0);
+    this->right_downstream_up.push_back(0);
+    this->left_downstream_down.push_back(0);
+    this->right_downstream_down.push_back(0);
+  }
+}

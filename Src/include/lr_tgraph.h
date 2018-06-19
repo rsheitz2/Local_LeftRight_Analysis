@@ -10,19 +10,31 @@ private:
   TGraphErrors *gr_asym, *gr_asym_upstream, *gr_asym_downstream;
   TGraphErrors *gr_asym_upstream_up, *gr_asym_upstream_down;
   TGraphErrors *gr_asym_downstream_up, *gr_asym_downstream_down;
+  TGraphErrors *gr_asym_upstream_left, *gr_asym_upstream_right;
+  TGraphErrors *gr_asym_downstream_left, *gr_asym_downstream_right;
+  TGraphErrors *gr_asym_updown_left, *gr_asym_updown_right;
+  TGraphErrors *gr_asym_downup_left, *gr_asym_downup_right;
   
   TLine *li_asym, *li_asym_upstream, *li_asym_downstream;
   TLine *li_asym_upstream_up, *li_asym_upstream_down;
   TLine *li_asym_downstream_up, *li_asym_downstream_down;
+  TLine *li_asym_upstream_left, *li_asym_upstream_right;
+  TLine *li_asym_downstream_left, *li_asym_downstream_right;
+  TLine *li_asym_updown_left, *li_asym_updown_right;
+  TLine *li_asym_downup_left, *li_asym_downup_right;
 
   std::vector<double> ex;
 
   //Helper functions
   void setupTLine(TLine *l);
   void setupTGraph(TGraphErrors* gr);
+
+private:
+  void setZero();
+  void setZero(Int_t nBins);
     
 public:
-  lr_tgraph();
+  lr_tgraph() : lrSpinCorr(){lr_tgraph::setZero();}
   lr_tgraph(int nBins, TString name="noName");
   lr_tgraph (int nBins, std::vector<Double_t> &in_bounds,
 	     std::vector<Double_t> &in_xval, TString thisName="noName");

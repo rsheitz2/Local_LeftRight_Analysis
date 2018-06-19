@@ -5,12 +5,12 @@
 #include "lrSpinCorr.h"
 #include "genericBounds.h"
 #include "lr_tgraph.h"
+#include "distribution.h"
 
 using namespace std;
 
 int main(int argc, char **argv){
-  //Starting Help information
-  if(argc < 2){
+  if(argc < 2){//Starting Help information
     cout << "" << endl;
     cout << "" << endl;
     cout << "Usage:" << endl;
@@ -33,8 +33,9 @@ int main(int argc, char **argv){
 	 << endl;
     cout << " " << endl;
     cout << "  --Monte-Carlo Data Only Options--"<< endl;
-    cout << "Option:  -C    (To specify MC data)" << endl;
-    cout << "           (Assumed real data if this option is not given)" <<endl;
+    cout << "Option:  -C    (To specify reconstructed MC data)" << endl;
+    cout << "Option:  -G    (To specify generated MC data)" << endl;
+    cout <<"          (Assumed real data if these options are not given)"<<endl;
     cout << " " << endl;
     cout << "Option:  -T trig       (Only specific trigger)" << endl;
     cout << "                  (\"LL\"=last-last, \"LO\"=last-outer, " <<
@@ -65,14 +66,14 @@ int main(int argc, char **argv){
 
   //Read input arguments
   Int_t wflag=0, Qflag=0, fflag=0, Sflag=0, Pflag=0, Tflag=0, Vflag=0, Nflag=0;
-  Int_t iflag=0, aflag=0, binFlag=0, Dflag=0, Cflag=0, Hflag=0;
+  Int_t iflag=0, aflag=0, binFlag=0, Dflag=0, Cflag=0, Hflag=0, Gflag=0;
   Int_t c;
   TString fname = "", outFile = "", leftrightChoice="", trig="";
   TString binFile = "", binVar="";
   Double_t M_min=0.0, M_max=12.0;
   Int_t NVar;
   
-  while ((c = getopt (argc, argv, "Pwf:Q:S:T:V:N:i:a:b:M:DCH")) != -1) {
+  while ((c = getopt (argc, argv, "Pwf:Q:S:T:V:N:i:a:b:M:DCGH")) != -1) {
     switch (c) {
     case 'w':
       wflag = 1;
@@ -121,6 +122,9 @@ int main(int argc, char **argv){
       break;
     case 'C':
       Cflag = 1;
+      break;
+    case 'G':
+      Gflag = 1;
       break;
     case 'H':
       Hflag = 1;
@@ -195,7 +199,7 @@ int main(int argc, char **argv){
 
   if(Cflag) {
     cout << "" << endl;
-    cout << "Using Monte-Carlo data!" << endl;
+    cout << "Using reconstructed Monte-Carlo data!" << endl;
     cout << " " << endl;
 
     if (Pflag || Sflag){
@@ -203,8 +207,31 @@ int main(int argc, char **argv){
       cout << "-P && -S options are not to be used with -C option" << endl;
       exit(EXIT_FAILURE);
     }
+
+    if(Gflag){
+      cout << "" << endl;
+      cout << "Cannot be generated and reconstructed MC data" << endl;
+      exit(EXIT_FAILURE);
+    }
   }
-  else{
+  else if (Gflag){
+    cout << "" << endl;
+    cout << "Using generated Monte-Carlo data!" << endl;
+    cout << " " << endl;
+
+    if (Pflag || Sflag){
+      cout << "" << endl;
+      cout << "-P && -S options are not to be used with -G option" << endl;
+      exit(EXIT_FAILURE);
+    }
+
+    if(Cflag){
+      cout << "" << endl;
+      cout << "Cannot be generated and reconstructed MC data" << endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+  else {
     cout << "" << endl;
     cout << "Using REAL data!" << endl;
     cout << " " << endl;
@@ -222,7 +249,15 @@ int main(int argc, char **argv){
   
   //Opening data files/getting trees
   TFile *fdata = TFile::Open(fname);
-  TTree *tree = (TTree*)fdata->Get("pT_Weighted");
+  TChain *tree = new TChain("Particles");
+  Int_t nTree=0;
+  TList *li = (TList*)fdata->GetListOfKeys(); TIter iter( li->MakeIterator() );
+  while (TObject *obj = iter() ){ TKey *theKey = (TKey*)obj;
+    if (strncmp (theKey->GetClassName(),"TTree",4) == 0){
+      tree->Add(fname+"/"+obj->GetName()+";"+Form("%i", theKey->GetCycle() ));
+      nTree++;
+    }
+  } tree->LoadTree(0); cout << "Number of trees cycles:    " << nTree << endl; 
   
   //Vertex specific
   Double_t vx_z, vx_x, vx_y;
@@ -240,10 +275,10 @@ int main(int argc, char **argv){
   Double_t dilutionFactor, Polarization;
   //DY-variables
   Double_t x_beam, x_target, x_feynman, q_transverse, Mmumu;
-
+  
   Int_t Errors = 0;
   //Vertex specific
-  Errors+=tree->SetBranchAddress("vx_z", &vx_z);
+  Errors+=tree->SetBranchAddress("vx_z", &vx_z); 
   Errors+=tree->SetBranchAddress("vx_x", &vx_x);
   Errors+=tree->SetBranchAddress("vx_y", &vx_y);
   Errors+=tree->SetBranchAddress("targetPosition", &targetPosition);
@@ -252,13 +287,15 @@ int main(int argc, char **argv){
   Errors+=tree->SetBranchAddress("Theta_CS", &Theta_CS);
   Errors+=tree->SetBranchAddress("vOpenAngle", &vOpenAngle);
   //Mu plus
-  Errors+=tree->SetBranchAddress("theta_traj1", &theta_traj1);
+  if (!Gflag) Errors+=tree->SetBranchAddress("theta_traj1", &theta_traj1);
+  else Errors+=tree->SetBranchAddress("theta_muP", &theta_traj1);
   //Mu Minus
-  Errors+=tree->SetBranchAddress("theta_traj2", &theta_traj2);
+  if (!Gflag) Errors+=tree->SetBranchAddress("theta_traj2", &theta_traj2);
+  else Errors+=tree->SetBranchAddress("theta_muM", &theta_traj2);
   //Event
-  Errors+=tree->SetBranchAddress("trigMask", &trigMask);
+  if (!Gflag) Errors+=tree->SetBranchAddress("trigMask", &trigMask);
   //Target values
-  if (!Cflag) {
+  if (!Cflag && !Gflag) {
     Errors+=tree->SetBranchAddress("MasterTrigMask", &MasterTrigMask);
     Errors+=tree->SetBranchAddress("Spin_0", &Spin_0);
     Errors+=tree->SetBranchAddress("Spin_1", &Spin_1);
@@ -284,10 +321,12 @@ int main(int argc, char **argv){
     cout << " " << endl;
     exit(EXIT_FAILURE);
   }
-  
+
   Double_t radius;
-  Double_t *boundValue;
+  Double_t *boundValue=0;
   if (Vflag){
+    cout << "Need asymetries written and taken care of..." << endl;
+    exit(EXIT_FAILURE);
     if (binVar=="openAngle") boundValue = &vOpenAngle;
     else if (binVar=="radius") boundValue = &radius;
     else if (binVar=="vx_z") boundValue = &vx_z;
@@ -308,13 +347,16 @@ int main(int argc, char **argv){
     Mass = new lr_tgraph(binFile, "mass", "M");
   }
   else{
+    cout << "binFlag must be specifed for now because of new asymmetries"<<endl;
+    exit(EXIT_FAILURE);
+    
     xN = new lr_tgraph(fdata, "xN");
     xPi = new lr_tgraph(fdata, "xPi");
     xF = new lr_tgraph(fdata, "xF");
     pT = new lr_tgraph(fdata, "pT");
     Mass = new lr_tgraph(fdata, "mass", "M");
 
-    if (!Cflag){
+    if (!Cflag && !Gflag){
       xN->SetCorr(fdata, "xN");
       xPi->SetCorr(fdata, "xPi");
       xF->SetCorr(fdata, "xF");
@@ -329,17 +371,20 @@ int main(int argc, char **argv){
   genericBounds *genericPhys = NULL;
   if (Vflag) genericPhys = new lr_tgraph(NVar, binVar);
 
+  distribution *dist_xN = new distribution("xN", 100, 0, 1);//cleanup
+
   //1st tree loop, equal out by target data
   Int_t nUpStream=0, nDownStream=0;
   Int_t tree_entries = (!Dflag) ? tree->GetEntries() : 1000;//Tree Loop
-  if (Cflag || Vflag) {
+  if (Cflag || Gflag || Vflag) {
     for (Int_t ev=0; ev<tree_entries; ev++) {
       tree->GetEntry(ev, 0);
 
       //Additional Optional cuts
       if (Tflag && (trigMask != trigChoice)) continue;
       if (Mmumu < M_min || Mmumu > M_max) continue;
-
+      if (Gflag && (targetPosition!=0 && targetPosition!=1) ) continue;
+      
       //General useful quantities
       radius = TMath::Sqrt(vx_x*vx_x + vx_y*vx_y);
 
@@ -351,10 +396,10 @@ int main(int argc, char **argv){
 	nDownStream++;
 	if (Vflag) genericPhys->SetUpBounds("downstream", *boundValue);
       }
-      else cout << "Not in NH3 targets" << endl;
+      else {if (!Gflag) cout << "Not in NH3 targets" << endl;}
     }
 
-    if (Cflag){
+    if (Cflag || Gflag){
     (nUpStream>nDownStream) ? nUpStream=nDownStream : nDownStream=nUpStream;
     cout << "Number of Entries    UpStream: " << nUpStream << "   DownStream: "
 	 << nDownStream << endl;}
@@ -368,7 +413,7 @@ int main(int argc, char **argv){
   cout << "Number of entries in tree: " << tree->GetEntries() << endl;
   for (Int_t ev=0; ev<tree_entries; ev++) {
     tree->GetEntry(ev, 0);
-
+    dist_xN->dist->Fill(x_target);//cleanup
     //Tree setup
     if (first || ev==tree_entries-1){
       cout << " " << endl;
@@ -382,22 +427,26 @@ int main(int argc, char **argv){
       if(leftrightChoice=="True") {
 	cout << "True left/right asymmetry (no spin influence)" << endl;
       }
-      else if (leftrightChoice=="Spin" || leftrightChoice=="" || Cflag){
+      else if (leftrightChoice=="Spin" || leftrightChoice=="" || Cflag ||Gflag){
 	cout << "Spin influnced left/right asymmetry" << endl;
       }
       if (Tflag){
 	cout << "Trigger mask set to: " << trig << " only" << endl;
       }
+      if (Gflag){ cout << "NH3 target set to true values" << endl;}
       
       cout << " " << endl;
       first = false;
     }
-    else if (Cflag &&(stopUpStream>=nUpStream && stopDownStream>=nDownStream) ){
+    else if ( (Cflag||Gflag)
+	     &&(stopUpStream>=nUpStream && stopDownStream>=nDownStream) ){
       break;}
+
 
     //Additional Optional cuts
     if (Tflag && (trigMask != trigChoice)) continue;
     if (Mmumu < M_min || Mmumu > M_max) continue;
+    if (Gflag && (targetPosition!=0 && targetPosition!=1) ) continue;
 
     //General useful quantities
     radius = TMath::Sqrt(vx_x*vx_x + vx_y*vx_y);
@@ -422,11 +471,11 @@ int main(int argc, char **argv){
     else if (leftrightChoice=="Spin" || leftrightChoice==""){
       //Spin influenced left/right
       if (phi_photon_lab<TMath::Pi()/2 && phi_photon_lab>-TMath::Pi()/2
-	  && (Spin_0>0||Cflag) ){ // Target spin up
+	  && (Spin_0>0||Cflag||Gflag) ){ // Target spin up
 	Left = true;
       }
       else if (phi_photon_lab<3*TMath::Pi()/2 && phi_photon_lab>TMath::Pi()/2
-	       && (Spin_0>0||Cflag) ){// Target spin up
+	       && (Spin_0>0||Cflag||Gflag) ){// Target spin up
 	Right = true;
       }
       else if (phi_photon_lab< 3*TMath::Pi()/2 && phi_photon_lab > TMath::Pi()/2
@@ -444,30 +493,27 @@ int main(int argc, char **argv){
       }
     }
 
-    /*if (ev!=24857) continue;//cleanup
-    std::cout << "event: " << ev << "   targetPosition: " << targetPosition
-	      << "    left?: " << Left << "  Spin_0: " << Spin_0
-	      << std::endl;//cleanup*/
-    
     if (targetPosition == 0) {//UpStream target
-      if (Cflag &&(stopUpStream>=nUpStream) ) continue;
+      if ( (Cflag||Gflag) &&(stopUpStream>=nUpStream) ) continue;
 
-      if (Cflag && stopUpStream>nUpStream/2.0) {//Switch Left/Right for MC
+      if ( (Cflag||Gflag) &&stopUpStream>nUpStream/2.0) {//Switch Left/Right for MC
 	Bool_t tmp = Left;
 	Left = Right;
 	Right = tmp;
       }
-      if (Cflag) stopUpStream++;
+      if (Cflag||Gflag) stopUpStream++;
 
       if (Left){//Polarized Up
-	if ( (!Cflag&&Spin_0>0) || (Cflag&&stopUpStream<nUpStream/2.0) ){
+	if ( (!Cflag&&!Gflag&&Spin_0>0)
+	     || ( (Cflag||Gflag) &&stopUpStream<nUpStream/2.0) ){
 	  for (Int_t i=0; i<nBasics; i++) 
 	    Basics[i]->BinDataCounts("left_upstream_up", *basicValues[i]);
-	  
+
 	  if (Vflag) genericPhys->BinDataCounts(targetPosition,
 						"left_upstream_up",*boundValue);
 	}//Polarized Down
-	else if ( (!Cflag&&Spin_0<0) || (Cflag&&stopUpStream>nUpStream/2.0) ){
+	else if ( (!Cflag&&!Gflag&&Spin_0<0)
+		  || ( (Cflag||Gflag) &&stopUpStream>nUpStream/2.0) ){
 	  for (Int_t i=0; i<nBasics; i++) 
 	    Basics[i]->BinDataCounts("left_upstream_down", *basicValues[i]);
 	  
@@ -477,7 +523,8 @@ int main(int argc, char **argv){
 	}
       }//End Left
       else if (Right){//Polarized Up
-	if ( (!Cflag&&Spin_0>0) || (Cflag&&stopUpStream<nUpStream/2.0) ){
+	if ( (!Cflag&&!Gflag&&Spin_0>0)
+	     || ( (Cflag||Gflag) &&stopUpStream<nUpStream/2.0) ){
 	  for (Int_t i=0; i<nBasics; i++) 
 	    Basics[i]->BinDataCounts("right_upstream_up", *basicValues[i]);
 	  
@@ -485,7 +532,8 @@ int main(int argc, char **argv){
 	    genericPhys->BinDataCounts(targetPosition, "right_upstream_up",
 				       *boundValue);}
 	}//Polarized Down
-	else if ( (!Cflag&&Spin_0<0) || (Cflag&&stopUpStream>nUpStream/2.0) ){
+	else if ( (!Cflag&&!Gflag&&Spin_0<0)
+		  || ( (Cflag||Gflag) &&stopUpStream>nUpStream/2.0) ){
 	  for (Int_t i=0; i<nBasics; i++) 
 	    Basics[i]->BinDataCounts("right_upstream_down", *basicValues[i]);
 	  
@@ -495,15 +543,16 @@ int main(int argc, char **argv){
 	}
       }//End Right
 
-      if (!Cflag && binFlag){//Dilution/Polarization corrections
+      if (!Cflag &&!Gflag && binFlag){//Dilution/Polarization corrections
 	Double_t dil = TMath::Abs(dilutionFactor);
 	Double_t correct_dil = 0.95*dil;
 	Double_t pol = TMath::Abs(Polarization);
 
 	if (Spin_0 > 0) {//Polarized Up
 	  for (Int_t i=0; i<nBasics; i++) {
-	    Basics[i]->SetCorr("pol_upstream_up", *basicValues[i], pol);
-	    Basics[i]->SetCorr("dil_upstream_up", *basicValues[i], correct_dil);
+	    Basics[i]->SetCorr("pol_upstream_up", *basicValues[i], pol, Left);
+	    Basics[i]->SetCorr("dil_upstream_up", *basicValues[i], correct_dil,
+			       Left);
 	  }
 	  
 	  if (Vflag) {
@@ -514,9 +563,9 @@ int main(int argc, char **argv){
 	}
 	else if (Spin_0 < 0){//Polarized Down
 	  for (Int_t i=0; i<nBasics; i++) {
-	    Basics[i]->SetCorr("pol_upstream_down", *basicValues[i], pol);
+	    Basics[i]->SetCorr("pol_upstream_down", *basicValues[i], pol, Left);
 	    Basics[i]->SetCorr("dil_upstream_down", *basicValues[i],
-			       correct_dil);
+			       correct_dil, Left);
 	  }
 	  
 	  if (Vflag) {
@@ -528,17 +577,19 @@ int main(int argc, char **argv){
       }
     }//End UpStream target
     else if (targetPosition == 1) {//DownStream target
-      if (Cflag &&(stopDownStream>=nDownStream) ) continue;
+      if ( (Cflag||Gflag) &&(stopDownStream>=nDownStream) ) continue;
 
-      if (Cflag && stopDownStream>nDownStream/2.0) {//Switch Left/Right for MC
+      if ( (Cflag||Gflag)
+	  && stopDownStream>nDownStream/2.0) {//Switch Left/Right for MC
 	Bool_t tmp = Left;
 	Left = Right;
 	Right = tmp;
       }
-      if (Cflag) stopDownStream++;
+      if (Cflag||Gflag) stopDownStream++;
 
       if (Left){//Polarized Up
-	if ( (!Cflag&&Spin_0>0) || (Cflag&&stopDownStream<nDownStream/2.0) ){
+	if ( (!Cflag&&!Gflag&&Spin_0>0)
+	     || ((Cflag||Gflag) &&stopDownStream<nDownStream/2.0) ){
 	  for (Int_t i=0; i<nBasics; i++) 
 	    Basics[i]->BinDataCounts("left_downstream_up", *basicValues[i]);
 
@@ -546,7 +597,8 @@ int main(int argc, char **argv){
 	    genericPhys->BinDataCounts(targetPosition, "left_downstream_up",
 				       *boundValue);}
 	}//Polarized Down
-	else if ( (!Cflag&&Spin_0<0) || (Cflag&&stopDownStream>nDownStream/2.0) ){
+	else if ( (!Cflag&&!Gflag&&Spin_0<0)
+		  || ((Cflag||Gflag) &&stopDownStream>nDownStream/2.0) ){
 	  for (Int_t i=0; i<nBasics; i++) 
 	    Basics[i]->BinDataCounts("left_downstream_down", *basicValues[i]);
 
@@ -556,7 +608,8 @@ int main(int argc, char **argv){
 	}
       }//End Left
       else if (Right){//Polarized Up
-	if ( (!Cflag&&Spin_0>0) || (Cflag&&stopDownStream<nDownStream/2.0) ){
+	if ( (!Cflag&&!Gflag&&Spin_0>0)
+	     || ( (Cflag||Gflag) &&stopDownStream<nDownStream/2.0) ){
 	  for (Int_t i=0; i<nBasics; i++) 
 	    Basics[i]->BinDataCounts("right_downstream_up", *basicValues[i]);
 	  
@@ -564,7 +617,8 @@ int main(int argc, char **argv){
 	    genericPhys->BinDataCounts(targetPosition, "right_downstream_up",
 				       *boundValue);}
 	}//Polarized Down
-	else if ( (!Cflag&&Spin_0<0) ||(Cflag&&stopDownStream>nDownStream/2.0)){
+	else if ( (!Cflag&&!Gflag&&Spin_0<0)
+		  || ( (Cflag||Gflag) &&stopDownStream>nDownStream/2.0)){
 	  for (Int_t i=0; i<nBasics; i++) 
 	    Basics[i]->BinDataCounts("right_downstream_down", *basicValues[i]);
 	  
@@ -574,16 +628,16 @@ int main(int argc, char **argv){
 	}
       }//End Right
 
-      if (!Cflag && binFlag){//Dilution/Polarization corrections
+      if (!Cflag &&!Gflag && binFlag){//Dilution/Polarization corrections
 	Double_t dil = TMath::Abs(dilutionFactor);
 	Double_t correct_dil = 0.91*dil;
 	Double_t pol = TMath::Abs(Polarization);
 
 	if (Spin_0 > 0) {//Polarized Up
 	  for (Int_t i=0; i<nBasics; i++) {
-	    Basics[i]->SetCorr("pol_downstream_up", *basicValues[i], pol);
+	    Basics[i]->SetCorr("pol_downstream_up", *basicValues[i], pol, Left);
 	    Basics[i]->SetCorr("dil_downstream_up", *basicValues[i],
-			       correct_dil);
+			       correct_dil, Left);
 	  }
 	  
 	  if (Vflag) {
@@ -594,9 +648,10 @@ int main(int argc, char **argv){
 	}
 	else if (Spin_0 < 0){//Polarized Down
 	  for (Int_t i=0; i<nBasics; i++) {
-	    Basics[i]->SetCorr("pol_downstream_down", *basicValues[i], pol);
+	    Basics[i]->SetCorr("pol_downstream_down", *basicValues[i], pol,
+			       Left);
 	    Basics[i]->SetCorr("dil_downstream_down", *basicValues[i],
-			       correct_dil);
+			       correct_dil, Left);
 	  }
 	  
 	  if (Vflag) {
@@ -610,12 +665,13 @@ int main(int argc, char **argv){
 
   }//End tree loop
 
+
   //Asymmetries
   for (Int_t i=0; i<nBasics; i++) Basics[i]->BinLeftRight();
   if (Vflag) genericPhys->BinLeftRight();
 
   //Dilution and polarization corrections
-  if (!Pflag && !Cflag){
+  if (!Pflag && !Cflag && !Gflag){
     if(binFlag) {
       for (Int_t i=0; i<nBasics; i++) Basics[i]->AvgCorr();
     }
@@ -629,19 +685,11 @@ int main(int argc, char **argv){
     if (Vflag) genericPhys->CorrectDilPol();
   }
 
-  xF->Print_Asym("asym");
-  //xF->Print_Asym("asym_upstream_up");
-  //xF->Print_Asym("asym_upstream_down");
-  //xF->Print_Asym("asym_downstream_up");
-  //xF->Print_Asym("asym_downstream_down");
-
-  if (Vflag) {
-    genericPhys->Print_Asym("asym");
-    //genericPhys->Print_Asym("asym_upstream_up");
-    //genericPhys->Print_Asym("asym_upstream_down");
-    //genericPhys->Print_Asym("asym_downstream_up");
-    //genericPhys->Print_Asym("asym_downstream_down");
-  }
+  //xN->Print_LR("left_upstream_up");
+  //xN->Print_LR("right_upstream_up");
+  //xN->Print_Asym("asym_upstream_left");
+  xN->PrintCorr("dil_upstream_left");
+  xN->PrintCorr("pol_upstream_left");
 
   //Graphs and Drawing
   for (Int_t i=0; i<nBasics; i++) Basics[i]->Fill();
@@ -654,7 +702,7 @@ int main(int argc, char **argv){
 
     for (Int_t i=0; i<nBasics; i++) Basics[i]->Write();
     if (Vflag) genericPhys->Write();
-
+    dist_xN->Write();//cleanup
     fout->Close();
     cout << " " << endl;
     if (Qflag) cout << outFile << " file written" << endl;
@@ -664,6 +712,11 @@ int main(int argc, char **argv){
   cout << "-------------------------------------------" << endl;
   cout << "---------------code finished---------------" << endl;
   cout << "-------------------------------------------" << endl;
+
+  cout << " " << endl;
+  cout << "Notes:" << endl;
+  cout << "Do not used    PhiS   (it's not defined well)" << endl;
+  cout << " " << endl;
   
   theApp.Run();//Needed to make root graphics work on C++
 }

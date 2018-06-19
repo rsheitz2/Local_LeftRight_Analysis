@@ -38,7 +38,7 @@ public:
 			     std::vector<double> &boundVals, int noprint=0) = 0;
   virtual bool BinDataCounts(TString target, double binVal, int noprint=0) = 0;
   virtual bool BinDataCounts(int whichTarget, TString target, double binVal,
-			     int noprint=0){}
+			     int noprint=0){return true;}
   virtual bool BinLeftRight() = 0;//make all left/right asymmetries
 
   virtual void Print_LR(TString target) = 0;
@@ -49,7 +49,8 @@ public:
   virtual void Print_xVal(TString target) { CoutLoop(this->xval, "xval"); }
 
   virtual bool SetCorr(TFile *f1, TString type){return true;}
-  virtual bool SetCorr(TString target,double binVal,double avgVal){return true;}
+  virtual bool SetCorr(TString target,double binVal,double avgVal,bool left){
+    return true;}
   virtual void AvgCorr(){}
   virtual void CorrectDilPol(){}
   virtual void PrintCorr(TString name){}

@@ -5,76 +5,18 @@ lrSpinCorr::lrSpinCorr(int nBins, TString name)
   : twotargets(nBins, name){
   this->pol_int = 0.0, this->dil_int = 0.0;
   this->pol_int_count = 0, this->dil_int_count = 0;
-  
-  for (Int_t i=0; i<nBins; i++) {
-    this->avgPol.push_back(0.0); this->avgDil.push_back(0.0);
-    this->avgPol_count.push_back(0); this->avgDil_count.push_back(0);
 
-    this->avgPol_upstream.push_back(0.0);
-    this->avgDil_upstream.push_back(0.0);
-    this->avgPol_count_upstream.push_back(0);
-    this->avgDil_count_upstream.push_back(0);
-    this->avgPol_downstream.push_back(0.0);
-    this->avgDil_downstream.push_back(0.0);
-    this->avgPol_count_downstream.push_back(0);
-    this->avgDil_count_downstream.push_back(0);
-
-    this->avgPol_upstream_up.push_back(0.0);
-    this->avgDil_upstream_up.push_back(0.0);
-    this->avgPol_count_upstream_up.push_back(0);
-    this->avgDil_count_upstream_up.push_back(0);
-    this->avgPol_upstream_down.push_back(0.0);
-    this->avgDil_upstream_down.push_back(0.0);
-    this->avgPol_count_upstream_down.push_back(0);
-    this->avgDil_count_upstream_down.push_back(0);
-    this->avgPol_downstream_up.push_back(0.0);
-    this->avgDil_downstream_up.push_back(0.0);
-    this->avgPol_count_downstream_up.push_back(0);
-    this->avgDil_count_downstream_up.push_back(0);
-    this->avgPol_downstream_down.push_back(0.0);
-    this->avgDil_downstream_down.push_back(0.0);
-    this->avgPol_count_downstream_down.push_back(0);
-    this->avgDil_count_downstream_down.push_back(0);
-  }
+  lrSpinCorr::setZero(nBins);
 }
 
 
 lrSpinCorr::lrSpinCorr (int nBins, std::vector<Double_t> &in_bounds,
-	      std::vector<Double_t> &in_xval, TString thisName)
-    : twotargets(nBins, in_bounds, in_xval, thisName){
+			std::vector<Double_t> &in_xval, TString thisName)
+  : twotargets(nBins, in_bounds, in_xval, thisName){
   this->pol_int = 0.0, this->dil_int = 0.0;
   this->pol_int_count = 0, this->dil_int_count = 0;
   
-  for (Int_t i=0; i<nBins; i++) {
-    this->avgPol.push_back(0.0); this->avgDil.push_back(0.0);
-    this->avgPol_count.push_back(0); this->avgDil_count.push_back(0);
-
-    this->avgPol_upstream.push_back(0.0);
-    this->avgDil_upstream.push_back(0.0);
-    this->avgPol_count_upstream.push_back(0);
-    this->avgDil_count_upstream.push_back(0);
-    this->avgPol_downstream.push_back(0.0);
-    this->avgDil_downstream.push_back(0.0);
-    this->avgPol_count_downstream.push_back(0);
-    this->avgDil_count_downstream.push_back(0);
-
-    this->avgPol_upstream_up.push_back(0.0);
-    this->avgDil_upstream_up.push_back(0.0);
-    this->avgPol_count_upstream_up.push_back(0);
-    this->avgDil_count_upstream_up.push_back(0);
-    this->avgPol_upstream_down.push_back(0.0);
-    this->avgDil_upstream_down.push_back(0.0);
-    this->avgPol_count_upstream_down.push_back(0);
-    this->avgDil_count_upstream_down.push_back(0);
-    this->avgPol_downstream_up.push_back(0.0);
-    this->avgDil_downstream_up.push_back(0.0);
-    this->avgPol_count_downstream_up.push_back(0);
-    this->avgDil_count_downstream_up.push_back(0);
-    this->avgPol_downstream_down.push_back(0.0);
-    this->avgDil_downstream_down.push_back(0.0);
-    this->avgPol_count_downstream_down.push_back(0);
-    this->avgDil_count_downstream_down.push_back(0);
-  }
+  lrSpinCorr::setZero(nBins);
 }
 
 
@@ -83,36 +25,7 @@ lrSpinCorr::lrSpinCorr(TString binfile, TString type, TString thisName)
   this->pol_int = 0.0, this->dil_int = 0.0;
   this->pol_int_count = 0, this->dil_int_count = 0;
   
-  for (Int_t i=0; i<nBins; i++) {
-    this->avgPol.push_back(0.0); this->avgDil.push_back(0.0);
-    this->avgPol_count.push_back(0); this->avgDil_count.push_back(0);
-
-    this->avgPol_upstream.push_back(0.0);
-    this->avgDil_upstream.push_back(0.0);
-    this->avgPol_count_upstream.push_back(0);
-    this->avgDil_count_upstream.push_back(0);
-    this->avgPol_downstream.push_back(0.0);
-    this->avgDil_downstream.push_back(0.0);
-    this->avgPol_count_downstream.push_back(0);
-    this->avgDil_count_downstream.push_back(0);
-
-    this->avgPol_upstream_up.push_back(0.0);
-    this->avgDil_upstream_up.push_back(0.0);
-    this->avgPol_count_upstream_up.push_back(0);
-    this->avgDil_count_upstream_up.push_back(0);
-    this->avgPol_upstream_down.push_back(0.0);
-    this->avgDil_upstream_down.push_back(0.0);
-    this->avgPol_count_upstream_down.push_back(0);
-    this->avgDil_count_upstream_down.push_back(0);
-    this->avgPol_downstream_up.push_back(0.0);
-    this->avgDil_downstream_up.push_back(0.0);
-    this->avgPol_count_downstream_up.push_back(0);
-    this->avgDil_count_downstream_up.push_back(0);
-    this->avgPol_downstream_down.push_back(0.0);
-    this->avgDil_downstream_down.push_back(0.0);
-    this->avgPol_count_downstream_down.push_back(0);
-    this->avgDil_count_downstream_down.push_back(0);
-  }
+  lrSpinCorr::setZero(nBins);
 }
 
 
@@ -121,36 +34,7 @@ lrSpinCorr::lrSpinCorr(TFile *f1, TString type, TString thisName)
   this->pol_int = 0.0, this->dil_int = 0.0;
   this->pol_int_count = 0, this->dil_int_count = 0;
   
-  for (Int_t i=0; i<nBins; i++) {
-    this->avgPol.push_back(0.0); this->avgDil.push_back(0.0);
-    this->avgPol_count.push_back(0); this->avgDil_count.push_back(0);
-
-    this->avgPol_upstream.push_back(0.0);
-    this->avgDil_upstream.push_back(0.0);
-    this->avgPol_count_upstream.push_back(0);
-    this->avgDil_count_upstream.push_back(0);
-    this->avgPol_downstream.push_back(0.0);
-    this->avgDil_downstream.push_back(0.0);
-    this->avgPol_count_downstream.push_back(0);
-    this->avgDil_count_downstream.push_back(0);
-
-    this->avgPol_upstream_up.push_back(0.0);
-    this->avgDil_upstream_up.push_back(0.0);
-    this->avgPol_count_upstream_up.push_back(0);
-    this->avgDil_count_upstream_up.push_back(0);
-    this->avgPol_upstream_down.push_back(0.0);
-    this->avgDil_upstream_down.push_back(0.0);
-    this->avgPol_count_upstream_down.push_back(0);
-    this->avgDil_count_upstream_down.push_back(0);
-    this->avgPol_downstream_up.push_back(0.0);
-    this->avgDil_downstream_up.push_back(0.0);
-    this->avgPol_count_downstream_up.push_back(0);
-    this->avgDil_count_downstream_up.push_back(0);
-    this->avgPol_downstream_down.push_back(0.0);
-    this->avgDil_downstream_down.push_back(0.0);
-    this->avgPol_count_downstream_down.push_back(0);
-    this->avgDil_count_downstream_down.push_back(0);
-  }
+  lrSpinCorr::setZero(nBins);
 }
 
 
@@ -189,7 +73,8 @@ bool lrSpinCorr::SetCorr(TFile *f1, TString type){
 }
 
 
-bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal){
+bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal,
+			 bool left){
   
   if (target=="pol_upstream_up") {
     binOneAvg(this->avgPol_upstream_up, this->avgPol_count_upstream_up,
@@ -197,6 +82,20 @@ bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal){
     binOneAvg(this->avgPol_upstream, this->avgPol_count_upstream,
 	      binVal, avgVal);
     binOneAvg(this->avgPol, this->avgPol_count, binVal, avgVal);
+    
+    if (left){
+      binOneAvg(this->avgPol_upstream_left, this->avgPol_count_upstream_left,
+		binVal, avgVal);
+      binOneAvg(this->avgPol_updown_left, this->avgPol_count_updown_left,
+		binVal, avgVal);
+    }
+    else{
+      binOneAvg(this->avgPol_upstream_right, this->avgPol_count_upstream_right,
+		binVal, avgVal);
+      binOneAvg(this->avgPol_updown_right, this->avgPol_count_updown_right,
+		binVal, avgVal);
+    }
+    
     pol_int += avgVal; pol_int_count++;
   }
   else if (target=="pol_upstream_down") {
@@ -205,6 +104,21 @@ bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal){
     binOneAvg(this->avgPol_upstream, this->avgPol_count_upstream,
 	      binVal, avgVal);
     binOneAvg(this->avgPol, this->avgPol_count, binVal, avgVal);
+    
+    if (left){
+      binOneAvg(this->avgPol_upstream_right, this->avgPol_count_upstream_right,
+		binVal, avgVal);
+      binOneAvg(this->avgPol_downup_right, this->avgPol_count_downup_right,
+		binVal, avgVal);
+      
+    }
+    else {
+      binOneAvg(this->avgPol_upstream_left, this->avgPol_count_upstream_left,
+		binVal, avgVal);
+      binOneAvg(this->avgPol_downup_left, this->avgPol_count_downup_left,
+		binVal, avgVal);
+    }
+
     pol_int += avgVal; pol_int_count++;
   }
   else if (target=="pol_downstream_up") {
@@ -213,6 +127,20 @@ bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal){
     binOneAvg(this->avgPol_downstream, this->avgPol_count_downstream,
 	      binVal, avgVal);
     binOneAvg(this->avgPol, this->avgPol_count, binVal, avgVal);
+
+    if (left){
+      binOneAvg(this->avgPol_downstream_left,this->avgPol_count_downstream_left,
+		binVal, avgVal);
+      binOneAvg(this->avgPol_downup_left, this->avgPol_count_downup_left,
+		binVal, avgVal);
+    }
+    else {
+      binOneAvg(this->avgPol_downstream_right,
+		this->avgPol_count_downstream_right, binVal, avgVal);
+      binOneAvg(this->avgPol_downup_right, this->avgPol_count_downup_right,
+		binVal, avgVal);
+    }
+    
     pol_int += avgVal; pol_int_count++;
   }
   else if (target=="pol_downstream_down") {
@@ -221,6 +149,20 @@ bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal){
     binOneAvg(this->avgPol_downstream, this->avgPol_count_downstream,
 	      binVal, avgVal);
     binOneAvg(this->avgPol, this->avgPol_count, binVal, avgVal);
+
+    if (left){
+      binOneAvg(this->avgPol_downstream_right,
+		this->avgPol_count_downstream_right, binVal, avgVal);
+      binOneAvg(this->avgPol_updown_right, this->avgPol_count_updown_right,
+		binVal, avgVal);
+    }
+    else{
+      binOneAvg(this->avgPol_downstream_left,this->avgPol_count_downstream_left,
+		binVal, avgVal);
+      binOneAvg(this->avgPol_updown_left, this->avgPol_count_updown_left,
+		binVal, avgVal);
+    }
+    
     pol_int += avgVal; pol_int_count++;
   }
   else if (target=="dil_upstream_up") {
@@ -229,6 +171,20 @@ bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal){
     binOneAvg(this->avgDil_upstream, this->avgDil_count_upstream,
 	      binVal, avgVal);
     binOneAvg(this->avgDil, this->avgDil_count, binVal, avgVal);
+
+    if (left){
+      binOneAvg(this->avgDil_upstream_left, this->avgDil_count_upstream_left,
+		binVal, avgVal);
+      binOneAvg(this->avgDil_updown_left, this->avgDil_count_updown_left,
+		binVal, avgVal);
+    }
+    else{
+      binOneAvg(this->avgDil_upstream_right, this->avgDil_count_upstream_right,
+		binVal, avgVal);
+      binOneAvg(this->avgDil_updown_right, this->avgDil_count_updown_right,
+		binVal, avgVal);
+    }
+    
     dil_int += avgVal; dil_int_count++;
   }
   else if (target=="dil_upstream_down") {
@@ -237,6 +193,21 @@ bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal){
     binOneAvg(this->avgDil_upstream, this->avgDil_count_upstream,
 	      binVal, avgVal);
     binOneAvg(this->avgDil, this->avgDil_count, binVal, avgVal);
+
+    if (left){
+      binOneAvg(this->avgDil_upstream_right, this->avgDil_count_upstream_right,
+		binVal, avgVal);
+      binOneAvg(this->avgDil_downup_right, this->avgDil_count_downup_right,
+		binVal, avgVal);
+      
+    }
+    else {
+      binOneAvg(this->avgDil_upstream_left, this->avgDil_count_upstream_left,
+		binVal, avgVal);
+      binOneAvg(this->avgDil_downup_left, this->avgDil_count_downup_left,
+		binVal, avgVal);
+    }
+    
     dil_int += avgVal; dil_int_count++;
   }
   else if (target=="dil_downstream_up") {
@@ -245,6 +216,20 @@ bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal){
     binOneAvg(this->avgDil_downstream, this->avgDil_count_downstream,
 	      binVal, avgVal);
     binOneAvg(this->avgDil, this->avgDil_count, binVal, avgVal);
+
+    if (left){
+      binOneAvg(this->avgDil_downstream_left,this->avgDil_count_downstream_left,
+		binVal, avgVal);
+      binOneAvg(this->avgDil_downup_left, this->avgDil_count_downup_left,
+		binVal, avgVal);
+    }
+    else {
+      binOneAvg(this->avgDil_downstream_right,
+		this->avgDil_count_downstream_right, binVal, avgVal);
+      binOneAvg(this->avgDil_downup_right, this->avgDil_count_downup_right,
+		binVal, avgVal);
+    }
+    
     dil_int += avgVal; dil_int_count++;
   }
   else if (target=="dil_downstream_down") {
@@ -253,12 +238,26 @@ bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal){
     binOneAvg(this->avgDil_downstream, this->avgDil_count_downstream,
 	      binVal, avgVal);
     binOneAvg(this->avgDil, this->avgDil_count, binVal, avgVal);
+
+    if (left){
+      binOneAvg(this->avgDil_downstream_right,
+		this->avgDil_count_downstream_right, binVal, avgVal);
+      binOneAvg(this->avgDil_updown_right, this->avgDil_count_updown_right,
+		binVal, avgVal);
+    }
+    else{
+      binOneAvg(this->avgDil_downstream_left,this->avgDil_count_downstream_left,
+		binVal, avgVal);
+      binOneAvg(this->avgDil_updown_left, this->avgDil_count_updown_left,
+		binVal, avgVal);
+    }
+    
     dil_int += avgVal; dil_int_count++;
   }
   else {
-	std::cout << this->thisName << " Wrong target name to " <<
-	  "lrSpinCorr::SetCorr" << std::endl;
-	return false;
+    std::cout << this->thisName << " Wrong target name to " <<
+      "lrSpinCorr::SetCorr" << std::endl;
+    return false;
   }
 
   return true;
@@ -280,7 +279,23 @@ void lrSpinCorr::AvgCorr(){
 	     "avgPol_downstream_up");
   makeOneAvg(this->avgPol_downstream_down, this->avgPol_count_downstream_down,
 	     "avgPol_downstream_down");
-
+  makeOneAvg(this->avgPol_upstream_left, this->avgPol_count_upstream_left,
+	     "avgPol_upstream_left");
+  makeOneAvg(this->avgPol_upstream_right, this->avgPol_count_upstream_right,
+	     "avgPol_upstream_right");
+  makeOneAvg(this->avgPol_downstream_left, this->avgPol_count_downstream_left,
+	     "avgPol_downstream_left");
+  makeOneAvg(this->avgPol_downstream_right, this->avgPol_count_downstream_right,
+	     "avgPol_downstream_right");
+  makeOneAvg(this->avgPol_updown_left, this->avgPol_count_updown_left,
+	     "avgPol_updown_left");
+  makeOneAvg(this->avgPol_updown_right, this->avgPol_count_updown_right,
+	     "avgPol_updown_right");
+  makeOneAvg(this->avgPol_downup_left, this->avgPol_count_downup_left,
+	     "avgPol_downup_left");
+  makeOneAvg(this->avgPol_downup_right, this->avgPol_count_downup_right,
+	     "avgPol_downup_right");
+  
   this->dil_int = this->dil_int/(1.0*this->dil_int_count);
   makeOneAvg(this->avgDil, this->avgDil_count, "avgDil");
   makeOneAvg(this->avgDil_upstream, this->avgDil_count_upstream,
@@ -295,6 +310,22 @@ void lrSpinCorr::AvgCorr(){
 	     "avgDil_downstream_up");
   makeOneAvg(this->avgDil_downstream_down, this->avgDil_count_downstream_down,
 	     "avgDil_downstream_down");
+  makeOneAvg(this->avgDil_upstream_left, this->avgDil_count_upstream_left,
+	     "avgDil_upstream_left");
+  makeOneAvg(this->avgDil_upstream_right, this->avgDil_count_upstream_right,
+	     "avgDil_upstream_right");
+  makeOneAvg(this->avgDil_downstream_left, this->avgDil_count_downstream_left,
+	     "avgDil_downstream_left");
+  makeOneAvg(this->avgDil_downstream_right, this->avgDil_count_downstream_right,
+	     "avgDil_downstream_right");
+  makeOneAvg(this->avgDil_updown_left, this->avgDil_count_updown_left,
+	     "avgDil_updown_left");
+  makeOneAvg(this->avgDil_updown_right, this->avgDil_count_updown_right,
+	     "avgDil_updown_right");
+  makeOneAvg(this->avgDil_downup_left, this->avgDil_count_downup_left,
+	     "avgDil_downup_left");
+  makeOneAvg(this->avgDil_downup_right, this->avgDil_count_downup_right,
+	     "avgDil_downup_right");
 }
 
 
@@ -315,7 +346,24 @@ void lrSpinCorr::CorrectDilPol(){
 		   this->avgPol_downstream_up, this->avgDil_downstream_up);
   correctOneDilPol(this->asym_downstream_down, this->e_asym_downstream_down,
 		   this->avgPol_downstream_down, this->avgDil_downstream_down);
-    
+
+  correctOneDilPol(this->asym_upstream_left, this->e_asym_upstream_left,
+		   this->avgPol_upstream_left, this->avgDil_upstream_left);
+  correctOneDilPol(this->asym_upstream_right, this->e_asym_upstream_right,
+		   this->avgPol_upstream_right, this->avgDil_upstream_right);
+  correctOneDilPol(this->asym_downstream_left, this->e_asym_downstream_left,
+		   this->avgPol_downstream_left, this->avgDil_downstream_left);
+  correctOneDilPol(this->asym_downstream_right, this->e_asym_downstream_right,
+		   this->avgPol_downstream_right, this->avgDil_downstream_right);
+
+  correctOneDilPol(this->asym_updown_left, this->e_asym_updown_left,
+		   this->avgPol_updown_left, this->avgDil_updown_left);
+  correctOneDilPol(this->asym_updown_right, this->e_asym_updown_right,
+		   this->avgPol_updown_right, this->avgDil_updown_right);
+  correctOneDilPol(this->asym_downup_left, this->e_asym_downup_left,
+		   this->avgPol_downup_left, this->avgDil_downup_left);
+  correctOneDilPol(this->asym_downup_right, this->e_asym_downup_right,
+		   this->avgPol_downup_right, this->avgDil_downup_right);
 }
 
 
@@ -334,6 +382,8 @@ void lrSpinCorr::PrintCorr(TString name){
   else if (name=="pol_downstream_up") CoutLoop(this->avgPol_downstream_up,name);
   else if (name=="pol_downstream_down") {
     CoutLoop(this->avgPol_downstream_down, name);}
+  else if (name=="pol_upstream_left") {
+    CoutLoop(this->avgPol_upstream_left, name);}
   else if (name=="dil_int") {
     std::cout << "Printing content for: " << name 
 	      << "  from: " << this->thisName << std::endl;
@@ -347,12 +397,82 @@ void lrSpinCorr::PrintCorr(TString name){
   else if (name=="dil_downstream_up") CoutLoop(this->avgDil_downstream_up,name);
   else if (name=="dil_downstream_down") {
     CoutLoop(this->avgDil_downstream_down, name);}
+  else if (name=="dil_upstream_left") {
+    CoutLoop(this->avgDil_upstream_left, name);}
   else std::cout << "Wrong lrSpinCorr::PrintCorr input name" << std::endl;
 
 }
 
 
 //Helper functions
+void lrSpinCorr::setZero(Int_t nBins){
+  for (Int_t i=0; i<nBins; i++) {
+    this->avgPol.push_back(0.0); this->avgDil.push_back(0.0);
+    this->avgPol_count.push_back(0); this->avgDil_count.push_back(0);
+
+    this->avgPol_upstream.push_back(0.0);
+    this->avgDil_upstream.push_back(0.0);
+    this->avgPol_count_upstream.push_back(0);
+    this->avgDil_count_upstream.push_back(0);
+    this->avgPol_downstream.push_back(0.0);
+    this->avgDil_downstream.push_back(0.0);
+    this->avgPol_count_downstream.push_back(0);
+    this->avgDil_count_downstream.push_back(0);
+
+    this->avgPol_upstream_up.push_back(0.0);
+    this->avgDil_upstream_up.push_back(0.0);
+    this->avgPol_count_upstream_up.push_back(0);
+    this->avgDil_count_upstream_up.push_back(0);
+    this->avgPol_upstream_down.push_back(0.0);
+    this->avgDil_upstream_down.push_back(0.0);
+    this->avgPol_count_upstream_down.push_back(0);
+    this->avgDil_count_upstream_down.push_back(0);
+    this->avgPol_downstream_up.push_back(0.0);
+    this->avgDil_downstream_up.push_back(0.0);
+    this->avgPol_count_downstream_up.push_back(0);
+    this->avgDil_count_downstream_up.push_back(0);
+    this->avgPol_downstream_down.push_back(0.0);
+    this->avgDil_downstream_down.push_back(0.0);
+    this->avgPol_count_downstream_down.push_back(0);
+    this->avgDil_count_downstream_down.push_back(0);
+
+    this->avgPol_upstream_left.push_back(0.0);
+    this->avgDil_upstream_left.push_back(0.0);
+    this->avgPol_count_upstream_left.push_back(0);
+    this->avgDil_count_upstream_left.push_back(0);
+    this->avgPol_upstream_right.push_back(0.0);
+    this->avgDil_upstream_right.push_back(0.0);
+    this->avgPol_count_upstream_right.push_back(0);
+    this->avgDil_count_upstream_right.push_back(0);
+    this->avgPol_downstream_left.push_back(0.0);
+    this->avgDil_downstream_left.push_back(0.0);
+    this->avgPol_count_downstream_left.push_back(0);
+    this->avgDil_count_downstream_left.push_back(0);
+    this->avgPol_downstream_right.push_back(0.0);
+    this->avgDil_downstream_right.push_back(0.0);
+    this->avgPol_count_downstream_right.push_back(0);
+    this->avgDil_count_downstream_right.push_back(0);
+
+    this->avgPol_updown_left.push_back(0.0);
+    this->avgDil_updown_left.push_back(0.0);
+    this->avgPol_count_updown_left.push_back(0);
+    this->avgDil_count_updown_left.push_back(0);
+    this->avgPol_updown_right.push_back(0.0);
+    this->avgDil_updown_right.push_back(0.0);
+    this->avgPol_count_updown_right.push_back(0);
+    this->avgDil_count_updown_right.push_back(0);
+    this->avgPol_downup_left.push_back(0.0);
+    this->avgDil_downup_left.push_back(0.0);
+    this->avgPol_count_downup_left.push_back(0);
+    this->avgDil_count_downup_left.push_back(0);
+    this->avgPol_downup_right.push_back(0.0);
+    this->avgDil_downup_right.push_back(0.0);
+    this->avgPol_count_downup_right.push_back(0);
+    this->avgDil_count_downup_right.push_back(0);
+  }
+}//setZero
+
+
 void lrSpinCorr::setOneCorr(TFile *f1, std::vector<double> &corr,
 			    TString corrType){
   corr.clear();
