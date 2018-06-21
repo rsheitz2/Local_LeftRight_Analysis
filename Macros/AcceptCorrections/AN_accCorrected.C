@@ -3,6 +3,9 @@ const Int_t nBins=3; Double_t dx =0.005; Double_t yMax =0.5;
 
 Bool_t accCorrected=true;
 TString physType ="xF", period ="WAll";
+Bool_t toWrite =false;
+TString fNameout ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Presents/June26/Data/";
 
 
 void SetUpTGraph(TGraphErrors* g, TString name, Int_t ic, Double_t offset){
@@ -49,12 +52,21 @@ Double_t e_Amp(Double_t L, Double_t R, Double_t aL, Double_t aR,
 }
 
 
-void AN_accCorrected(){
-  TFile *f_LR = TFile::Open(Form("Accept/%s_%i.root", period.Data(), nBins) );
-  TFile *f_LR_noCorr = TFile::Open(Form("Accept/%s_%i_noCorr.root",
+void AN_accCorrected(TString fname=""){
+  if (fname==""){
+    fname += "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
+Presents/May1/Macros/Accept";
+
+    cout << "Using default data from May1/Macros/Accept" << endl;
+  }
+  
+  TFile *f_LR = TFile::Open(Form("%s/%s_%i.root", fname.Data(), period.Data(),
+				 nBins) );
+  TFile *f_LR_noCorr = TFile::Open(Form("%s/%s_%i_noCorr.root", fname.Data(),
 					period.Data(), nBins) );
-  TFile *f_acc = TFile::Open(Form("Accept/Acceptance_%s_%s_%i.root",
-				  physType.Data(), period.Data(), nBins) );
+  TFile *f_acc = TFile::Open(Form("%s/Acceptance_%s_%s_%i.root",
+				  fname.Data(), physType.Data(), period.Data(),
+				  nBins) );
 
   if ( !(f_LR) || !(f_LR_noCorr) || !(f_acc) ){//Basic file checks
     cout << "Error:" << endl;
@@ -66,28 +78,30 @@ void AN_accCorrected(){
   const Int_t nTarg = 4;
   TString targName[nTarg] = {"asym_upstream_up", "asym_upstream_down",
 			     "asym_downstream_up", "asym_downstream_down"};
+  TString accName[nTarg] = {"acc_UpS_Left", "acc_UpS_Right",
+			     "acc_DownS_Left", "acc_DownS_Right"};
   Int_t icolor[nTarg] = {3, 4, 8, 9}; 
   Double_t offsets[nTarg];
   for (Int_t i=0; i<nTarg; i++) offsets[i] = i*dx;
 
-  TGraphErrors *g_LR[nTarg], *g_LR_noCorr[nTarg];
+  TGraphErrors *g_LR[nTarg], *g_LR_noCorr[nTarg], *g_acc[nTarg];
   for (Int_t i=0; i<nTarg; i++) {
     g_LR[i] = (TGraphErrors*)f_LR->Get(Form("%s_%s", physType.Data(),
 					    targName[i].Data() ) );
     g_LR_noCorr[i] = (TGraphErrors*)f_LR_noCorr->Get(Form("%s_%s",
 							  physType.Data(),
 							  targName[i].Data()) );
+    g_acc[i] = (TGraphErrors*)f_acc->Get(accName[i]);
   }
-  TGraphErrors *g_acc_L = (TGraphErrors*) f_acc->Get("acc_UpS_Left");
-  TGraphErrors *g_acc_R = (TGraphErrors*) f_acc->Get("acc_UpS_Right");
 
-  
   Double_t AN[nTarg][nBins], e_AN[nTarg][nBins];
   Double_t xvals[nBins];
   Double_t ex[nBins]= {0.};
 
-  Double_t *y_acc_L = g_acc_L->GetY();
-  Double_t *y_acc_R = g_acc_R->GetY();
+  Double_t *y_acc_UpS_L = g_acc[0]->GetY();
+  Double_t *y_acc_UpS_R = g_acc[1]->GetY();
+  Double_t *y_acc_DownS_L = g_acc[2]->GetY();
+  Double_t *y_acc_DownS_R = g_acc[3]->GetY();
   Double_t *x_lr = g_LR[0]->GetX();
   for (Int_t tr=0; tr<nTarg; tr++) {
     Double_t *y_lr = g_LR[tr]->GetY();
@@ -102,8 +116,15 @@ void AN_accCorrected(){
       Double_t N_L = (1-A)*(1+A)*(1+A)/(2*dA*dA);
       Double_t N_R = (1+A)*(1-A)*(1-A)/(2*dA*dA);
 
-      Double_t aL = y_acc_L[bi];
-      Double_t aR = y_acc_R[bi];
+      Double_t aL, aR;
+      if (tr==0 || tr==1){//Upstream targets
+	aL = y_acc_UpS_L[bi];
+	aR = y_acc_UpS_R[bi];
+      }
+      else{
+	aL = y_acc_DownS_L[bi];
+	aR = y_acc_DownS_R[bi];
+      }
 
       Double_t P = y_lr_noCorr[bi]/y_lr[bi];
 
@@ -156,10 +177,22 @@ void AN_accCorrected(){
   }
 
 
+  fNameout+="AN_accCorrected_";
+  fNameout+=Form("%i_%s_%s.root", nBins, physType.Data(), period.Data() );
+  TString AN_name[nTarg] = {"AN_upstream_up", "AN_upstream_down",
+			    "AN_downstream_up", "AN_downstream_down"};
+  if (toWrite){
+    TFile *fOutput = new TFile(fNameout, "RECREATE");
+    for (Int_t tr=0; tr<nTarg; tr++) g_AN[tr]->Write( AN_name[tr] );
+    fOutput->Close();
+  }
+
+
   cout << " " << endl;
   cout << "Period is:    "  << period << endl;
   cout << "Acceptance from:  " << physType << endl;
   cout << "Number of bins considered: " << nBins << endl;
   cout << "Acceptance correction?   " << accCorrected << endl;
+  cout << "File: " << fNameout << "  was writen:  " << toWrite << endl;
   cout << " " << endl;
 }

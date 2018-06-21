@@ -58,7 +58,16 @@ Bool_t BinDataCounts(unsigned long long *counts, Double_t binVal,
 Double_t RatioError(long long A, long long B){
   Double_t ratio = 1.0*A/(1.0*B);
   Double_t error = TMath::Sqrt( 1.0/(1.0*A) + 1.0/(1.0*B) );
-  cout << ratio << " " << error << endl;//cleanup
+  
+  return ratio*error;
+}
+
+
+Double_t RatioError(Double_t A, Double_t B,
+		    Double_t dA, Double_t dB){
+  Double_t ratio = A/B;
+  Double_t error = TMath::Sqrt( dA*dA/(A*A) + dB*dB/(B*B) );
+
   return ratio*error;
 }
 
@@ -76,10 +85,10 @@ Bool_t BinAcc(unsigned long long *Top, unsigned long long *Bottom,
 
 
 void Acceptance(){
-  TString period = "W07";//Changes
+  TString period = "WAll";//Changes
   TString subper = "sp1";
   if (period=="W09"||period=="W10") period += Form("_%s", subper.Data() );
-  Bool_t toWrite=false;
+  Bool_t toWrite =true;
   
   TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Presents/DATA/";
@@ -417,8 +426,8 @@ Yu_HMDY_"+period+"_3bins.root");
   Double_t ex[nCounts]={0.};
   Double_t dx = 0.02;
   Double_t offset[nHist] = {0., 0., 0., 0., dx,
-			    0., 0.,
-			    0., 0.,
+			    0., dx,
+			    0., dx,
 			    0., 0., 0.,
 			    0., dx,
 			    0., dx,
@@ -432,13 +441,23 @@ Yu_HMDY_"+period+"_3bins.root");
 
     if ( accType[i].Contains("Left") ){
       Double_t *yvals = g_acc[i]->GetY();
-      for (Int_t j=0; j<nCounts; j++) acc_ratio[r][j] = yvals[j];
+      Double_t *e_yvals = g_acc[i]->GetEY();
+      for (Int_t j=0; j<nCounts; j++) {
+	acc_ratio[r][j] = yvals[j];
+	e_acc_ratio[r][j] = e_yvals[j];
+      }
     }
     else if ( accType[i].Contains("Right") ){
-      Double_t *yvals = g_acc[i]->GetY();
+      Double_t *acc_right = g_acc[i]->GetY();
+      Double_t *e_acc_right = g_acc[i]->GetEY();
+      
       for (Int_t j=0; j<nCounts; j++) {
-	e_acc_ratio[r][j] = RatioError(acc_ratio[r][j], yvals[j]);
-	acc_ratio[r][j] = acc_ratio[r][j]/yvals[j];
+	Double_t acc_left = acc_ratio[r][j];
+	Double_t e_acc_left = e_acc_ratio[r][j];
+	
+	e_acc_ratio[r][j] = RatioError(acc_left, acc_right[j],
+				       e_acc_left, e_acc_right[j] );
+	acc_ratio[r][j] = acc_ratio[r][j]/acc_right[j];
       }
       
       g_acc_ratio[r] = new TGraphErrors(nCounts, xval, acc_ratio[r], ex,
@@ -454,7 +473,8 @@ Yu_HMDY_"+period+"_3bins.root");
 
   TCanvas* cAlr = new TCanvas(); cAlr->Divide(1,2);
   cAlr->cd(1);
-  g_acc[3]->Draw("AP"); g_acc[3]->SetMarkerColor(kBlue);
+  g_acc[3]->Draw("AP");
+  g_acc[3]->SetMarkerColor(kBlue); g_acc[3]->GetYaxis()->SetRangeUser(0.0, 0.4);
   g_acc[4]->Draw("Psame"); g_acc[4]->SetMarkerColor(kBlue);
   g_acc[12]->Draw("Psame"); g_acc[12]->SetMarkerColor(kRed);
   g_acc[13]->Draw("Psame"); g_acc[13]->SetMarkerColor(kRed);
@@ -474,6 +494,24 @@ Yu_HMDY_"+period+"_3bins.root");
   li_acc_ratio->SetLineColor(1);
   li_acc_ratio->SetLineStyle(8);
   li_acc_ratio->Draw("same");
+
+
+  TCanvas* cTrLR = new TCanvas(); cTrLR->Divide(1,2);
+  cTrLR->cd(1);
+  g_acc[5]->Draw("AP"); g_acc[5]->SetMarkerColor(kRed);
+  g_acc[6]->Draw("Psame"); g_acc[6]->SetMarkerColor(kRed);
+  g_acc[7]->Draw("Psame"); g_acc[7]->SetMarkerColor(kBlue);
+  g_acc[8]->Draw("Psame"); g_acc[8]->SetMarkerColor(kBlue);
+
+  cTrLR->cd(2);
+  g_acc_ratio[1]->Draw("AP"); g_acc_ratio[1]->SetMarkerColor(kRed);
+  g_acc_ratio[2]->Draw("Psame"); g_acc_ratio[2]->SetMarkerColor(kBlue);
+  min_x = g_acc_ratio[1]->GetXaxis()->GetXmin();	
+  max_x = g_acc_ratio[1]->GetXaxis()->GetXmax();	
+  TLine* li_a_r_updown = new TLine(min_x, 1.0, max_x, 1.0);
+  li_a_r_updown->SetLineColor(1);
+  li_a_r_updown->SetLineStyle(8);
+  li_a_r_updown->Draw("same");
   
   
   TString fname = "Accept/Acceptance_"; fname += physType; fname += "_";
