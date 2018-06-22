@@ -1,13 +1,13 @@
-const Int_t nBins=1; Double_t dx =0.04; Double_t yMax =0.5;
-TString physType="xF";
+//const Int_t nBins=1; Double_t dx =0.04; Double_t yMax =0.3; 
+//TString physType ="xF";
 
-//const Int_t nBins=3; Double_t yMax =0.5;
-//const Int_t nBins=5; Double_t yMax =0.3;
+//const Int_t nBins=3; Double_t yMax =0.3;
+const Int_t nBins=5; Double_t yMax =0.3;
 //Double_t dx =0.005; TString physType ="xN"; //xN, xPi
-//Double_t dx =0.03; TString physType ="xF";
+Double_t dx =0.03; TString physType ="xF";
 //Double_t dx =0.05; TString physType ="pT"; //pT, M
 
-TString period ="WAll"; 
+TString period ="WAll";
 //TString massRange ="HM";
 TString massRange ="JPsi3_326";
 Bool_t toWrite =true;
@@ -15,11 +15,8 @@ TString fNameout ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Presents/June26/Data/";
 
 
-void SetUpTGraph(TGraphErrors* g, TString name, Int_t ic, Double_t offset){
-  g->SetTitle(name);
-  
+void SetUpTGraph(TGraphErrors* g){
   g->SetMarkerStyle(21);
-  g->SetMarkerColor(ic);
 
   g->GetYaxis()->SetNdivisions(504);
   g->GetYaxis()->SetLabelFont(22);
@@ -29,18 +26,29 @@ void SetUpTGraph(TGraphErrors* g, TString name, Int_t ic, Double_t offset){
   g->GetXaxis()->SetNdivisions(504);
   g->GetXaxis()->SetLabelFont(22);
   g->GetXaxis()->SetLabelSize(0.08);
-
-  Double_t *xval = g->GetX();
-  for (Int_t i=0; i<nBins; i++) xval[i] += offset;
 }
 
 
-Double_t Amp(Double_t L1, Double_t R1, Double_t L2, Double_t R2,
-	     Double_t P1, Double_t P2){
-  Double_t Pol = ( P1*(L1+R1) + P2*(L2+R2) )/(L1+R1+L2+R2);
+Double_t Amp(Double_t NL[][nBins], Double_t NR[][nBins],
+	     Double_t P[][nBins], Int_t bi){
+  Int_t nTarg=4;
 
-  Double_t L = TMath::Sqrt( L1*L2 );
-  Double_t R = TMath::Sqrt( R1*R2 );
+  Double_t Pol=0.0, Nsum=0.0;
+  for (Int_t tr=0; tr<nTarg; tr++) {
+    Pol += P[tr][bi]*( NL[tr][bi]+NR[tr][bi] );
+    Nsum += NL[tr][bi]+NR[tr][bi];
+  }
+  Pol /= Nsum;
+  
+  Double_t Lup, Rup;
+  Lup = NL[0][bi]*NL[1][bi]; Rup = NR[0][bi]*NR[1][bi];
+
+  Double_t Ldown, Rdown;
+  Ldown = NL[2][bi]*NL[3][bi]; Rdown = NR[2][bi]*NR[3][bi];
+
+  Double_t L=Lup*Ldown, R=Rup*Rdown;
+  L = TMath::Power(L, 0.25);
+  R = TMath::Power(R, 0.25);
 
   Double_t A = L - R;
   A /= ( L + R );
@@ -50,14 +58,26 @@ Double_t Amp(Double_t L1, Double_t R1, Double_t L2, Double_t R2,
 }
 
 
-Double_t e_Amp(Double_t L1, Double_t R1, Double_t L2, Double_t R2,
-	     Double_t P1, Double_t P2){
-  Double_t Pol = ( P1*(L1+R1) + P2*(L2+R2) )/(L1+R1+L2+R2);
-  
-  Double_t L = TMath::Sqrt( L1*L2 );
-  Double_t R = TMath::Sqrt( R1*R2 );
-  Double_t dL = 0.5*L * TMath::Sqrt( 1/L1 + 1/L2 );
-  Double_t dR = 0.5*R * TMath::Sqrt( 1/R1 + 1/R2 );
+Double_t e_Amp(Double_t NL[][nBins], Double_t NR[][nBins],
+	       Double_t P[][nBins], Int_t bi){
+  Int_t nTarg=4;
+
+  Double_t Pol=0.0, Nsum=0.0;
+  Double_t L=1.0, R=1.0;
+  Double_t LinvSum=0.0, RinvSum=0.0;
+  for (Int_t tr=0; tr<nTarg; tr++) {
+    Pol += P[tr][bi]*( NL[tr][bi]+NR[tr][bi] );
+    Nsum += NL[tr][bi]+NR[tr][bi];
+
+    L *= NL[tr][bi]; R *= NR[tr][bi];
+    LinvSum += 1.0/NL[tr][bi]; RinvSum += 1.0/NR[tr][bi];
+  }
+  Pol /= Nsum;
+
+  L = TMath::Power(L, 0.25);
+  R = TMath::Power(R, 0.25);
+  Double_t dL = 0.25*L * TMath::Sqrt( LinvSum );
+  Double_t dR = 0.25*R * TMath::Sqrt( RinvSum );
 
   Double_t e = L - R;
   e /= ( L + R );
@@ -70,7 +90,7 @@ Double_t e_Amp(Double_t L1, Double_t R1, Double_t L2, Double_t R2,
 }
 
 
-void geoMean_AN(TString fname=""){
+void allTarg_geoMeanAN(TString fname=""){
   if (fname==""){
     fname += "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
 Local_LeftRight_Analysis/Macros/AcceptCorrections/Data/";
@@ -78,18 +98,8 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data/";
     cout << "Using default data from ./AcceptCorrections/Data/" << endl;
     cout << "Data originally made in Presents/May1" << endl;
     cout << " " << endl;
-    
-    /*fname += "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/	\
-Presents/May1/Macros/Accept";
-
-cout << "Using default data from May1/Macros/Accept" << endl;*/
   }
   
-
-  /*TFile *f_LR = TFile::Open(Form("%s/%s_%i.root", fname.Data(),
-				 period.Data(), nBins) );
-  TFile *f_LR_noCorr = TFile::Open(Form("%s/%s_%i_noCorr.root", fname.Data(),
-					period.Data(), nBins) );*/
 
   TFile *f_LR
     = TFile::Open(Form("%s/leftRight_byTarget_%s_%s_%i.root", 
@@ -120,10 +130,9 @@ cout << "Using default data from May1/Macros/Accept" << endl;*/
   }
 
   //Get Left/Right counts and Polarization values
-  Double_t N_L[nTarg][nBins], N_R[nTarg][nBins];
-  Double_t xvals[nBins], Pol[nTarg][nBins];
+  Double_t N_L[nTarg][nBins], N_R[nTarg][nBins], Pol[nTarg][nBins];
   Double_t ex[nBins]= {0.};
-  Double_t *x_lr = g_LR[0]->GetX();
+  Double_t *xvals = g_LR[0]->GetX();
   for (Int_t tr=0; tr<nTarg; tr++) {
     Double_t *y_lr = g_LR[tr]->GetY();
     Double_t *y_lr_noCorr = g_LR_noCorr[tr]->GetY();
@@ -138,57 +147,38 @@ cout << "Using default data from May1/Macros/Accept" << endl;*/
       N_R[tr][bi] = (1+A)*(1-A)*(1-A)/(2*dA*dA);
 
       Pol[tr][bi] = y_lr_noCorr[bi]/y_lr[bi];
-      
-      if (tr==0) xvals[bi] = x_lr[bi];
     }
   }
 
   const Int_t nAmp = 2;
-  Int_t icolor[nAmp] = {3, 4};
-  Double_t offsets[nAmp]; for (Int_t i=0; i<nAmp; i++) offsets[i] = i*dx;
   TString ampName[nAmp] = {"AN_upstream", "AN_downstream"};
-  
-  Double_t AN[nAmp][nBins], e_AN[nAmp][nBins];
-  for (Int_t am=0; am<nAmp; am++) {
-    for (Int_t bi=0; bi<nBins; bi++) {
-      AN[am][bi] = Amp(N_L[am*2][bi], N_R[am*2][bi],
-		       N_L[am*2+1][bi], N_R[am*2+1][bi],
-		       Pol[am*2][bi], Pol[am*2+1][bi]);
-      e_AN[am][bi] = e_Amp(N_L[am*2][bi], N_R[am*2][bi],
-			   N_L[am*2+1][bi], N_R[am*2+1][bi],
-			   Pol[am*2][bi], Pol[am*2+1][bi]);
-    }
+  Double_t AN[nBins], e_AN[nBins];
+  for (Int_t bi=0; bi<nBins; bi++) {
+    AN[bi] = Amp(N_L, N_R, Pol, bi);
+    e_AN[bi] = e_Amp(N_L, N_R, Pol, bi);
+    
+    cout << "AN   " << AN[bi] << "   e_AN  "<< e_AN[bi] << endl;
   }
 
   
   TCanvas* c1 = new TCanvas(); 
-  TGraphErrors *g_AN[nAmp];
-  TLine *li;
-  for (Int_t am=0; am<nAmp; am++) {
-    g_AN[am] = new TGraphErrors(nBins, xvals, AN[am], ex, e_AN[am]);
-    SetUpTGraph(g_AN[am], ampName[am], icolor[am], offsets[am] );
+  TGraphErrors *g_AN = new TGraphErrors(nBins, xvals, AN, ex, e_AN);
+  SetUpTGraph(g_AN);
+  g_AN->Draw("AP");
+  
+  Double_t xmin =g_AN->GetXaxis()->GetXmin();
+  Double_t xmax =g_AN->GetXaxis()->GetXmax();
+  TLine *li = new TLine(xmin, 0., xmax, 0.);
+  li->SetLineColor(kBlue); li->SetLineStyle(8);
+  li->Draw("same");
 
-    if (am==0) {
-      g_AN[am]->Draw("AP");
-
-      Double_t xmin =g_AN[am]->GetXaxis()->GetXmin();
-      Double_t xmax =g_AN[am]->GetXaxis()->GetXmax();
-      li = new TLine(xmin, 0., xmax, 0.);
-      li->SetLineColor(kBlue);
-      li->SetLineStyle(8);
-      li->Draw("same");
-    }
-    else g_AN[am]->Draw("Psame");
-  }
-
-  fNameout+="geoMean_";
+  
+  fNameout+="allTarg_geoMeanAN_";
   fNameout+=Form("%i_%s_%s_%s.root", nBins, physType.Data(), period.Data(),
 		 massRange.Data() );
   if (toWrite){
     TFile *fOutput = new TFile(fNameout, "RECREATE");
-    for (Int_t am=0; am<nAmp; am++) {
-      g_AN[am]->Write(ampName[am]);
-    }
+    g_AN->Write("AN");
     fOutput->Close();
   }
 
@@ -196,6 +186,7 @@ cout << "Using default data from May1/Macros/Accept" << endl;*/
   cout << "Period is:    "  << period << endl;
   cout << "Acceptance from:  " << physType << endl;
   cout << "Number of bins considered: " << nBins << endl;
+  cout << "Mass range considered:  " << massRange << endl;
   cout << "File: " << fNameout << "  was writen:  " << toWrite << endl;
   cout << " " << endl;
 }

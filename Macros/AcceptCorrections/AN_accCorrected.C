@@ -1,9 +1,12 @@
-//const Int_t nBins=1; Double_t dx =0.02; Double_t yMax =0.4; 
-const Int_t nBins=3; Double_t dx =0.005; Double_t yMax =0.5;
+const Int_t nBins=1; Double_t dx =0.02; Double_t yMax =0.4; 
+//const Int_t nBins=3; Double_t dx =0.005; Double_t yMax =0.5;
+//const Int_t nBins=5; Double_t dx =0.005; Double_t yMax =0.5;
 
-Bool_t accCorrected=true;
+Bool_t accCorrected=false;
 TString physType ="xF", period ="WAll";
-Bool_t toWrite =false;
+//TString massRange ="HM";
+TString massRange ="JPsi3_326";
+Bool_t toWrite =true;
 TString fNameout ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Presents/June26/Data/";
 
@@ -55,18 +58,22 @@ Double_t e_Amp(Double_t L, Double_t R, Double_t aL, Double_t aR,
 void AN_accCorrected(TString fname=""){
   if (fname==""){
     fname += "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
-Presents/May1/Macros/Accept";
+Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
 
-    cout << "Using default data from May1/Macros/Accept" << endl;
+    cout << "Using default data from ./AcceptCorrections/Data/" << endl;
+    cout << "Data originally made in Presents/May1" << endl;
+    cout << " " << endl;
   }
-  
-  TFile *f_LR = TFile::Open(Form("%s/%s_%i.root", fname.Data(), period.Data(),
-				 nBins) );
-  TFile *f_LR_noCorr = TFile::Open(Form("%s/%s_%i_noCorr.root", fname.Data(),
-					period.Data(), nBins) );
-  TFile *f_acc = TFile::Open(Form("%s/Acceptance_%s_%s_%i.root",
+
+  TFile *f_LR
+    = TFile::Open(Form("%s/leftRight_byTarget_%s_%s_%i.root", 
+		       fname.Data(), period.Data(), massRange.Data(), nBins) );
+  TFile *f_LR_noCorr
+    = TFile::Open(Form("%s/leftRight_byTarget_%s_%s_%i_noCorr.root",
+		       fname.Data(), period.Data(), massRange.Data(), nBins) );
+  TFile *f_acc = TFile::Open(Form("%s/Acceptance_%s_%s_%s_%i.root",
 				  fname.Data(), physType.Data(), period.Data(),
-				  nBins) );
+				  massRange.Data(), nBins) );
 
   if ( !(f_LR) || !(f_LR_noCorr) || !(f_acc) ){//Basic file checks
     cout << "Error:" << endl;
@@ -178,7 +185,8 @@ Presents/May1/Macros/Accept";
 
 
   fNameout+="AN_accCorrected_";
-  fNameout+=Form("%i_%s_%s.root", nBins, physType.Data(), period.Data() );
+  fNameout+=Form("%i_%s_%s_%s.root", nBins, physType.Data(), period.Data(),
+		 massRange.Data() );
   TString AN_name[nTarg] = {"AN_upstream_up", "AN_upstream_down",
 			    "AN_downstream_up", "AN_downstream_down"};
   if (toWrite){
