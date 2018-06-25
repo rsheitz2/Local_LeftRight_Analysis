@@ -1,7 +1,7 @@
-//const Int_t nBins=1; Double_t yMax =0.03; TString physType ="xF"; 
+const Int_t nBins=1; Double_t yMax =0.2; TString physType ="xF"; 
 //const Int_t nBins=3; Double_t yMax =0.3; 
-const Int_t nBins=5; Double_t yMax =0.03; 
-TString physType ="M"; //xN, xPi, xF, pT, M
+//const Int_t nBins=5; Double_t yMax =0.2; 
+//TString physType ="M"; //xN, xPi, xF, pT, M
 
 //TString massRange ="HM";
 //TString massRange ="JPsi3_326";
@@ -12,6 +12,7 @@ Bool_t toWrite =false; TString period ="WAll";
 TString fNameout ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Presents/June26/Data/";
 
+Int_t upS_up=0, upS_down=1, downS_up=2, downS_down=3;
 
 void SetUpTGraph(TGraphErrors* g){
   g->SetMarkerStyle(21);
@@ -39,10 +40,14 @@ Double_t Amp(Double_t NL[][nBins], Double_t NR[][nBins],
   Pol /= Nsum;
 
   Double_t Lup, Rup;
-  Lup = NL[0][bi]*NL[1][bi]; Rup = NR[0][bi]*NR[1][bi];
+  Lup = NL[upS_up][bi]*NR[upS_down][bi]; Rup = NR[upS_up][bi]*NL[upS_down][bi];
 
   Double_t Ldown, Rdown;
-  Ldown = NL[2][bi]*NL[3][bi]; Rdown = NR[2][bi]*NR[3][bi];
+  Ldown = NL[downS_down][bi]*NR[downS_up][bi];
+  Rdown = NR[downS_down][bi]*NL[downS_up][bi];
+  //Ldown = NL[downS_up][bi]*NR[downS_down][bi];
+  //Rdown = NR[downS_up][bi]*NL[downS_down][bi];
+
 
   Double_t L=Lup*Ldown, R=Rup*Rdown;
   L = TMath::Power(L, 0.25);
@@ -61,19 +66,30 @@ Double_t e_Amp(Double_t NL[][nBins], Double_t NR[][nBins],
   Int_t nTarg=4;
 
   Double_t Pol=0.0, Nsum=0.0;
-  Double_t L=1.0, R=1.0;
-  Double_t LinvSum=0.0, RinvSum=0.0;
   for (Int_t tr=0; tr<nTarg; tr++) {
     Pol += P[tr][bi]*( NL[tr][bi]+NR[tr][bi] );
     Nsum += NL[tr][bi]+NR[tr][bi];
-
-    L *= NL[tr][bi]; R *= NR[tr][bi];
-    LinvSum += 1.0/NL[tr][bi]; RinvSum += 1.0/NR[tr][bi];
   }
   Pol /= Nsum;
 
+  
+  Double_t Lup, Rup;
+  Lup = NL[upS_up][bi]*NR[upS_down][bi]; Rup = NR[upS_up][bi]*NL[upS_down][bi];
+  Double_t Ldown, Rdown;
+  Ldown = NL[downS_down][bi]*NR[downS_up][bi];
+  Rdown = NR[downS_down][bi]*NL[downS_up][bi];
+
+  Double_t L=Lup*Ldown, R=Rup*Rdown;
   L = TMath::Power(L, 0.25);
   R = TMath::Power(R, 0.25);
+
+  
+  Double_t LinvSum = 1.0/NL[upS_up][bi] + 1.0/NR[upS_down][bi] +
+    1.0/NL[downS_down][bi] + 1.0/NR[downS_up][bi];
+  Double_t RinvSum = 1.0/NR[upS_up][bi] + 1.0/NL[upS_down][bi] +
+    1.0/NR[downS_down][bi] + 1.0/NL[downS_up][bi];
+  
+  
   Double_t dL = 0.25*L * TMath::Sqrt( LinvSum );
   Double_t dR = 0.25*R * TMath::Sqrt( RinvSum );
 
@@ -88,7 +104,7 @@ Double_t e_Amp(Double_t NL[][nBins], Double_t NR[][nBins],
 }
 
 
-void allTarg_geoMeanAN(TString fname=""){
+void allTarg_geoMeanFalseAN(TString fname=""){
   if (fname==""){
     fname += "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
 Local_LeftRight_Analysis/Macros/AcceptCorrections/Data/";
@@ -189,7 +205,7 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data/";
   li->Draw("same");
 
   
-  fNameout+="allTarg_geoMeanAN_";
+  fNameout+="allTarg_geoMeanFalseAN_";
   fNameout+=Form("%i_%s_%s_%s.root", nBins, physType.Data(), period.Data(),
 		 massRange.Data() );
   if (toWrite){

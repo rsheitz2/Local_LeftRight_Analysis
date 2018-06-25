@@ -1,12 +1,13 @@
-const Int_t nBins=1; Double_t dx =0.02; Double_t yMax =0.4; 
+const Int_t nBins=1; Double_t dx =0.02; Double_t yMax =0.1; 
 //const Int_t nBins=3; Double_t dx =0.005; Double_t yMax =0.5;
 //const Int_t nBins=5; Double_t dx =0.005; Double_t yMax =0.5;
 
 Bool_t accCorrected=false;
 TString physType ="xF", period ="WAll";
 //TString massRange ="HM";
-TString massRange ="JPsi3_326";
-Bool_t toWrite =true;
+//TString massRange ="JPsi3_326";
+TString massRange ="JPsi25_43";
+Bool_t toWrite =false;
 TString fNameout ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Presents/June26/Data/";
 
@@ -71,11 +72,16 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
   TFile *f_LR_noCorr
     = TFile::Open(Form("%s/leftRight_byTarget_%s_%s_%i_noCorr.root",
 		       fname.Data(), period.Data(), massRange.Data(), nBins) );
-  TFile *f_acc = TFile::Open(Form("%s/Acceptance_%s_%s_%s_%i.root",
-				  fname.Data(), physType.Data(), period.Data(),
-				  massRange.Data(), nBins) );
+  TFile *f_acc = NULL;
+  if (accCorrected){
+    f_acc = TFile::Open(Form("%s/Acceptance_%s_%s_%s_%i.root",
+			     fname.Data(), physType.Data(), period.Data(),
+			     massRange.Data(), nBins) );
+  }
+    
 
-  if ( !(f_LR) || !(f_LR_noCorr) || !(f_acc) ){//Basic file checks
+  //Basic file checks
+  if ( !(f_LR) || !(f_LR_noCorr) || (accCorrected && !(f_acc) ) ){
     cout << "Error:" << endl;
     cout << "One of the files did not open" << endl;
     cout << " " << endl;
@@ -98,17 +104,17 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
     g_LR_noCorr[i] = (TGraphErrors*)f_LR_noCorr->Get(Form("%s_%s",
 							  physType.Data(),
 							  targName[i].Data()) );
-    g_acc[i] = (TGraphErrors*)f_acc->Get(accName[i]);
+    if (accCorrected) g_acc[i] = (TGraphErrors*)f_acc->Get(accName[i]);
   }
 
   Double_t AN[nTarg][nBins], e_AN[nTarg][nBins];
   Double_t xvals[nBins];
   Double_t ex[nBins]= {0.};
-
-  Double_t *y_acc_UpS_L = g_acc[0]->GetY();
-  Double_t *y_acc_UpS_R = g_acc[1]->GetY();
-  Double_t *y_acc_DownS_L = g_acc[2]->GetY();
-  Double_t *y_acc_DownS_R = g_acc[3]->GetY();
+  
+  Double_t *y_acc_UpS_L = (accCorrected) ? g_acc[0]->GetY() : NULL;
+  Double_t *y_acc_UpS_R = (accCorrected) ? g_acc[1]->GetY() : NULL;
+  Double_t *y_acc_DownS_L = (accCorrected) ? g_acc[2]->GetY() : NULL;
+  Double_t *y_acc_DownS_R = (accCorrected) ? g_acc[3]->GetY() : NULL;
   Double_t *x_lr = g_LR[0]->GetX();
   for (Int_t tr=0; tr<nTarg; tr++) {
     Double_t *y_lr = g_LR[tr]->GetY();
@@ -124,23 +130,25 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
       Double_t N_R = (1+A)*(1-A)*(1-A)/(2*dA*dA);
 
       Double_t aL, aR;
-      if (tr==0 || tr==1){//Upstream targets
-	aL = y_acc_UpS_L[bi];
-	aR = y_acc_UpS_R[bi];
-      }
-      else{
-	aL = y_acc_DownS_L[bi];
-	aR = y_acc_DownS_R[bi];
-      }
+      if (accCorrected){
+	if (tr==0 || tr==1){//Upstream targets
+	  aL = y_acc_UpS_L[bi];
+	  aR = y_acc_UpS_R[bi];
+	}
+	else{
+	  aL = y_acc_DownS_L[bi];
+	  aR = y_acc_DownS_R[bi];
+	}
 
+	if (tr==1 || tr==3){//Switch left/right acceptance for polarization down
+	  Double_t tmp;
+	  tmp = aL;
+	  aL = aR;
+	  aR = tmp;
+	}
+      }
+      
       Double_t P = y_lr_noCorr[bi]/y_lr[bi];
-
-      if (tr==1 || tr==3){//Switch left/right acceptance for polarization down
-	Double_t tmp;
-	tmp = aL;
-	aL = aR;
-	aR = tmp;
-      }
 
       if (accCorrected){
 	AN[tr][bi] = Amp(N_L, N_R, aL, aR, P); //acc. correct
@@ -184,7 +192,8 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
   }
 
 
-  fNameout+="AN_accCorrected_";
+  if (accCorrected) fNameout+="AN_accCorrected_";
+  else fNameout+="AN_accNotCorrected_";
   fNameout+=Form("%i_%s_%s_%s.root", nBins, physType.Data(), period.Data(),
 		 massRange.Data() );
   TString AN_name[nTarg] = {"AN_upstream_up", "AN_upstream_down",

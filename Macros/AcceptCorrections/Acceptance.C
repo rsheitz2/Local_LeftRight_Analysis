@@ -85,10 +85,10 @@ Bool_t BinAcc(unsigned long long *Top, unsigned long long *Bottom,
 
 
 void Acceptance(){
-  TString period = "WAll";//Changes
+  TString period = "W07";//Changes
   TString subper = "sp1";
   if (period=="W09"||period=="W10") period += Form("_%s", subper.Data() );
-  Bool_t toWrite =true;
+  Bool_t toWrite =false;
   
   TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Presents/DATA/";

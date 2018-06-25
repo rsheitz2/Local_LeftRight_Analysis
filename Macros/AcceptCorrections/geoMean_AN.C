@@ -1,4 +1,4 @@
-const Int_t nBins=1; Double_t dx =0.04; Double_t yMax =0.5;
+const Int_t nBins=5; Double_t dx =0.04; Double_t yMax =0.5;
 TString physType="xF";
 
 //const Int_t nBins=3; Double_t yMax =0.5;
@@ -9,8 +9,9 @@ TString physType="xF";
 
 TString period ="WAll"; 
 //TString massRange ="HM";
-TString massRange ="JPsi3_326";
-Bool_t toWrite =true;
+//TString massRange ="JPsi3_326";
+TString massRange ="JPsi25_43";
+Bool_t toWrite =false;
 TString fNameout ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Presents/June26/Data/";
 
