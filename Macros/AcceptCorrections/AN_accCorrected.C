@@ -1,35 +1,20 @@
-const Int_t nBins=1; Double_t dx =0.02; Double_t yMax =0.1; 
+#include "helperFunctions.h"
+
+const Int_t nBins=1; Double_t dx =0.02; Double_t yMax =0.2; 
 //const Int_t nBins=3; Double_t dx =0.005; Double_t yMax =0.5;
 //const Int_t nBins=5; Double_t dx =0.005; Double_t yMax =0.5;
 
 Bool_t accCorrected=false;
 TString physType ="xF", period ="WAll";
-//TString massRange ="HM";
+TString massRange ="HM";
 //TString massRange ="JPsi3_326";
-TString massRange ="JPsi25_43";
+//TString massRange ="Psi367_386";
+//TString massRange ="JPsi25_43";
+
 Bool_t toWrite =false;
+
 TString fNameout ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Presents/June26/Data/";
-
-
-void SetUpTGraph(TGraphErrors* g, TString name, Int_t ic, Double_t offset){
-  g->SetTitle(name);
-  
-  g->SetMarkerStyle(21);
-  g->SetMarkerColor(ic);
-
-  g->GetYaxis()->SetNdivisions(504);
-  g->GetYaxis()->SetLabelFont(22);
-  g->GetYaxis()->SetLabelSize(0.08);
-  g->GetYaxis()->SetRangeUser(-yMax, yMax);
-
-  g->GetXaxis()->SetNdivisions(504);
-  g->GetXaxis()->SetLabelFont(22);
-  g->GetXaxis()->SetLabelSize(0.08);
-
-  Double_t *xval = g->GetX();
-  for (Int_t i=0; i<nBins; i++) xval[i] += offset;
-}
+TGeant/Presents/July3/Data/";
 
 
 Double_t Amp(Double_t L, Double_t R, Double_t aL, Double_t aR,
@@ -110,6 +95,8 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
   Double_t AN[nTarg][nBins], e_AN[nTarg][nBins];
   Double_t xvals[nBins];
   Double_t ex[nBins]= {0.};
+  TVectorD tv_Pol_uS_uP(nBins), tv_Pol_uS_dP(nBins);
+  TVectorD tv_Pol_dS_uP(nBins), tv_Pol_dS_dP(nBins);
   
   Double_t *y_acc_UpS_L = (accCorrected) ? g_acc[0]->GetY() : NULL;
   Double_t *y_acc_UpS_R = (accCorrected) ? g_acc[1]->GetY() : NULL;
@@ -149,6 +136,10 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
       }
       
       Double_t P = y_lr_noCorr[bi]/y_lr[bi];
+      if (tr==0) tv_Pol_uS_uP[bi] = P;
+      else if (tr==1) tv_Pol_uS_dP[bi] = P;
+      else if (tr==2) tv_Pol_dS_uP[bi] = P;
+      else if (tr==3) tv_Pol_dS_dP[bi] = P;
 
       if (accCorrected){
 	AN[tr][bi] = Amp(N_L, N_R, aL, aR, P); //acc. correct
@@ -158,6 +149,8 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
 	AN[tr][bi] = y_lr[bi];//no corrections
 	e_AN[tr][bi] = e_y_lr[bi];
       }
+
+      cout << "AN=  " << AN[tr][bi] << "   +/- " << e_AN[tr][bi] << endl;
       
       xvals[bi] = x_lr[bi];
     }
@@ -181,7 +174,7 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
     }
 
     
-    SetUpTGraph(g_AN[i], targName[i], icolor[i], offsets[i] );
+    SetUpTGraph(g_AN[i], targName[i], icolor[i], offsets[i], nBins);
     c4->cd(i+1);
     g_AN[i]->Draw("AP");
     li->Draw("same");
@@ -201,6 +194,11 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
   if (toWrite){
     TFile *fOutput = new TFile(fNameout, "RECREATE");
     for (Int_t tr=0; tr<nTarg; tr++) g_AN[tr]->Write( AN_name[tr] );
+    tv_Pol_uS_uP.Write("Pol_AN_upstream_up");
+    tv_Pol_uS_dP.Write("Pol_AN_upstream_down");
+    tv_Pol_dS_uP.Write("Pol_AN_downstream_up");
+    tv_Pol_dS_dP.Write("Pol_AN_downstream_down");
+    
     fOutput->Close();
   }
 

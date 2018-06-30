@@ -1,31 +1,61 @@
-void SetUpTGraph(TGraphErrors* g, Double_t offset, Int_t nCounts){
-  g->SetMarkerStyle(21);
-  g->SetMarkerSize(1.4);
+#include "helperFunctions.h"
+
+
+void ReadFile(TString bin_path, Double_t *b, Double_t *x, TString type,
+	      Int_t nBins){
+  ifstream f(bin_path);
   
-  g->GetYaxis()->SetNdivisions(504);
-  g->GetYaxis()->SetLabelFont(22);
-  g->GetYaxis()->SetLabelSize(0.08);
-  //g->GetYaxis()->SetRangeUser(-3, 3);
+  if (type=="xN"||type=="xPi"||type=="pT"||type=="mass"||type=="rad")
+    b[0] = 0.0;
+  else if (type=="xF") b[0] = -1.0;
+  else if (type=="vxZ_upstream") b[0] = -294.5;
+  else if (type=="vxZ_downstream") b[0] = -219.5;
+  else {
+    std::cout << "Invalid type: " << type << " in leftright::leftright"
+	      << std::endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  TString boundaries = type; boundaries += " bin boundaries";
+  TString averages = type; averages += " bin averages";
+  
+  string line;
+  bool first = false, found = false;
+  Int_t iter = 1;
+  
+  while (!f.eof()) {
+    getline(f, line);
+    TString tline (line);
 
-  g->GetXaxis()->SetNdivisions(504);
-  g->GetXaxis()->SetLabelFont(22);
-  g->GetXaxis()->SetLabelSize(0.08);
+    if (tline == boundaries) {
+      found = true; first = true;
+      continue;
+    }
+    else if (tline == averages) {
+      first = false; iter = 0;
+      continue;
+    }
+    else if (!found) continue;
 
-  Double_t *xvals = g->GetX();
-  for (Int_t i=0; i<nCounts; i++) xvals[i] += offset;
-}
-
-
-void SetUpTH1(TH1D* h){
-  h->GetYaxis()->SetNdivisions(504);
-  h->GetYaxis()->SetLabelFont(22);
-  h->GetYaxis()->SetLabelSize(0.08);
-
-  h->GetXaxis()->SetNdivisions(504);
-  h->GetXaxis()->SetLabelFont(22);
-  h->GetXaxis()->SetLabelSize(0.08);
-
-  h->SetLineWidth(3);
+    if (first) {
+      if (iter == nBins) cout << "\n Bin size problem\n" << endl;
+      b[iter] = atof(line.c_str() );
+      iter++;
+    }
+    else {
+      if (iter >= nBins) break;
+      x[iter] = atof(line.c_str() );
+      iter++;
+    }
+  }//while loop
+  f.close();
+  
+  if (type=="xN"||type=="xPi"||type=="xF") b[nBins] = 1.0;
+  else if (type=="pT") b[nBins] = 5.0;
+  else if (type=="mass") b[nBins] = 12.0;
+  else if (type=="rad") b[nBins] = 2.0;
+  else if (type=="vxZ_upstream") b[nBins] = -239.3;
+  else if (type=="vxZ_downstream") b[nBins] = -164.3;
 }
 
 
@@ -55,23 +85,6 @@ Bool_t BinDataCounts(unsigned long long *counts, Double_t binVal,
 }
 
 
-Double_t RatioError(long long A, long long B){
-  Double_t ratio = 1.0*A/(1.0*B);
-  Double_t error = TMath::Sqrt( 1.0/(1.0*A) + 1.0/(1.0*B) );
-  
-  return ratio*error;
-}
-
-
-Double_t RatioError(Double_t A, Double_t B,
-		    Double_t dA, Double_t dB){
-  Double_t ratio = A/B;
-  Double_t error = TMath::Sqrt( dA*dA/(A*A) + dB*dB/(B*B) );
-
-  return ratio*error;
-}
-
-
 Bool_t BinAcc(unsigned long long *Top, unsigned long long *Bottom,
 		       Double_t* Acc, Double_t *e_Acc, Int_t nBins){
   
@@ -85,23 +98,43 @@ Bool_t BinAcc(unsigned long long *Top, unsigned long long *Bottom,
 
 
 void Acceptance(){
-  TString period = "W07";//Changes
+  ////////////////
+  //Changes Here//
+  TString period = "W07"; //WAll || W07 for test
   TString subper = "sp1";
   if (period=="W09"||period=="W10") period += Form("_%s", subper.Data() );
+  TString mcType ="HMDY", massRange ="HM";
+  const Int_t nBins=3;
+  //const Int_t nBins=1;
   Bool_t toWrite =false;
   
-  TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Presents/DATA/";
-  TFile* f_phast = TFile::Open(path+"MC_Data/YuShiangMC/HMDY/\
-Yu_HMDY_"+period+"_3bins.root");
+  TString path="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant";
+  
+  TString MC_path = "Presents/DATA/MC_Data/YuShiangMC";
+  TFile* f_phast =
+    TFile::Open(Form("%s/%s/%s/Yu_%s_%s_3bins.root", path.Data(),MC_path.Data(),
+		     mcType.Data(), mcType.Data(), period.Data() ) );
+  
+  TString Gen_MC_path = "Presents/DATA/Gen_MC_Data/Yu_BW/";
   TFile* f_gen =
-    TFile::Open(path+"Gen_MC_Data/Yu_BW/HMDY/HMDY_"+period+"_run0.root");
-  if ( !(f_phast) || !(f_gen) ){//Basic file checks
+    TFile::Open(Form("%s/%s/%s/%s_%s_run0.root", path.Data(),Gen_MC_path.Data(),
+		     mcType.Data(), mcType.Data(), period.Data() ) );
+
+  TString bin_path = path+"/Presents/DATA/RealData/";
+  (massRange=="HM") ? bin_path += "HMDY/" : bin_path += "JPsi/";
+  bin_path += "BinValues/WAll_"+massRange+"_"+Form("%i", nBins)+"bins.txt";
+  ifstream f_bins_phast(bin_path);
+  cout << "\nNote: Binning used from  REAL DATA  ";
+  cout << " from   WAll   for any input periods\n" << endl;
+  
+  if ( !(f_phast) || !(f_gen) || !(f_bins_phast) ){//Basic file checks
     cout << "Error:" << endl;
     cout << "One of the files did not open" << endl;
     cout << " " << endl;
     exit(EXIT_FAILURE);
   }
+  else f_bins_phast.close();
+
   
   TTree *T_phast = (TTree*)f_phast->Get("pT_Weighted");
   Double_t ph_x_beam, ph_x_target, ph_x_feynman, ph_pT, ph_Mmumu;
@@ -132,41 +165,26 @@ Yu_HMDY_"+period+"_3bins.root");
   T_gen->SetBranchAddress("PhiS_simple", &gen_PhiS_simple);
 
 
-  //Stupid quick Changes
-  const Int_t nCounts=3;
-  Double_t b_xN[] = {0., 0.129814, 0.18812, 1.};
-  Double_t b_xPi[] = {0., 0.402282, 0.560041, 1.};
-  Double_t b_xF[] = {-1., 0.220098, 0.417865, 1.};
-  Double_t b_pT[] = {0.4, 0.870791, 1.38214, 5.};
-  Double_t b_M[] = {4.3, 4.73784, 5.51497, 8.5};
-  Double_t x_xN[] = {0.102138, 0.157343, 0.247397};
-  Double_t x_xPi[] = {0.316269, 0.478449, 0.68709};
-  Double_t x_xF[] = {0.0948135, 0.31752, 0.562391};
-  Double_t x_pT[] = {0.645781, 1.10941, 1.95049};
-  Double_t x_M[] = {4.50083, 5.08035, 6.44104};//*/
-
-  /*const Int_t nCounts=1;
-  Double_t b_xN[] = {0., 1.};
-  Double_t b_xPi[] = {0., 1.};
-  Double_t b_xF[] = {-1., 1.};
-  Double_t b_pT[] = {0.4, 5.};
-  Double_t b_M[] = {4.3, 8.5};
-  Double_t x_xN[] = {0.157343};
-  Double_t x_xPi[] = {0.478449};
-  Double_t x_xF[] = {0.31752};
-  Double_t x_pT[] = {1.10941};
-  Double_t x_M[] = {5.08035};//*/
-  
+  Double_t b_xN[nBins+1], x_xN[nBins];
+  Double_t b_xPi[nBins+1], x_xPi[nBins];
+  Double_t b_xF[nBins+1], x_xF[nBins];
+  Double_t b_pT[nBins+1], x_pT[nBins];
+  Double_t b_M[nBins+1], x_M[nBins];
+  ReadFile(bin_path, b_xN, x_xN, "xN", nBins);
+  ReadFile(bin_path, b_xPi, x_xPi, "xPi", nBins);
+  ReadFile(bin_path, b_xF, x_xF, "xF", nBins);
+  ReadFile(bin_path, b_pT, x_pT, "pT", nBins);
+  ReadFile(bin_path, b_M, x_M, "mass", nBins);
   vector<Double_t> Bounds;
   
   ////////////////
   //Changes Here//
   Double_t *ph_phys=&ph_x_feynman, *gen_phys=&gen_x_feynman, *physB=b_xF, *xval=x_xF;
   Double_t xMin =-0.2, xMax =0.8; TString physType="xF";//x_feynman
-  Int_t nBins = 100;
+  Int_t nHistBins = 100;
   
 
-  for (Int_t i=0; i<nCounts+1; i++, physB++) Bounds.push_back(*physB);
+  for (Int_t i=0; i<nBins+1; i++, physB++) Bounds.push_back(*physB);
   const Int_t nHist = 18;
   TString accType[nHist] = {"", "UpS", "DownS", "Left", "Right",
 			    "UpS_Left", "UpS_Right",
@@ -179,13 +197,13 @@ Yu_HMDY_"+period+"_3bins.root");
   for (Int_t i=0; i<nHist; i++) {
     h_phast[i] = new TH1D(Form("h_phast%s",accType[i].Data() ),
 			  Form("h_phast%s",accType[i].Data() ),
-			  nBins, xMin, xMax);
+			  nHistBins, xMin, xMax);
     h_gen[i] = new TH1D(Form("h_gen%s",accType[i].Data() ),
 			Form("h_gen%s",accType[i].Data() ),
-			nBins, xMin, xMax);
+			nHistBins, xMin, xMax);
   }
 
-  unsigned long long ph_counts[nHist][nCounts] = {0};
+  unsigned long long ph_counts[nHist][nBins] = {0};
   Int_t ph_entries = T_phast->GetEntries();
   for (Int_t ev=0; ev<ph_entries; ev++) {
     T_phast->GetEntry(ev);
@@ -282,7 +300,7 @@ Yu_HMDY_"+period+"_3bins.root");
   }
   
 
-  unsigned long long gen_counts[nHist][nCounts] = {0};
+  unsigned long long gen_counts[nHist][nBins] = {0};
   Int_t gen_entries = T_gen->GetEntries();
   for (Int_t ev=0; ev<gen_entries; ev++) {
     T_gen->GetEntry(ev);
@@ -422,8 +440,8 @@ Yu_HMDY_"+period+"_3bins.root");
   c4->cd(4);  r_ud_rl->Draw();
 
 
-  Double_t b_acc[nHist][nCounts], eb_acc[nHist][nCounts];
-  Double_t ex[nCounts]={0.};
+  Double_t b_acc[nHist][nBins], eb_acc[nHist][nBins];
+  Double_t ex[nBins]={0.};
   Double_t dx = 0.02;
   Double_t offset[nHist] = {0., 0., 0., 0., dx,
 			    0., dx,
@@ -433,16 +451,16 @@ Yu_HMDY_"+period+"_3bins.root");
 			    0., dx,
 			    0., dx};
   TGraphErrors *g_acc[nHist], *g_acc_ratio[6];
-  Double_t acc_ratio[6][nCounts], e_acc_ratio[6][nCounts];
+  Double_t acc_ratio[6][nBins], e_acc_ratio[6][nBins];
   for (Int_t i=0, r=0; i<nHist; i++) {
-    BinAcc(ph_counts[i], gen_counts[i], b_acc[i], eb_acc[i], nCounts);
-    g_acc[i] = new TGraphErrors(nCounts, xval, b_acc[i], ex, eb_acc[i]);
-    SetUpTGraph(g_acc[i], offset[i], nCounts);
+    BinAcc(ph_counts[i], gen_counts[i], b_acc[i], eb_acc[i], nBins);
+    g_acc[i] = new TGraphErrors(nBins, xval, b_acc[i], ex, eb_acc[i]);
+    SetUpTGraph(g_acc[i], offset[i], nBins);
 
     if ( accType[i].Contains("Left") ){
       Double_t *yvals = g_acc[i]->GetY();
       Double_t *e_yvals = g_acc[i]->GetEY();
-      for (Int_t j=0; j<nCounts; j++) {
+      for (Int_t j=0; j<nBins; j++) {
 	acc_ratio[r][j] = yvals[j];
 	e_acc_ratio[r][j] = e_yvals[j];
       }
@@ -451,7 +469,7 @@ Yu_HMDY_"+period+"_3bins.root");
       Double_t *acc_right = g_acc[i]->GetY();
       Double_t *e_acc_right = g_acc[i]->GetEY();
       
-      for (Int_t j=0; j<nCounts; j++) {
+      for (Int_t j=0; j<nBins; j++) {
 	Double_t acc_left = acc_ratio[r][j];
 	Double_t e_acc_left = e_acc_ratio[r][j];
 	
@@ -460,9 +478,9 @@ Yu_HMDY_"+period+"_3bins.root");
 	acc_ratio[r][j] = acc_ratio[r][j]/acc_right[j];
       }
       
-      g_acc_ratio[r] = new TGraphErrors(nCounts, xval, acc_ratio[r], ex,
+      g_acc_ratio[r] = new TGraphErrors(nBins, xval, acc_ratio[r], ex,
 					e_acc_ratio[r]);
-      SetUpTGraph(g_acc_ratio[r], r*dx/5.0, nCounts);
+      SetUpTGraph(g_acc_ratio[r], r*dx/5.0, nBins);
       g_acc_ratio[r]->GetYaxis()->SetRangeUser(0.85, 1.15);
       r++;
     }
@@ -515,7 +533,7 @@ Yu_HMDY_"+period+"_3bins.root");
   
   
   TString fname = "Accept/Acceptance_"; fname += physType; fname += "_";
-  fname+= period; fname += "_"; fname += Form("%i", nCounts); fname+= ".root";
+  fname+= period; fname += "_"; fname += Form("%i", nBins); fname+= ".root";
   if (toWrite){
     TFile *fOutput = new TFile(fname, "RECREATE");
     for (Int_t i=0; i<nHist; i++) {
@@ -534,6 +552,6 @@ Yu_HMDY_"+period+"_3bins.root");
   cout << "Period is:    "  << period << endl;
   cout << "Acceptance from:  " << physType << endl;
   cout  << "xMin: " << xMin << "     xMax: " << xMax << endl;
-  cout << "Number of output bins is:  " << nCounts << endl;
+  cout << "Number of output bins is:  " << nBins << endl;
   cout << " " << endl;
 }
