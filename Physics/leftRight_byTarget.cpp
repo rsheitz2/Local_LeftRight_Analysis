@@ -5,7 +5,7 @@
 #include "lrSpinCorr.h"
 #include "genericBounds.h"
 #include "lr_tgraph.h"
-#include "distribution.h"
+#include "binDist.h"
 
 using namespace std;
 
@@ -371,7 +371,11 @@ int main(int argc, char **argv){
   genericBounds *genericPhys = NULL;
   if (Vflag) genericPhys = new lr_tgraph(NVar, binVar);
 
-  distribution *dist_xN = new distribution("xN", 100, 0, 1);//cleanup
+  binDist *MuMu_b_xN = new binDist("MuMu", "xN", binFile, 100, M_min, M_min);
+  binDist *MuMu_b_xPi = new binDist("MuMu", "xPi", binFile, 100, M_min, M_min);
+  binDist *MuMu_b_xF = new binDist("MuMu", "xF", binFile, 100, M_min, M_min);
+  binDist *MuMu_b_pT = new binDist("MuMu", "pT", binFile, 100, M_min, M_min);
+  binDist *MuMu_b[nBasics-1] = {MuMu_b_xN, MuMu_b_xPi, MuMu_b_xF, MuMu_b_pT};
 
   //1st tree loop, equal out by target data
   Int_t nUpStream=0, nDownStream=0;
@@ -413,7 +417,7 @@ int main(int argc, char **argv){
   cout << "Number of entries in tree: " << tree->GetEntries() << endl;
   for (Int_t ev=0; ev<tree_entries; ev++) {
     tree->GetEntry(ev, 0);
-    dist_xN->dist->Fill(x_target);//cleanup
+    
     //Tree setup
     if (first || ev==tree_entries-1){
       cout << " " << endl;
@@ -511,6 +515,10 @@ int main(int argc, char **argv){
 
 	  if (Vflag) genericPhys->BinDataCounts(targetPosition,
 						"left_upstream_up",*boundValue);
+
+	  for (Int_t i=0; i<nBasics-1; i++) 
+	    MuMu_b[i]->BinFill("left_upstream_up", Mmumu, *basicValues[i]);
+	  
 	}//Polarized Down
 	else if ( (!Cflag&&!Gflag&&Spin_0<0)
 		  || ( (Cflag||Gflag) &&stopUpStream>nUpStream/2.0) ){
@@ -520,6 +528,9 @@ int main(int argc, char **argv){
 	  if (Vflag) {
 	    genericPhys->BinDataCounts(targetPosition,
 				       "left_upstream_down",*boundValue);}
+
+	  for (Int_t i=0; i<nBasics-1; i++) 
+	    MuMu_b[i]->BinFill("left_upstream_down", Mmumu, *basicValues[i]);
 	}
       }//End Left
       else if (Right){//Polarized Up
@@ -531,6 +542,10 @@ int main(int argc, char **argv){
 	  if (Vflag) {
 	    genericPhys->BinDataCounts(targetPosition, "right_upstream_up",
 				       *boundValue);}
+
+	  for (Int_t i=0; i<nBasics-1; i++) 
+	    MuMu_b[i]->BinFill("right_upstream_up", Mmumu, *basicValues[i]);
+	  
 	}//Polarized Down
 	else if ( (!Cflag&&!Gflag&&Spin_0<0)
 		  || ( (Cflag||Gflag) &&stopUpStream>nUpStream/2.0) ){
@@ -540,6 +555,9 @@ int main(int argc, char **argv){
 	  if (Vflag) {
 	    genericPhys->BinDataCounts(targetPosition, "right_upstream_down",
 				       *boundValue);}
+
+	  for (Int_t i=0; i<nBasics-1; i++) 
+	    MuMu_b[i]->BinFill("right_upstream_down", Mmumu, *basicValues[i]);
 	}
       }//End Right
 
@@ -596,6 +614,10 @@ int main(int argc, char **argv){
 	  if (Vflag) {
 	    genericPhys->BinDataCounts(targetPosition, "left_downstream_up",
 				       *boundValue);}
+
+	  for (Int_t i=0; i<nBasics-1; i++) 
+	    MuMu_b[i]->BinFill("left_downstream_up", Mmumu, *basicValues[i]);
+	  
 	}//Polarized Down
 	else if ( (!Cflag&&!Gflag&&Spin_0<0)
 		  || ((Cflag||Gflag) &&stopDownStream>nDownStream/2.0) ){
@@ -605,6 +627,9 @@ int main(int argc, char **argv){
 	  if (Vflag) {
 	    genericPhys->BinDataCounts(targetPosition, "left_downstream_down",
 				       *boundValue);}
+
+	  for (Int_t i=0; i<nBasics-1; i++) 
+	    MuMu_b[i]->BinFill("left_downstream_down", Mmumu, *basicValues[i]);
 	}
       }//End Left
       else if (Right){//Polarized Up
@@ -616,6 +641,10 @@ int main(int argc, char **argv){
 	  if (Vflag) {
 	    genericPhys->BinDataCounts(targetPosition, "right_downstream_up",
 				       *boundValue);}
+
+	  for (Int_t i=0; i<nBasics-1; i++) 
+	    MuMu_b[i]->BinFill("right_downstream_up", Mmumu, *basicValues[i]);
+	  
 	}//Polarized Down
 	else if ( (!Cflag&&!Gflag&&Spin_0<0)
 		  || ( (Cflag||Gflag) &&stopDownStream>nDownStream/2.0)){
@@ -625,6 +654,9 @@ int main(int argc, char **argv){
 	  if (Vflag) {
 	    genericPhys->BinDataCounts(targetPosition, "right_downstream_down",
 				       *boundValue);}
+
+	  for (Int_t i=0; i<nBasics-1; i++) 
+	    MuMu_b[i]->BinFill("right_downstream_down", Mmumu, *basicValues[i]);
 	}
       }//End Right
 
@@ -702,11 +734,12 @@ int main(int argc, char **argv){
 
     for (Int_t i=0; i<nBasics; i++) Basics[i]->Write();
     if (Vflag) genericPhys->Write();
-    dist_xN->Write();//cleanup
+    for (Int_t i=0; i<nBasics-1; i++) MuMu_b[i]->Write();
+    
     fout->Close();
-    cout << " " << endl;
-    if (Qflag) cout << outFile << " file written" << endl;
-    else cout << "Output.root file written" << endl;
+    
+    if (Qflag) cout << outFile << "\n file written" << endl;
+    else cout << "\nOutput.root file written" << endl;
   }
 
   cout << "-------------------------------------------" << endl;

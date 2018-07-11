@@ -38,10 +38,10 @@ leftright::leftright (int nBins, std::vector<Double_t> &in_bounds,
 
 leftright::leftright (TString binfile, TString type, TString thisName){
   if (type=="xN"||type=="xPi"||type=="pT"||type=="mass"||type=="rad") {
-    bounds.push_back(0.0);}
-  else if (type=="xF") bounds.push_back(-1.0);
-  else if (type=="vxZ_upstream") bounds.push_back(-294.5);
-  else if (type=="vxZ_downstream") bounds.push_back(-219.5);
+    this->bounds.push_back(0.0);}
+  else if (type=="xF") this->bounds.push_back(-1.0);
+  else if (type=="vxZ_upstream") this->bounds.push_back(-294.5);
+  else if (type=="vxZ_downstream") this->bounds.push_back(-219.5);
   else {
     std::cout << "Invalid type: " << type << " in leftright::leftright"
 	      << std::endl;
@@ -80,12 +80,12 @@ leftright::leftright (TString binfile, TString type, TString thisName){
     }
   }
 
-  if (type=="xN"||type=="xPi"||type=="xF") bounds.push_back(1.0);
-  else if (type=="pT") bounds.push_back(5.0);
-  else if (type=="mass") bounds.push_back(12.0);
-  else if (type=="rad") bounds.push_back(2.0);
-  else if (type=="vxZ_upstream") bounds.push_back(-239.3);
-  else if (type=="vxZ_downstream") bounds.push_back(-164.3);
+  if (type=="xN"||type=="xPi"||type=="xF") this->bounds.push_back(1.0);
+  else if (type=="pT") this->bounds.push_back(5.0);
+  else if (type=="mass") this->bounds.push_back(12.0);
+  else if (type=="rad") this->bounds.push_back(2.0);
+  else if (type=="vxZ_upstream") this->bounds.push_back(-239.3);
+  else if (type=="vxZ_downstream") this->bounds.push_back(-164.3);
 
   if ( (this->xval.size()==0)|| (this->xval.size()!=this->bounds.size()-1) ){
     std::cout << "xval did not fill well in leftright::leftright   from: " <<

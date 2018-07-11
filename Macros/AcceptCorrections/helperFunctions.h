@@ -17,10 +17,28 @@ Double_t RatioError(Double_t A, Double_t B,
 
 
 //Aesthetics
-void SetUpTGraph(TGraphErrors* g, TString name, Int_t ic, Double_t offset,
-		 Int_t nBins){
+void SetUpTGraph(TGraphErrors* g, TString name, Int_t ic, Double_t offset, Int_t nBins){
   g->SetTitle(name);
   
+  g->SetMarkerStyle(21);
+  g->SetMarkerColor(ic);
+
+  g->GetYaxis()->SetNdivisions(504);
+  g->GetYaxis()->SetLabelFont(22);
+  g->GetYaxis()->SetLabelSize(0.08);
+  
+  g->GetXaxis()->SetNdivisions(504);
+  g->GetXaxis()->SetLabelFont(22);
+  g->GetXaxis()->SetLabelSize(0.08);
+
+  if (nBins!=0){
+    Double_t *xval = g->GetX();
+    for (Int_t i=0; i<nBins; i++) xval[i] += offset;
+  }
+}
+
+
+void SetUpTGraph(TGraphErrors* g, Int_t ic, Double_t offset, Int_t nBins){
   g->SetMarkerStyle(21);
   g->SetMarkerColor(ic);
 
