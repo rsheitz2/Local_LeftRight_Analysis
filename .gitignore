@@ -6,3 +6,5 @@ realData_binning
 setup.sh
 *.txt
 Macros/AcceptCorrections/Tests
+Macros/MC_bgDetermination/Tests
+Macros/MC_bgDetermination/FitDist/

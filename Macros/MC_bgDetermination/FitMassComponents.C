@@ -23,16 +23,10 @@ TGeant/Presents/DATA/";
 TGeant/Presents/DATA/MC_Data/YuShiangMC/";
   
   TFile *fJPsi = TFile::Open(pathMC+"JPsi/Yu_Wall_full_main_JPsi_20bins.root");
-  TTree *tJPsi = (TTree*) fJPsi->Get("pT_Weighted");
   TFile *fpsi = TFile::Open(pathMC+"psi/Yu_Wall_full_main_psi_20bins.root");
-  TTree *tpsi = (TTree*) fpsi->Get("pT_Weighted");
   TFile *fOC = TFile::Open(pathMC+"OC/Yu_Wall_full_main_OC_20bins.root");
-  TTree *tOC = (TTree*) fOC->Get("pT_Weighted");
   TFile *fAMDY = TFile::Open(pathMC+"AMDY/Yu_Wall_full_main_AMDY_20bins.root");
-  TTree *tAMDY = (TTree*) fAMDY->Get("pT_Weighted");
-  TFile *fReal = TFile::Open(path+"RealData/WAll_AllMass.root");
-  TTree *tReal = (TTree*) fReal->Get("pT_Weighted");
-
+  TFile *fReal = TFile::Open(path+"RealData/AMDY/WAll_AllMass.root");
 
   TFile *Files[nFiles] = {fJPsi, fpsi, fOC, fAMDY, fReal};
   for (Int_t i=0; i<nFiles; i++) {
@@ -40,6 +34,11 @@ TGeant/Presents/DATA/MC_Data/YuShiangMC/";
       cout << "File:   " << i << "   does not exist " << endl;
       exit(EXIT_FAILURE); }
   }
+  TTree *tJPsi = (TTree*) fJPsi->Get("pT_Weighted");
+  TTree *tpsi = (TTree*) fpsi->Get("pT_Weighted");
+  TTree *tOC = (TTree*) fOC->Get("pT_Weighted");
+  TTree *tAMDY = (TTree*) fAMDY->Get("pT_Weighted");
+  TTree *tReal = (TTree*) fReal->Get("pT_Weighted");
 
   TString type[nFiles] = {"JPsi", "psi", "OC", "AMDY", "Real"};
   for (Int_t i=0; i<nFiles; i++) {

@@ -27,15 +27,10 @@ void BasicDist(){
 TGeant/Presents/DATA/";
   TString pathMC = path+"MC_Data/YuShiangMC/";
   TFile *fJPsi = TFile::Open(pathMC+"JPsi/Yu_Wall_full_main_JPsi_20bins.root");
-  TTree *tJPsi = (TTree*) fJPsi->Get("pT_Weighted");
   TFile *fpsi = TFile::Open(pathMC+"psi/Yu_Wall_full_main_psi_20bins.root");
-  TTree *tpsi = (TTree*) fpsi->Get("pT_Weighted");
   TFile *fOC = TFile::Open(pathMC+"OC/Yu_Wall_full_main_OC_20bins.root");
-  TTree *tOC = (TTree*) fOC->Get("pT_Weighted");
   TFile *fAMDY = TFile::Open(pathMC+"AMDY/Yu_Wall_full_main_AMDY_20bins.root");
-  TTree *tAMDY = (TTree*) fAMDY->Get("pT_Weighted");
-  TFile *fReal = TFile::Open(path+"RealData/WAll_AllMass.root");
-  TTree *tReal = (TTree*) fReal->Get("pT_Weighted");
+  TFile *fReal = TFile::Open(path+"RealData/AMDY/WAll_AllMass.root");
 
   TFile *Files[nFiles] = {fJPsi, fpsi, fOC, fAMDY, fReal};
   TH1D *hist[nFiles];
@@ -48,6 +43,11 @@ TGeant/Presents/DATA/";
     hist[i] = new TH1D(Form("h_%s", type[i].Data()),
 		       Form("h_%s", type[i].Data()), nBins, xMin, xMax);
   }
+  TTree *tJPsi = (TTree*) fJPsi->Get("pT_Weighted");
+  TTree *tpsi = (TTree*) fpsi->Get("pT_Weighted");
+  TTree *tOC = (TTree*) fOC->Get("pT_Weighted");
+  TTree *tAMDY = (TTree*) fAMDY->Get("pT_Weighted");
+  TTree *tReal = (TTree*) fReal->Get("pT_Weighted");
 
   
   TCanvas* c1 = new TCanvas();
