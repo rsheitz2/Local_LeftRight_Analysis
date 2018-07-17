@@ -371,10 +371,44 @@ int main(int argc, char **argv){
   genericBounds *genericPhys = NULL;
   if (Vflag) genericPhys = new lr_tgraph(NVar, binVar);
 
-  binDist *MuMu_b_xN = new binDist("MuMu", "xN", binFile, 100, M_min, M_min);
-  binDist *MuMu_b_xPi = new binDist("MuMu", "xPi", binFile, 100, M_min, M_min);
-  binDist *MuMu_b_xF = new binDist("MuMu", "xF", binFile, 100, M_min, M_min);
-  binDist *MuMu_b_pT = new binDist("MuMu", "pT", binFile, 100, M_min, M_min);
+  const Int_t nHbins =120;
+  /*if (nHbins % 4) {//Should be divisiable by 4
+    cout << "Histogram binning should be divisiable by 4!!" << endl;
+    exit(EXIT_FAILURE);
+    }
+    const Double_t highM =4.3;*/
+
+  /*//if M_min < 4.3 && M_max > 4.3
+  //3/4 of the bins will be < 4.3 && 1/4 bins will be > 4.3
+  Double_t hBins[nHbins+1];
+  for (Int_t bi=0, binHighM=0; bi<nHbins+1; bi++) {
+    if (M_min + bi*(highM - M_min)/(3*nHbins/4) < highM ){
+      hBins[bi] = M_min + bi*(highM - M_min)/(3*nHbins/4);
+      binHighM++;
+    }
+    else
+      hBins[bi] = highM + (bi-binHighM)*(M_max - highM)/(nHbins/4);
+  }
+
+  binDist *MuMu_b_xN, *MuMu_b_xPi, *MuMu_b_xF, *MuMu_b_pT;
+  if (M_min<highM && M_max>highM){//variable binning
+    MuMu_b_xN = new binDist("MuMu", "xN", binFile, nHbins, hBins);
+    MuMu_b_xPi = new binDist("MuMu","xPi",binFile, nHbins, hBins);
+    MuMu_b_xF = new binDist("MuMu", "xF", binFile, nHbins, hBins);
+    MuMu_b_pT = new binDist("MuMu", "pT", binFile, nHbins, hBins);
+
+    cout << "\nVariable histogram binning is used!!!\n" << endl;
+    }
+  else {
+  MuMu_b_xN = new binDist("MuMu", "xN", binFile, nHbins, M_min, M_max);
+    MuMu_b_xPi = new binDist("MuMu","xPi",binFile, nHbins, M_min, M_max);
+    MuMu_b_xF = new binDist("MuMu", "xF", binFile, nHbins, M_min, M_max);
+    MuMu_b_pT = new binDist("MuMu", "pT", binFile, nHbins, M_min, M_max);
+    }*/
+  binDist *MuMu_b_xN = new binDist("MuMu", "xN", binFile, nHbins, M_min, M_max);
+  binDist *MuMu_b_xPi = new binDist("MuMu","xPi",binFile, nHbins, M_min, M_max);
+  binDist *MuMu_b_xF = new binDist("MuMu", "xF", binFile, nHbins, M_min, M_max);
+  binDist *MuMu_b_pT = new binDist("MuMu", "pT", binFile, nHbins, M_min, M_max);
   binDist *MuMu_b[nBasics-1] = {MuMu_b_xN, MuMu_b_xPi, MuMu_b_xF, MuMu_b_pT};
 
   //1st tree loop, equal out by target data
@@ -747,6 +781,7 @@ int main(int argc, char **argv){
   cout << "-------------------------------------------" << endl;
 
   cout << " " << endl;
+  cout << "nHbins used for distribution histograms:  " << nHbins << endl;
   cout << "Notes:" << endl;
   cout << "Do not used    PhiS   (it's not defined well)" << endl;
   cout << " " << endl;

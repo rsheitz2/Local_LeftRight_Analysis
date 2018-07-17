@@ -1,10 +1,11 @@
 #include "helperFunctions.h"
 
-//const Int_t nBins=1; Double_t dx=0.04;Double_t yMax=0.5;TString physType="xF";
-const Int_t nBins=3; Double_t yMax =0.5;
+//_______________Setup_______________
+const Int_t nBins=1; Double_t dx=0.04;Double_t yMax=0.5;TString physType="xF";
+//const Int_t nBins=3; Double_t yMax =0.5;
 //const Int_t nBins=5; Double_t yMax =0.3;
 //Double_t dx =0.005; TString physType ="xPi"; //xN, xPi
-Double_t dx =0.03; TString physType ="xF";
+//Double_t dx =0.03; TString physType ="xF";
 //Double_t dx =0.05; TString physType ="M"; //pT, M
 
 TString massRange ="HM";
@@ -12,11 +13,11 @@ TString massRange ="HM";
 //TString massRange ="Psi367_386";
 //TString massRange ="JPsi25_43";
 
-Bool_t toWrite =false;
-
+Bool_t toWrite =true;
 TString period ="WAll"; 
 TString fNameout ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Presents/July3/Data/";
+//_______________Setup_______________
 
 
 Double_t WeightedPol(Double_t L1, Double_t R1, Double_t L2, Double_t R2,
@@ -117,6 +118,8 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data/";
       N_L[tr][bi] = (1-A)*(1+A)*(1+A)/(2*dA*dA);
       N_R[tr][bi] = (1+A)*(1-A)*(1-A)/(2*dA*dA);
 
+      //cout << N_L[tr][bi] << " " << N_R[tr][bi] << endl;//cleanup
+
       Pol[tr][bi] = y_lr_noCorr[bi]/y_lr[bi];
       
       if (tr==0) xvals[bi] = x_lr[bi];
@@ -149,11 +152,8 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data/";
 	tv_Pol_dS[bi] = WeightedPol(N_L[am*2][bi], N_R[am*2][bi],
 				    N_L[am*2+1][bi], N_R[am*2+1][bi],
 				    Pol[am*2][bi], Pol[am*2+1][bi]);
-      }
-      
+      } 
     }
-
-    
   }
 
 
@@ -189,7 +189,7 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data/";
       g_AN[am]->Write(ampName[am]);
     }
     tv_Pol_uS.Write("Pol_AN_upstream");
-    tv_Pol_uS.Write("Pol_AN_downstream");
+    tv_Pol_dS.Write("Pol_AN_downstream");
     
     fOutput->Close();
   }
