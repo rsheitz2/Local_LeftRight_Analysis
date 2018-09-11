@@ -54,6 +54,8 @@ int main(int argc, char **argv){
 	 << "qP_pIn, phi_photon)" << endl;
     cout << "Option   -N bins" << endl;
     cout << "    (Option can only be used with \"-V\" option for binVar)"<<endl;
+    cout << "Option:  -Z change number of bins for histogram distributions/n";
+    cout << "    (default nHbins is 150)" << endl;
     cout << " " << endl;
     cout << "----Additional Options----" << endl;
     cout << "Option:  -D    (Debug mode, only 1000 events considered)" << endl;
@@ -62,18 +64,18 @@ int main(int argc, char **argv){
 	
     exit(EXIT_FAILURE);
   }
-  TApplication theApp("tapp", &argc, argv);
+  //TApplication theApp("tapp", &argc, argv);
 
   //Read input arguments
   Int_t wflag=0, Qflag=0, fflag=0, Sflag=0, Pflag=0, Tflag=0, Vflag=0, Nflag=0;
-  Int_t iflag=0, aflag=0, binFlag=0, Dflag=0, Cflag=0, Hflag=0, Gflag=0;
+  Int_t iflag=0, aflag=0, binFlag=0, Dflag=0, Cflag=0, Hflag=0, Gflag=0,Zflag=0;
   Int_t c;
   TString fname = "", outFile = "", leftrightChoice="", trig="";
   TString binFile = "", binVar="";
   Double_t M_min=0.0, M_max=12.0;
-  Int_t NVar;
+  Int_t NVar, nHbins=150;
   
-  while ((c = getopt (argc, argv, "Pwf:Q:S:T:V:N:i:a:b:M:DCGH")) != -1) {
+  while ((c = getopt (argc, argv, "Pwf:Q:S:T:V:N:i:a:b:M:DCGHZ:")) != -1) {
     switch (c) {
     case 'w':
       wflag = 1;
@@ -129,6 +131,10 @@ int main(int argc, char **argv){
     case 'H':
       Hflag = 1;
       break;
+    case 'Z':
+      Zflag = 1;
+      nHbins = atoi(optarg);
+      break;
     case '?':
       if (optopt == 'u')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
@@ -145,6 +151,8 @@ int main(int argc, char **argv){
       else if (optopt == 'a')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (optopt == 'b')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'Z')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (isprint (optopt))
 	fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -189,6 +197,12 @@ int main(int argc, char **argv){
     cout << " " << endl;
     cout << "Option -T" << trig << " is not a valid choice" << endl;
     exit(EXIT_FAILURE);
+  }
+  
+  if(Pflag){
+    cout << " " << endl;
+    cout << "No polarization or dilution factors performed" << endl;
+    cout << " " << endl;
   }
 
   if(Dflag) {
@@ -371,40 +385,6 @@ int main(int argc, char **argv){
   genericBounds *genericPhys = NULL;
   if (Vflag) genericPhys = new lr_tgraph(NVar, binVar);
 
-  const Int_t nHbins =120;
-  /*if (nHbins % 4) {//Should be divisiable by 4
-    cout << "Histogram binning should be divisiable by 4!!" << endl;
-    exit(EXIT_FAILURE);
-    }
-    const Double_t highM =4.3;*/
-
-  /*//if M_min < 4.3 && M_max > 4.3
-  //3/4 of the bins will be < 4.3 && 1/4 bins will be > 4.3
-  Double_t hBins[nHbins+1];
-  for (Int_t bi=0, binHighM=0; bi<nHbins+1; bi++) {
-    if (M_min + bi*(highM - M_min)/(3*nHbins/4) < highM ){
-      hBins[bi] = M_min + bi*(highM - M_min)/(3*nHbins/4);
-      binHighM++;
-    }
-    else
-      hBins[bi] = highM + (bi-binHighM)*(M_max - highM)/(nHbins/4);
-  }
-
-  binDist *MuMu_b_xN, *MuMu_b_xPi, *MuMu_b_xF, *MuMu_b_pT;
-  if (M_min<highM && M_max>highM){//variable binning
-    MuMu_b_xN = new binDist("MuMu", "xN", binFile, nHbins, hBins);
-    MuMu_b_xPi = new binDist("MuMu","xPi",binFile, nHbins, hBins);
-    MuMu_b_xF = new binDist("MuMu", "xF", binFile, nHbins, hBins);
-    MuMu_b_pT = new binDist("MuMu", "pT", binFile, nHbins, hBins);
-
-    cout << "\nVariable histogram binning is used!!!\n" << endl;
-    }
-  else {
-  MuMu_b_xN = new binDist("MuMu", "xN", binFile, nHbins, M_min, M_max);
-    MuMu_b_xPi = new binDist("MuMu","xPi",binFile, nHbins, M_min, M_max);
-    MuMu_b_xF = new binDist("MuMu", "xF", binFile, nHbins, M_min, M_max);
-    MuMu_b_pT = new binDist("MuMu", "pT", binFile, nHbins, M_min, M_max);
-    }*/
   binDist *MuMu_b_xN = new binDist("MuMu", "xN", binFile, nHbins, M_min, M_max);
   binDist *MuMu_b_xPi = new binDist("MuMu","xPi",binFile, nHbins, M_min, M_max);
   binDist *MuMu_b_xF = new binDist("MuMu", "xF", binFile, nHbins, M_min, M_max);
@@ -754,8 +734,8 @@ int main(int argc, char **argv){
   //xN->Print_LR("left_upstream_up");
   //xN->Print_LR("right_upstream_up");
   //xN->Print_Asym("asym_upstream_left");
-  xN->PrintCorr("dil_upstream_left");
-  xN->PrintCorr("pol_upstream_left");
+  //xN->PrintCorr("dil_upstream_left");
+  //xN->PrintCorr("pol_upstream_left");
 
   //Graphs and Drawing
   for (Int_t i=0; i<nBasics; i++) Basics[i]->Fill();
@@ -781,10 +761,9 @@ int main(int argc, char **argv){
   cout << "-------------------------------------------" << endl;
 
   cout << " " << endl;
-  cout << "nHbins used for distribution histograms:  " << nHbins << endl;
   cout << "Notes:" << endl;
   cout << "Do not used    PhiS   (it's not defined well)" << endl;
   cout << " " << endl;
   
-  theApp.Run();//Needed to make root graphics work on C++
+  //theApp.Run();//Needed to make root graphics work on C++
 }

@@ -1,11 +1,12 @@
 #include "helperFunctions.h"
 
-const Int_t nBins=1; Double_t dx =0.02; Double_t yMax =0.2; 
-//const Int_t nBins=3; Double_t dx =0.005; Double_t yMax =0.5;
+//const Int_t nBins=1; Double_t dx =0.02; Double_t yMax =0.5; 
+const Int_t nBins=3; Double_t dx =0.03; Double_t yMax =0.5;
 //const Int_t nBins=5; Double_t dx =0.005; Double_t yMax =0.5;
 
-Bool_t accCorrected=false;
-TString physType ="xF", period ="WAll";
+Bool_t accCorrected =true;
+TString physType ="M";//xN, xPi, xF, pT, M
+TString period ="WAll";
 TString massRange ="HM";
 //TString massRange ="JPsi3_326";
 //TString massRange ="Psi367_386";
@@ -14,7 +15,7 @@ TString massRange ="HM";
 Bool_t toWrite =false;
 
 TString fNameout ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Presents/July3/Data/";
+TGeant/Presents/July24/Data/";
 
 
 Double_t Amp(Double_t L, Double_t R, Double_t aL, Double_t aR,
@@ -78,7 +79,7 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
 			     "asym_downstream_up", "asym_downstream_down"};
   TString accName[nTarg] = {"acc_UpS_Left", "acc_UpS_Right",
 			     "acc_DownS_Left", "acc_DownS_Right"};
-  Int_t icolor[nTarg] = {3, 4, 8, 9}; 
+  Int_t icolor[nTarg] = {3, 3, 4, 4}; 
   Double_t offsets[nTarg];
   for (Int_t i=0; i<nTarg; i++) offsets[i] = i*dx;
 
@@ -175,6 +176,9 @@ Local_LeftRight_Analysis/Macros/AcceptCorrections/Data";
 
     
     SetUpTGraph(g_AN[i], targName[i], icolor[i], offsets[i], nBins);
+    g_AN[i]->GetYaxis()->SetRangeUser(-yMax, yMax);
+    ( i%2 ) ? g_AN[i]->SetMarkerStyle(23) : g_AN[i]->SetMarkerStyle(22);
+    g_AN[i]->SetMarkerSize(1.8);
     c4->cd(i+1);
     g_AN[i]->Draw("AP");
     li->Draw("same");

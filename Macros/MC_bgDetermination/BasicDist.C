@@ -1,7 +1,15 @@
 const Int_t nFiles=5;
 const Int_t nMrange=4;
 
-void BasicDist(){
+void BasicDist(TString start=""){
+  if (start=="") {
+    cout << "Script plots the components that add up to a basic distribution";
+    cout << "\nThis is done fitting MC distributions as a function of Mass to";
+    cout << " to get the contribution from each physical process" << endl;
+    cout << "\nUsage:" << endl;
+    cout << "root \'BasicDist(1)\'" << endl;
+    exit(EXIT_FAILURE);
+  }
   //TString physType = "Mmumu"; Double_t xMin=2., xMax=8.5; Int_t nBins=200;
   TString physType = "x_beam"; Double_t xMin=0.1, xMax=0.9; Int_t nBins=100;
   //TString physType = "x_target"; Double_t xMin=0.04, xMax=0.5; Int_t nBins=200;

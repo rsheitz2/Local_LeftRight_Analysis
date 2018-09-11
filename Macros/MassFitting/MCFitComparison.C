@@ -12,7 +12,14 @@ Double_t FitMCs(Double_t *x, Double_t *par){
 }
 
 
-void FitMassComponents(){
+void MCFitComparison(TString start=""){
+  if (start==""){
+    cout << "Script fits data using a sum of MC distributions and ";
+    cout << "compares real data with the fit" << endl;
+    cout << "Usage:" << endl;
+    cout << "root \'MCFitComparison(1)\'" << endl;
+    exit(EXIT_FAILURE);
+  }
   const Int_t nBins=200;
   //const Double_t minX=2.5, maxX=8.5;
   const Double_t minX=4.3, maxX=8.5;

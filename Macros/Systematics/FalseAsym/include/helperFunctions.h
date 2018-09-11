@@ -1,5 +1,8 @@
-//Error Calculations
-Double_t CorrelatedRatioError(Double_t A, Double_t B,
+//Conventions
+enum TargPol {upS_up, upS_down, downS_up, downS_down};
+
+//Errors Calculations
+Double_t FullyCorrelatedRatioError(Double_t A, Double_t B,
 			      Double_t eA, Double_t eB){
   if (eA<0 || eB<0){
     cout << "negative errors" << endl;
@@ -17,7 +20,25 @@ Double_t CorrelatedRatioError(Double_t A, Double_t B,
 }
 
 
-Double_t CorrelatedDiffError(Double_t eA, Double_t eB){
+Double_t CorrelatedRatioError(Double_t A, Double_t B, Double_t eA,
+				   Double_t eB, Double_t cov){
+  if (eA<0 || eB<0){
+    cout << "negative errors" << endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  Double_t r = A/B;
+  if (r<0) r *= -1.0;
+ 
+  Double_t e = eA*eA/(A*A) + eB*eB/(B*B) - 2*cov/(A*B);
+  e = TMath::Sqrt( e );
+  e *= r;
+
+  return e;
+}
+
+
+Double_t FullyCorrelatedDiffError(Double_t eA, Double_t eB){
   if (eA<0 || eB<0){
     cout << "negative errors" << endl;
     exit(EXIT_FAILURE);
@@ -141,36 +162,8 @@ Double_t ExpoInt(Double_t A, Double_t b){
 }
 
 
-//Functions
-Double_t ChiSquareDistr(Double_t *x,Double_t *par)
-{
-  // Chisquare density distribution for nrFree degrees of freedom
-  Double_t nrFree = par[0];
-  Double_t A = par[1];
-  Double_t chi2 = x[0];
-
-  if (chi2 > 0) {
-    Double_t lambda = nrFree/2.;
-    Double_t norm = TMath::Gamma(lambda)*TMath::Power(2.,lambda)/A;
-    //Double_t norm = TMath::Gamma(lambda)*TMath::Power(2.,lambda);
-    return TMath::Power(chi2,lambda-1)*TMath::Exp(-0.5*chi2)/norm;
-  }
-  else return 0.0;
-}
-
-
-Double_t RedChiSquareDistr(Double_t *x,Double_t *par)
-{
-  // Reduced Chisquare density distribution for nrFree degrees of freedom
-  Double_t nrFree = par[0];
-  x[0] = x[0]*nrFree;
-  
-  return ChiSquareDistr(x, par);
-}
-
-
 //Aesthetics
-void SetUpTGraph(TGraphErrors* g, Int_t icolor=1,
+void SetUp(TGraphErrors* g, Int_t icolor=1,
 		 Double_t offset=0.0, Int_t nBins=0){
   g->SetMarkerStyle(21);
   g->SetMarkerColor(icolor);
@@ -190,7 +183,7 @@ void SetUpTGraph(TGraphErrors* g, Int_t icolor=1,
 }
 
 
-void SetUpTGraph(TGraph* g){
+void SetUp(TGraph* g){
   g->SetMarkerStyle(21);
   
   g->GetYaxis()->SetNdivisions(504);
@@ -203,7 +196,7 @@ void SetUpTGraph(TGraph* g){
 }
 
 
-void SetUpHist(TH1D* h){
+void SetUp(TH1D* h){
   h->GetYaxis()->SetNdivisions(504);
   h->GetYaxis()->SetLabelFont(22);
   h->GetYaxis()->SetLabelSize(0.08);
@@ -214,7 +207,20 @@ void SetUpHist(TH1D* h){
 }
 
 
-void SetUpTF(TF1* f){
+void SetUp(TH1D* h, Double_t xmin, Double_t xmax){
+  h->GetYaxis()->SetNdivisions(504);
+  h->GetYaxis()->SetLabelFont(22);
+  h->GetYaxis()->SetLabelSize(0.08);
+  
+  h->GetXaxis()->SetNdivisions(508);
+  h->GetXaxis()->SetLabelFont(22);
+  h->GetXaxis()->SetLabelSize(0.08);
+
+  h->GetXaxis()->SetRangeUser(xmin, xmax);
+}
+
+
+void SetUp(TF1* f){
   f->GetYaxis()->SetNdivisions(504);
   f->GetYaxis()->SetLabelFont(22);
   f->GetYaxis()->SetLabelSize(0.08);
@@ -249,3 +255,26 @@ void DrawLine(TH1D *h, Double_t yval){
   
   li->Draw("same");
 }
+
+//Usefunctions
+void GetPolarization(Double_t *vals_noPcorr, Double_t *vals, Double_t *Pol,
+		     Int_t nBins){
+  Double_t Pol_mean; Int_t Pol_nan_counts=0;
+
+  for (Int_t bi=0; bi<nBins; bi++) {
+    Pol[bi] = vals_noPcorr[bi]/vals[bi];
+    if ( isnan(Pol[bi]) ) Pol_nan_counts++;
+    else Pol_mean += Pol[bi]; 
+  }
+
+  if (Pol_nan_counts == nBins){
+    cout << "Error: No polarization values determined" << endl;
+    exit(EXIT_FAILURE);
+  }
+    
+  Pol_mean = Pol_mean/(nBins-Pol_nan_counts);
+  for (Int_t bi=0; bi<nBins; bi++) {
+    if ( isnan(Pol[bi]) ) Pol[bi] = Pol_mean;
+  }
+}
+

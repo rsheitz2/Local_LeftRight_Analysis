@@ -1,4 +1,4 @@
-#include "helperFunctions.h"
+#include "include/include/helperFunctions.h"
 
 //Setup_______________
 const Int_t nBins =5;
@@ -83,11 +83,19 @@ Double_t MakeAsymError(Double_t L, Double_t R, Double_t e_L, Double_t e_R,
 }
 
 
-void AN_fitMass(){
+void MCMassFitSimple(TString start=""){
+  if (start==""){
+    cout << "\nScript determines AN from massing";
+    cout << " using a sum of Monte Carlo distributions as the fitting function";
+    cout << "AN is determined using a simple asymmetry determination" << endl;
+    cout << "\nUsage:" << endl;
+    cout << "root \'AN_MCMassFits(1)\'" << endl;
+    exit(EXIT_FAILURE);
+  }
     
   TFile *fFits[nFits]; 
   for (Int_t f=0; f<nFits; f++) {
-    fFits[f] = TFile::Open(Form("FitDist/MC_%s_%.2f_%.2f.root",
+    fFits[f] = TFile::Open(Form("MC_FitDists/MC_%s_%.2f_%.2f.root",
 				fitTypes[f].Data(), Mmin,Mmax));
     if (!fFits[f]) {
       cout << "File:   " << f << "   does not exist " << endl;

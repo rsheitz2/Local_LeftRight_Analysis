@@ -1,12 +1,12 @@
 #include "helperFunctions.h"
 
-//const Int_t nBins=1; Double_t yMax =0.03; TString physType ="xF"; 
-const Int_t nBins=3; Double_t yMax =0.3; 
+const Int_t nBins=1; Double_t yMax =0.3; TString physType ="xF"; 
+//const Int_t nBins=3; Double_t yMax =0.3; 
 //const Int_t nBins=5; Double_t yMax =0.03; 
-TString physType ="xF"; //xN, xPi, xF, pT, M
+//TString physType ="xF"; //xN, xPi, xF, pT, M
 
-TString massRange ="HM";
-//TString massRange ="JPsi3_326";
+//TString massRange ="HM";
+TString massRange ="JPsi3_326";
 //TString massRange ="Psi367_386";
 //TString massRange ="JPsi25_43";
 
@@ -14,7 +14,7 @@ Bool_t toWrite =false;
 
 TString period ="WAll";
 TString fNameout ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Presents/July3/Data/";
+TGeant/Presents/July24/Data/";
 
 
 Double_t WeightedPol(Double_t NL[][nBins], Double_t NR[][nBins],

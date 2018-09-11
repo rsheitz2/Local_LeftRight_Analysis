@@ -179,8 +179,21 @@ void Acceptance(){
   
   ////////////////
   //Changes Here//
-  Double_t *ph_phys=&ph_x_feynman, *gen_phys=&gen_x_feynman, *physB=b_xF, *xval=x_xF;
-  Double_t xMin =-0.2, xMax =0.8; TString physType="xF";//x_feynman
+  //Double_t *ph_phys=&ph_x_target, *gen_phys=&gen_x_target, *physB=b_xN, *xval=x_xN;
+  //Double_t xMin =0.0, xMax =1.0; TString physType="xN";//x_target
+  
+  //Double_t *ph_phys=&ph_x_beam, *gen_phys=&gen_x_beam, *physB=b_xPi, *xval=x_xPi;
+  //Double_t xMin =0.05, xMax =1.0; TString physType="xPi";//x_beam
+  
+  //Double_t *ph_phys=&ph_x_feynman, *gen_phys=&gen_x_feynman, *physB=b_xF, *xval=x_xF;
+  //Double_t xMin =-0.2, xMax =0.8; TString physType="xF";//x_feynman
+
+  //Double_t *ph_phys=&ph_pT, *gen_phys=&gen_pT, *physB=b_pT, *xval=x_pT;
+  //Double_t xMin =0.04, xMax =5.0; TString physType="pT";//pT
+
+  Double_t *ph_phys=&ph_Mmumu, *gen_phys=&gen_Mmumu, *physB=b_M, *xval=x_M;
+  Double_t xMin =4.3, xMax =8.5; TString physType="M";//M
+  
   Int_t nHistBins = 100;
   
 
@@ -532,8 +545,9 @@ void Acceptance(){
   li_a_r_updown->Draw("same");
   
   
-  TString fname = "Accept/Acceptance_"; fname += physType; fname += "_";
-  fname+= period; fname += "_"; fname += Form("%i", nBins); fname+= ".root";
+  TString fname = "Data/Acceptance_"; fname += physType; fname += "_";
+  fname+= period; fname += Form("_%s_", massRange.Data() );
+  fname += Form("%i", nBins); fname+= ".root";
   if (toWrite){
     TFile *fOutput = new TFile(fname, "RECREATE");
     for (Int_t i=0; i<nHist; i++) {
