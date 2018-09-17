@@ -312,3 +312,37 @@ void CorrectDilPol(Double_t* Asym, Double_t* e_Asym,
     e_Asym[i] = e_Asym[i]/(Dil[i]*Pol[i]);
   }
 }//End CorrectDilPol
+
+
+Bool_t ChooseLeftRight(TString leftrightChoice, Double_t phi_photon,
+		       Double_t spin){
+  
+  if (leftrightChoice=="Spin" || leftrightChoice==""){//Spin influenced left/right
+    if (phi_photon<TMath::Pi()/2 && phi_photon>-TMath::Pi()/2 && spin>0 )// Target spin up
+      return true;
+    else if (phi_photon<3*TMath::Pi()/2 && phi_photon>TMath::Pi()/2 && spin>0 )// Target spin up
+      return false;
+    else if (phi_photon< 3*TMath::Pi()/2 && phi_photon > TMath::Pi()/2 && spin < 0) // Target spin down
+      return true;
+    else if (phi_photon < TMath::Pi()/2 && phi_photon > -TMath::Pi()/2 && spin < 0)// Target spin down
+      return false;
+    else {
+      std::cout << "No Left or Right choosen" << std::endl;
+      std::cout << phi_photon << " " << spin << "\n" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+  else if (leftrightChoice=="True"){//True spectrometer left/right (no spin influence)
+    if (phi_photon < TMath::Pi()/2 && phi_photon > -TMath::Pi()/2)
+      return true;
+    else if (phi_photon <3*TMath::Pi()/2 && phi_photon>TMath::Pi()/2)
+      return false;
+    else {
+      std::cout << "No Left or Right choosen" << std::endl;
+      std::cout << phi_photon << " " << spin << "\n" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  return false;
+}//End ChooseLeftRight

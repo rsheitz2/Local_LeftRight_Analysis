@@ -3,6 +3,7 @@
 Data/*
 leftRight_byTarget
 realData_binning
+systematic_leftRight
 setup.sh
 *.txt
 Macros/AcceptCorrections/Tests

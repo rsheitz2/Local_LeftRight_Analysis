@@ -115,6 +115,42 @@ Bool_t binDist::BinFill(TString target, Double_t distVar, Double_t binVar){
 }//BinFill
 
 
+
+Bool_t binDist::BinFill(TString target, Double_t distVar, Int_t bin){
+
+  if (bin < 0 || bin > this->nBins){
+    std::cout << "binDist::BinFill bin too large or too small" << std::endl;
+    exit(EXIT_FAILURE);
+    return false;
+  }
+  
+  if (target=="left_upstream_up") 
+    this->left_upstream_up.at(bin)->Fill(distVar);
+  else if (target=="right_upstream_up") 
+    this->right_upstream_up.at(bin)->Fill(distVar);
+  else if (target=="left_upstream_down")
+    this->left_upstream_down.at(bin)->Fill(distVar);
+  else if (target=="right_upstream_down") 
+    this->right_upstream_down.at(bin)->Fill(distVar);
+  else if (target=="left_downstream_up")
+    this->left_downstream_up.at(bin)->Fill(distVar);
+  else if (target=="right_downstream_up")
+    this->right_downstream_up.at(bin)->Fill(distVar);
+  else if (target=="left_downstream_down")
+    this->left_downstream_down.at(bin)->Fill(distVar);
+  else if (target=="right_downstream_down")
+    this->right_downstream_down.at(bin)->Fill(distVar);
+  else {
+    std::cout << this->thisName << " Wrong target name to " <<
+      "twotargets::BinDataCounts" << std::endl;
+    return false;
+  }
+      
+  return true;
+    
+}//BinFill
+
+
 void binDist::Print(){
   std::cout << "\nPrinting information for: " << this->thisName;
   std::cout << "\nhbins = " << this->hbins << "  xMin = " << this->xMin

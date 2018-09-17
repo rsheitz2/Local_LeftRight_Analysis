@@ -163,10 +163,21 @@ Double_t ExpoInt(Double_t A, Double_t b){
 
 
 //Aesthetics
-void SetUp(TGraphErrors* g, Int_t icolor=1,
-		 Double_t offset=0.0, Int_t nBins=0){
+void SetUp(TGraphErrors* g){
   g->SetMarkerStyle(21);
-  g->SetMarkerColor(icolor);
+
+  g->GetYaxis()->SetNdivisions(504);
+  g->GetYaxis()->SetLabelFont(22);
+  g->GetYaxis()->SetLabelSize(0.08);
+  
+  g->GetXaxis()->SetNdivisions(504);
+  g->GetXaxis()->SetLabelFont(22);
+  g->GetXaxis()->SetLabelSize(0.08);
+}
+
+
+void SetUp(TGraphErrors *g, Double_t offset){
+  g->SetMarkerStyle(21);
 
   g->GetYaxis()->SetNdivisions(504);
   g->GetYaxis()->SetLabelFont(22);
@@ -176,10 +187,8 @@ void SetUp(TGraphErrors* g, Int_t icolor=1,
   g->GetXaxis()->SetLabelFont(22);
   g->GetXaxis()->SetLabelSize(0.08);
 
-  if (nBins != 0){
-    Double_t *xval = g->GetX();
-    for (Int_t i=0; i<nBins; i++) xval[i] += offset;
-  }
+  Double_t *xval = g->GetX();
+  for (Int_t i=0; i<g->GetN(); i++) xval[i] += offset;
 }
 
 

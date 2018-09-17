@@ -133,20 +133,20 @@ void CalAmp_AmpErr(Double_t *Fasym, Double_t *e_Fasym,
 
 void falseGeoMean4Targ_targFlips(TString start =""){
   //Setup_______________
-  TString pathAN = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
-
-  const Int_t nBins =3;
-  TString period_Mtype ="WAll_HMDY";
+  const Int_t nBins =5;
+  TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
   TString physBinned ="xF";//xN, xPi, xF, pT, M
-  TString process ="DY";//JPsi, psi, DY
+  TString process ="JPsi";//JPsi, psi, DY
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";
   TString whichFit ="true";
 
   Bool_t toWrite =false;
   //Setup_______________
+
+  TString pathAN = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   
   if (start==""){//Basic info
     cout << "\nScript calculates false AN asymmetries using the 4 target";
@@ -303,10 +303,10 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
 		  physBinned.Data(), nBins);
   }
   else{
-    fOutput =Form("%s/Data/TargFlip/falseGeoMean4Targ_%s%s_%s_%s%s_%s%i.root",
+    fOutput =Form("%s/Data/TargFlip/falseGeoMean4Targ_%s%s_%s_%s%s_%s%i_%ihbins.root",
 		  thisDirPath.Data(), whichFit.Data(), fitMrange.Data(),
 		  period_Mtype.Data(), process.Data(), lrMrange.Data(),
-		  physBinned.Data(), nBins);
+		  physBinned.Data(), nBins, hbins);
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");

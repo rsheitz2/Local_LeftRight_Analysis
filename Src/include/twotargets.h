@@ -50,7 +50,13 @@ public:
     
   bool BinDataCounts(TString target, double binVal,
 		     std::vector<double> &boundVals, int noprint=0);
+  virtual bool BinDataCounts(int whichTarget, TString target, double binVal,
+			     int noprint=0){return true;}
   virtual bool BinDataCounts(TString target, double binVal, int noprint=0);
+  bool BinDataCounts(TString target, Int_t bin);
+  virtual bool BinDataCounts(Int_t target, Bool_t Left, Double_t Spin,
+			     double binVal, int noprint=0){return true;}
+  
   virtual bool BinLeftRight();//make all left/right asymmetries
 
   void Print_LR(TString target);

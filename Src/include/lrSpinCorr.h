@@ -66,6 +66,8 @@ public:
 
   bool SetCorr(TFile *f1, TString type);
   bool SetCorr(TString target, double binVal, double avgVal, bool left);
+  virtual bool SetCorr(double binVal, double avgPol, double avgDil,
+		       Int_t target, bool left, Double_t spin) {return true;}
   void AvgCorr();
   void CorrectDilPol();
 

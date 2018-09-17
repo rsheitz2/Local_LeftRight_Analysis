@@ -44,4 +44,7 @@ void CorrectDilPol(Double_t* Asym_UpStream, Double_t* Asym_DownStream,
 void CorrectDilPol(Double_t* Asym, Double_t* e_Asym,
 		   TVectorD Dil, TVectorD Pol, Int_t nBins);
 
+Bool_t ChooseLeftRight(TString lrChoice, Double_t phi_photon, Double_t spin);
+
+
 #endif

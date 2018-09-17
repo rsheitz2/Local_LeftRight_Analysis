@@ -29,8 +29,8 @@ else
     fitMrangeType="HMDY"
     nBins=3
     hbins=150
-    fitMmin=4.30
-    fitMmax=8.50
+    fitMmin=4.30 #true fit mass range
+    fitMmax=8.50 #true fit mass range
     ##Step TWO settings
     physBinned="pT"
     process="DY"
@@ -55,7 +55,7 @@ else
     
     binFile=${analysisPath}/Presents/DATA/RealData/${fitMrangeType}/BinValues/WAll_${fitMrangeType}_${nBins}bins.txt
     InputData=${analysisPath}/Presents/DATA/RealData/
-    if [ ${fitMrangeType} == "HMDY" ]; then
+    if [ ${fitMrangeType} == "HMDY" ]; then #Speed optimization for lower data set HMDY
 	InputData+=${fitMrangeType}/${period}_${fitMrangeType}.root
     else
 	InputData+=LowM_AMDY/${period}_LowM_AMDY.root

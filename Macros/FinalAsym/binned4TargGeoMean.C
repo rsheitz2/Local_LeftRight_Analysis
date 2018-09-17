@@ -72,14 +72,14 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
   //Aesthetics setup
   TCanvas* cAsym = new TCanvas(); cAsym->Divide(4, 1, 0, 0.01);
   Double_t yMax =0.3;
-  Double_t ysys =-0.22;
+  Double_t ysys =-0.25;
   
   //Get Data file/Get graphs and plot
   TString physBinnedNames ="", fitNames="";
-  TGraphErrors *g_sys[nPhysBinned];
+  TGraphAsymmErrors *g_sys[nPhysBinned];
+  TGraphErrors *g_AN[nPhysBinned];
   for (Int_t phys=0; phys<nPhysBinned; phys++) {
-    TString AsymName;
-    TString FAname;
+    TString AsymName, FAname;
     if (whichFit[phys] == "true"){
       if (fitMrange != lrMrange){
 	cout << "fit Mass range != left/right mass range with true fit" << endl;
@@ -122,10 +122,10 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
     fitNames += whichFit[phys]+" ";
 
     cAsym->cd(phys+1);
-    TGraphErrors *g_AN =(TGraphErrors*)f_AN->Get("AN");
-    g_AN->Draw("AP"); g_AN->GetYaxis()->SetRangeUser(-yMax, yMax);
-    g_AN->SetTitle("");
-    DrawLine(g_AN, 0.0);
+    g_AN[phys] =(TGraphErrors*)f_AN->Get("AN");
+    g_AN[phys]->Draw("AP"); g_AN[phys]->GetYaxis()->SetRangeUser(-yMax, yMax);
+    g_AN[phys]->SetTitle("");
+    DrawLine(g_AN[phys], 0.0);
 
     //Calculate and Draw systematic error bars
     TGraphErrors *g_FA =(TGraphErrors*)f_sysFA->Get("gSys");
@@ -140,33 +140,29 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
     }
 
     Double_t sysErr[nBins] = {0.0};
-    CalTotalSysErrors(sysErr, g_AN, vec_sys, nBins);
+    CalTotalSysErrors(sysErr, g_AN[phys], vec_sys, nBins);
 
-    g_sys[phys] = new TGraphErrors(nBins, xvals, yvals, ex, sysErr);
+    g_sys[phys] = new TGraphAsymmErrors(nBins, xvals, yvals, ex, ex, ex,sysErr);
     SetUp(g_sys[phys]);
     g_sys[phys]->Draw("3Same");
     g_sys[phys]->SetFillColor(kRed);
     g_sys[phys]->SetFillStyle(3002);
   }//phys binned loop
 
-  /*TCanvas* cDist = new TCanvas();
-  hSys->Draw("E");
-  SetUp(hSys);
-  
   //Write Output/Final Settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
-/TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/allSysError";
+/TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/binned4TargGeoMean";
   TString fOutput;
   if (whichFit[0] == "true"){
     fOutput =
-      Form("%s/allSysError_true_%s_%s%s_%ibins.root", thisDirPath.Data(),
+      Form("%s/binned4TargGeoMean_true_%s_%s%s_%ibins.root", thisDirPath.Data(),
 	   period_Mtype.Data(), process.Data(), lrMrange.Data(), nBins);
   }
   else {
     fOutput =
-      Form("%s/allSysError_%s_%s_%s%s_%ibins_%ihbin.root", thisDirPath.Data(),
-	   fitMrange.Data(), period_Mtype.Data(), process.Data(),
-	   lrMrange.Data(), nBins, hbins);
+      Form("%s/binned4TargGeoMean_%s_%s_%s%s_%ibins_%ihbin.root",
+	   thisDirPath.Data(), fitMrange.Data(), period_Mtype.Data(),
+	   process.Data(), lrMrange.Data(), nBins, hbins);
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
@@ -174,26 +170,31 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
     TNamed fitNam ("fitNames", fitNames.Data());
     pBinNam.Write();
     fitNam.Write();
-    
+
+    for (Int_t i=0; i<nPhysBinned; i++) {
+      g_AN[i]->Write(Form("AN_%s", physBinned[i].Data() ));
+      g_sys[i]->Write(Form("sys_%s", physBinned[i].Data() ));
+    }
+
     cAsym->Write();
-    hSys->Write();
   }
 
   if (start!=1){
     cout << " " << endl;
     cout << "Settings______" << endl;
-    cout << "Data coming from:            " << path << endl;
+    cout << "Asymmetry data coming from:            " << pathAN << endl;
     cout << "physBinned nBins times:     " << nBins << endl;
     cout << "Mass type considered:   " << period_Mtype << endl;
     cout << "AN physical process:        " << process << endl;
     cout << "LR integral mass range:     " << lrMrange << endl;
     cout << "Fit mass range:     " << fitMrange << endl;
     cout << "Which fits considered:       " << endl;
-    for (Int_t i=0; i<nPhysBinned; i++) 
-      cout << whichFit[i] << " ";
+    for (Int_t i=0; i<nPhysBinned; i++) {
+      cout << physBinned[i] << ":   " << whichFit[i] << endl;
+    }
   }
   cout << " " << endl;
   if (toWrite) cout << "File:  " << fOutput << "   was written" << endl;
-  else cout << "File: " << fOutput << " was NOT written" << endl;*/
+  else cout << "File: " << fOutput << " was NOT written" << endl;
 }
 

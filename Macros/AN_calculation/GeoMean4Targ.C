@@ -42,7 +42,6 @@ Double_t e_Amp(Double_t NL[][4], Double_t NR[][4],
 
   Double_t e = L*R/( 2*(L + R)*(L + R) );
   Double_t error = e*TMath::Sqrt(LinvSum2 + RinvSum2)/Pol;
-
   return error;
 }
 
@@ -53,9 +52,9 @@ void GeoMean4Targ(TString start =""){
 TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
 
   const Int_t nBins =3;
-  TString period_Mtype ="W13_HMDY";
+  TString period_Mtype ="WAll_HMDY";
   Int_t hbins =150;
-  TString physBinned ="xPi";//xN, xPi, xF, pT, M
+  TString physBinned ="xF";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";

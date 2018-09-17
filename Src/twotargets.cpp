@@ -172,6 +172,55 @@ bool twotargets::BinDataCounts(TString target, Double_t binVal, int noprint){
 }//BinDataCounts
 
 
+bool twotargets::BinDataCounts(TString target, Int_t bin){
+  if (bin < 0 || bin > left_upstream_up.size()){
+    std::cout << "Bin value too high or too low twotargets::BinDataCounts\n";
+    exit(EXIT_FAILURE);
+    return false;
+  }
+  
+  if (target=="left_upstream_up") {
+    this->left_upstream_up.at(bin)++;
+    this->left_upstream.at(bin)++;
+    this->left.at(bin)++;}
+  else if (target=="right_upstream_up") {
+    this->right_upstream_up.at(bin)++;
+    this->right_upstream.at(bin)++;
+    this->right.at(bin)++;}
+  else if (target=="left_upstream_down") {
+    this->left_upstream_down.at(bin)++;
+    this->left_upstream.at(bin)++;
+    this->left.at(bin)++;}
+  else if (target=="right_upstream_down") {
+    this->right_upstream_down.at(bin)++;
+    this->right_upstream.at(bin)++;
+    this->right.at(bin)++;}
+  else if (target=="left_downstream_up") {
+    this->left_downstream_up.at(bin)++;
+    this->left_downstream.at(bin)++;
+    this->left.at(bin)++;}
+  else if (target=="right_downstream_up") {
+    this->right_downstream_up.at(bin)++;
+    this->right_downstream.at(bin)++;
+    this->right.at(bin)++;}
+  else if (target=="left_downstream_down") {
+    this->left_downstream_down.at(bin)++;
+    this->left_downstream.at(bin)++;
+    this->left.at(bin)++;}
+  else if (target=="right_downstream_down") {
+    this->right_downstream_down.at(bin)++;
+    this->right_downstream.at(bin)++;
+    this->right.at(bin)++;}
+  else {
+    std::cout << this->thisName << " Wrong target name to " <<
+      "twotargets::BinDataCounts" << std::endl;
+    return false;
+  }
+      
+  return true;
+}//BinDataCounts
+
+
 Bool_t twotargets::BinLeftRight(){
   
   BinOne_LeftRight(this->left, this->right, this->asym, this->e_asym, "asym");

@@ -256,7 +256,7 @@ bool lrSpinCorr::SetCorr(TString target, double binVal, double avgVal,
   }
   else {
     std::cout << this->thisName << " Wrong target name to " <<
-      "lrSpinCorr::SetCorr" << std::endl;
+      "lrSpinCorr::SetCorr   " << target << std::endl;
     return false;
   }
 

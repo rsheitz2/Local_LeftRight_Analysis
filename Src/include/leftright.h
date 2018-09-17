@@ -38,10 +38,14 @@ public:
 			     std::vector<double> &boundVals, int noprint=0) = 0;
   virtual bool BinDataCounts(TString target, double binVal, int noprint=0) = 0;
   virtual bool BinDataCounts(int whichTarget, TString target, double binVal,
-			     int noprint=0){return true;}
+			     int noprint=0) = 0;
+  virtual bool BinDataCounts(TString target, Int_t bin){return true;}
+  virtual bool BinDataCounts(Int_t target, Bool_t Left, Double_t Spin,
+			     double binVal, int noprint=0){return true;}
   virtual bool BinLeftRight() = 0;//make all left/right asymmetries
 
   virtual void Print_LR(TString target) = 0;
+  virtual void Print_PolDil(TString target){}
   virtual void Print_Asym(TString asymName) = 0;
   virtual void Print_Bounds() { CoutLoop(this->bounds, "bounds"); }
   virtual void Print_Bounds(TString target) { CoutLoop(this->bounds, "bounds");}
@@ -51,6 +55,8 @@ public:
   virtual bool SetCorr(TFile *f1, TString type){return true;}
   virtual bool SetCorr(TString target,double binVal,double avgVal,bool left){
     return true;}
+  virtual bool SetCorr(double binVal, double avgPol, double avgDil,
+		       Int_t target, bool left, Double_t spin){return true;}
   virtual void AvgCorr(){}
   virtual void CorrectDilPol(){}
   virtual void PrintCorr(TString name){}
@@ -59,6 +65,7 @@ public:
   virtual void Fill(TString toFill){}
   virtual void Draw(TString name, TString opt="AP"){}
   virtual void Write(){}
+  virtual void WriteAll(){}
 };
 
 #endif
