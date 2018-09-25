@@ -51,14 +51,14 @@ void GeoMean4Targ(TString start =""){
   TString pathAN = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
 
-  const Int_t nBins =3;
-  TString period_Mtype ="WAll_HMDY";
+  const Int_t nBins =5;
+  TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
   TString physBinned ="xF";//xN, xPi, xF, pT, M
-  TString process ="DY";//JPsi, psi, DY
-  TString lrMrange ="4.30_8.50";
-  TString fitMrange ="4.30_8.50";
-  TString whichFit ="true";
+  TString process ="JPsi";//JPsi, psi, DY
+  TString lrMrange ="2.90_3.30";
+  TString fitMrange ="1.00_8.50";
+  TString whichFit ="eight";
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -206,10 +206,11 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
 		  physBinned.Data(), nBins);
   }
   else{
-    fOutput =Form("%s/Data/GeoMean4Targ/GeoMean4Targ_%s%s_%s_%s%s_%s%i.root",
-		  thisDirPath.Data(), whichFit.Data(), fitMrange.Data(),
-		  period_Mtype.Data(), process.Data(), lrMrange.Data(),
-		  physBinned.Data(), nBins);
+    fOutput =
+      Form("%s/Data/GeoMean4Targ/GeoMean4Targ_%s%s_%s_%s%s_%s%i_%ihbin.root",
+	   thisDirPath.Data(), whichFit.Data(), fitMrange.Data(),
+	   period_Mtype.Data(), process.Data(), lrMrange.Data(),
+	   physBinned.Data(), nBins, hbins);
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");

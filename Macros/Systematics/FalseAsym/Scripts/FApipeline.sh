@@ -31,17 +31,19 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 ##########
 ##Step ONE settings
 period="WAll"
-fitMrangeType="HMDY"
-nBins=3
+fitMrangeType="LowM_AMDY"
+nBins=5
+binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/Wall_JPsi25_43_5bins.txt
 hbins=150
-fitMmin=4.30  #true fit mass range
+fitMmin=1.00  #true fit mass range
 fitMmax=8.50  #true fit mass range
+binRange="25_43"
 ##Step TWO settings
-physBinned="pT"
-process="DY"
-LR_Mmin=4.30
-LR_Mmax=8.50
-whichFit="true"
+physBinned="xF"
+process="JPsi"
+LR_Mmin=2.90
+LR_Mmax=3.30
+whichFit="eight"
 ##Step THREE settings
 
 
@@ -55,9 +57,7 @@ whichFit="true"
 
 
 
-
-
-##Setup___ last line to search setup
+##Setup___ last line (60) to search setup
 lrMrange="${LR_Mmin}_${LR_Mmax}"
 fitMrange="${fitMmin}_${fitMmax}"
 
@@ -97,7 +97,7 @@ fi
 #Basic Setup
 HOME=${analysisPath}/Local_LeftRight_Analysis/Macros
 aNPath=${HOME}/AN_calculation
-sysPath=${HOME}/Systematics/
+sysPath=${HOME}/Systematics
 sysFApath=${sysPath}/FalseAsym
 
 #Step One systematic_leftRight setup/checks
@@ -105,11 +105,12 @@ sysFApath=${sysPath}/FalseAsym
 echo " "
 echo "systematic_leftRight"
 echo " "
-sysLeftRight_Out=${analysisPath}"/Local_LeftRight_Analysis/Data/systematic_leftRight_"${period}"_"${fitMrangeType}${fitMmin}_${fitMmax}"_"${nBins}"bins_"${hbins}"hbin.root"
+sysLeftRight_Out=${analysisPath}"/Local_LeftRight_Analysis/Data/systematic_leftRight_"${period}"_"${fitMrangeType}${fitMmin}_${fitMmax}"_"
+sysLeftRight_Out+=${nBins}"bins"${binRange}"_"${hbins}"hbin.root"
 
 #systematic_leftRight Pipeline changes
 cp ${sysPath}/Scripts/systematic_leftRight_pipeline.sh ${sysPath}/Scripts/tmp_systematic_leftRight_pipeline.sh
-${sysPath}/Scripts/changeSystematic_LeftRight_Pipeline.sh ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax
+${sysPath}/Scripts/changeSystematic_LeftRight_Pipeline.sh ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax $binFile $binRange
 
 #Execute
 ${sysPath}/Scripts/systematic_leftRight_pipeline.sh 1 >> ${sysPath}/Scripts/log_systematic_leftRight_pipeline.txt
@@ -129,7 +130,7 @@ fi
 #############
 #Pipeline changes
 cp ${aNPath}/Scripts/pipeline.sh ${aNPath}/Scripts/tmp_pipeline.sh
-${aNPath}/Scripts/changePipeline.sh ${period} $fitMrangeType $nBins $hbins ${physBinned} $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax ${whichFit}
+${aNPath}/Scripts/changePipeline.sh ${period} $fitMrangeType $nBins $hbins ${physBinned} $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax ${whichFit} ${binRange} ${binFile}
 
 #Execute
 ${aNPath}/Scripts/pipeline.sh 2 >> ${aNPath}/Scripts/log_pipeline.txt
@@ -195,14 +196,14 @@ fi
 if [ ! -f ${FA_splitTarg_out} ]; then
     #falseGeoMean4Targ_splitTarg.C changes
     cp ${sysFApath}/falseGeoMean4Targ_splitTarg.C ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C
-    ${sysFApath}/Scripts/changeFalseSplitTarg.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit}
+    ${sysFApath}/Scripts/changeFalseSplitTarg.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit} $binRange
 
     #Execute falseGeoMean4Targ_splitTarg.C
-    root -l -b -q "${sysFApath}/falseGeoMean4Targ_splitTarg.C(1)"  >> ${sysFApath}/Scripts/log_falseGeoMean4Targ_splitTarg.txt
+    root -l -b -q "${sysFApath}/falseGeoMean4Targ_splitTarg.C(1)"  >> ${sysFApath}/log_falseGeoMean4Targ_splitTarg.txt
     if [ $? != 0 ]; then
 	echo "falseGeoMean4Targ_splitTarg.C did not execute well"
-	mv ${sysFApath}/falseGeoMean4Targ_splitTarg.sh ${sysFApath}/falseGeoMean4Targ_splitTarg.C.bak
-	mv ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.sh ${sysFApath}/falseGeoMean4Targ_splitTarg.C
+	mv ${sysFApath}/falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C.bak
+	mv ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C
 	exit 1
     else
 	#clean up falseGeoMean4Targ_splitTarg
@@ -216,7 +217,7 @@ fi
 
 ##Step FOUR
 #############
-sysErrorFA.C setup/checks
+#sysErrorFA.C setup/checks
 echo " "
 echo "sysErrorFA.C"
 echo " "

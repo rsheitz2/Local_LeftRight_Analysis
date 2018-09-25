@@ -151,20 +151,23 @@ void CalAmp_AmpErr(Double_t *Fasym, Double_t *e_Fasym,
 
 void falseGeoMean4Targ_splitTarg(TString start =""){
   //Setup_______________
-  const Int_t nBins =3;
-  TString period_Mtype ="WAll_HMDY";
+  const Int_t nBins =5;
+  TString binRange ="25_43";
+  TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
-  TString physBinned ="xF";//xN, xPi, xF, pT, M
-  TString process ="DY";//JPsi, psi, DY
-  TString lrMrange ="4.30_8.50";
-  TString fitMrange ="4.30_8.50";
-  TString whichFit ="true";
+  TString physBinned ="pT";//xN, xPi, xF, pT, M
+  TString process ="JPsi";//JPsi, psi, DY
+  TString lrMrange ="2.90_3.30";
+  TString fitMrange ="1.00_8.50";
+  TString whichFit ="eight";
 
   Bool_t toWrite =false;
   //Setup_______________
 
   TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/";
+  TString pathLR = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/sysFunctMFit/";
   
   if (start==""){//Basic info
     cout << "\nScript calculates false AN asymmetries using the 4 target";
@@ -206,26 +209,36 @@ TGeant/Local_LeftRight_Analysis/";
   }
 
   //File name setup && get file
-  TString inputFile;
+  TString inputFile, inputLR;
   if (whichFit=="true"){
-    inputFile = Form("Data/systematic_leftRight_%s%s_%ibins_%ihbin.root",
-		      period_Mtype.Data(), lrMrange.Data(), nBins, hbins);
+    inputFile = Form("Data/systematic_leftRight_%s%s_%ibins%s_%ihbin.root",
+		     period_Mtype.Data(), lrMrange.Data(), nBins,
+		     binRange.Data(), hbins);
   }
-  else{ //cleanup
-    inputFile = Form("functMFit_%s%s_%s_%s%s_%s%i_%ihbin_corr.root",
-		      whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
-		      process.Data(), lrMrange.Data(), physBinned.Data(),
-		      nBins, hbins);
-    path += "functMFit/";
-  }
-  
-  TFile *f_4TargLR = TFile::Open(path+inputFile);
-
-  if (!f_4TargLR){
-    cout << "Data file does not exist " << endl;
-    exit(EXIT_FAILURE);
+  else{
+    inputFile = Form("Data/systematic_leftRight_%s%s_%ibins%s_%ihbin.root",
+		     period_Mtype.Data(), fitMrange.Data(), nBins,
+		     binRange.Data(), hbins);
+    
+    inputLR = Form("sysFunctMFit_%s%s_%s_%s%s_%s%i_%ihbin.root",
+		   whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
+		   process.Data(), lrMrange.Data(), physBinned.Data(),
+		   nBins, hbins);
   }
   
+  TFile *f_sys =TFile::Open(path+inputFile), *f_LR =NULL;; 
+  if (whichFit != "true") {
+    f_LR = TFile::Open(pathLR+inputLR);
+    if (!f_LR){
+      cout << "Data file does not exist " << endl;
+      exit(EXIT_FAILURE);
+    } 
+  }
+  if (!f_sys){
+      cout << "Data file does not exist " << endl;
+      exit(EXIT_FAILURE);
+  }
+    
   //File data names setup
   const Int_t nTargPol =8;  
   TString targPolName[nTargPol] = {"upSup_upP", "upSdown_upP",       //Sub one
@@ -242,9 +255,16 @@ TGeant/Local_LeftRight_Analysis/";
       Form("%s_left_%s",physBinned.Data(),targPolName[tr].Data());
     TString inputRight =
       Form("%s_right_%s",physBinned.Data(),targPolName[tr].Data());
-        
-    TGraph *g_Left = (TGraph*)f_4TargLR->Get(inputLeft);
-    TGraph *g_Right = (TGraph*)f_4TargLR->Get(inputRight);
+
+    TGraph *g_Left, *g_Right;
+    if (whichFit == "true"){
+      g_Left = (TGraph*)f_sys->Get(inputLeft);
+      g_Right = (TGraph*)f_sys->Get(inputRight);
+    }
+    else{
+      g_Left = (TGraph*)f_LR->Get(inputLeft);
+      g_Right = (TGraph*)f_LR->Get(inputRight);
+    }
 
     if (!g_Left || !g_Right){
       cout << inputLeft << " " << inputRight << endl;
@@ -272,7 +292,7 @@ TGeant/Local_LeftRight_Analysis/";
   for (Int_t tr=0; tr<nTarg; tr++) {
     TString Polname =
       Form("%s_avgPolDil_%s",physBinned.Data(),targName[tr].Data());
-    TGraph *g_Pol = (TGraph*)f_4TargLR->Get(Polname);
+    TGraph *g_Pol = (TGraph*)f_sys->Get(Polname);
 
     if (!g_Pol) {
       cout << Polname << endl;
@@ -318,14 +338,14 @@ TGeant/Local_LeftRight_Analysis/";
     new TGraphErrors(nBins, xvals, FA_sb2_Sup, ex, eFA_sb2_Sup);
   
   TCanvas* c1 = new TCanvas();
-  Double_t yMax = 0.4;
+  Double_t yMax = 0.3;
   Double_t offset =0.01;
   SetUp(g_sb1_center); SetUp(g_sb2_center, offset);
   SetUp(g_sb1_Sup, offset*2); SetUp(g_sb2_Sup, offset*3);
-  g_sb1_center->Draw("AP");
-  g_sb2_center->Draw("Psame"); g_sb2_center->SetMarkerColor(kBlue);
-  g_sb1_Sup->Draw("Psame"); g_sb1_Sup->SetMarkerColor(kGreen);
-  g_sb2_Sup->Draw("Psame"); g_sb2_Sup->SetMarkerColor(kRed);
+  g_sb1_center->Draw("AP"); g_sb1_center->SetMarkerColor(36);
+  g_sb2_center->Draw("Psame"); g_sb2_center->SetMarkerColor(kRed);
+  g_sb1_Sup->Draw("Psame"); g_sb1_Sup->SetMarkerColor(kBlue);
+  g_sb2_Sup->Draw("Psame"); g_sb2_Sup->SetMarkerColor(38);
   g_sb1_center->GetYaxis()->SetRangeUser(-yMax, yMax);
   DrawLine(g_sb1_center, 0.0);
   

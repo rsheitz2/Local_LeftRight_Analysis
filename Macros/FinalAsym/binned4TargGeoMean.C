@@ -24,18 +24,21 @@ void binned4TargGeoMean(TString start=""){
 TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
   TString pathSys = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/Systematics";
-  const Int_t nPhysBinned =4;
-  TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
+  //const Int_t nPhysBinned =4;
+  //TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
+  const Int_t nPhysBinned =2;
+  TString physBinned[nPhysBinned] ={"xF", "pT"};
   
   //Setup_______________
-  const Int_t nBins =3;
-  TString period_Mtype ="WAll_HMDY";
+  const Int_t nBins =5;
+  TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
-  TString process ="DY";//JPsi, psi, DY
-  TString lrMrange ="4.30_8.50";
-  TString fitMrange ="4.30_8.50";
-  TString whichFit[nPhysBinned] = {"true", "true", "true", "true"};
+  TString process ="JPsi";//JPsi, psi, DY
+  TString lrMrange ="2.90_3.30";
+  TString fitMrange ="1.00_8.50";
+  //TString whichFit[nPhysBinned] = {"true", "true", "true", "true"};
   //TString whichFit[nPhysBinned] = {"six", "six", "seven", "seven"};
+  TString whichFit[nPhysBinned] = {"eight", "eight"};
 
   Bool_t falseAsym =true;
 
@@ -71,8 +74,8 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
   
   //Aesthetics setup
   TCanvas* cAsym = new TCanvas(); cAsym->Divide(4, 1, 0, 0.01);
-  Double_t yMax =0.3;
-  Double_t ysys =-0.25;
+  Double_t yMax =0.075;
+  Double_t ysys =-0.05;
   
   //Get Data file/Get graphs and plot
   TString physBinnedNames ="", fitNames="";

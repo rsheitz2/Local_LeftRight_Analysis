@@ -10,26 +10,41 @@ Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_six.h"
 #include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
 Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_seven.h"
 
+//2 Crystal Ball w/ psi' M/W = A*JPsi M/W by target
+//2 Exponential
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
+Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_eight.h"
+
+//2 Crystal Ball w/ psi' M/W = A*JPsi M/W by target
+//1 Exponential
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
+Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_nine.h"
+
 
 void DoFit(TH1D *h, TMatrixDSym &cov, Double_t Mmin, Double_t Mmax){
   h->Sumw2(); 
   TFitResultPtr status = h->Fit("fitFunc", "RLSQ", "", Mmin, Mmax);
   if (status->Status() ){
-    cout << "Fit failed!!" << endl;
-    cout << h->GetTitle() << endl;
-    exit(EXIT_FAILURE);
+    cout << h->GetTitle() << "    Fit failed Once!!" << endl;
+    
+    status = h->Fit("fitFunc", "RISQ", "", Mmin, Mmax+0.05);
+    if (status->Status() ){
+      cout << h->GetTitle() << "  Fit failed Twice!!!\n" << endl;
+      exit(EXIT_FAILURE);
+    }
   }
 
   cov = status->GetCovarianceMatrix();
 }
 
 
-Double_t FitGetPars(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
+Double_t FitGetPars(TH1D **h, TH1D **hRatio, Int_t bin,
+		    Double_t *LR, Double_t *e_LR,
 		    Double_t LR_Mmin, Double_t LR_Mmax, TString process,
 		    TString whichFit, Double_t Mmin, Double_t Mmax){
   
   Double_t processPars[8] = {0.0};//{aJPsi,mJPsi,wJPsi,Apsi,Mpsi,Wpsi,aDY,cDY}
-  Double_t LR_cov[9];
+  Double_t LR_cov[25] = {0.0};
   
   Bool_t hIsUpS =false;
   if (strncmp(Form("%s", h[bin]->GetTitle() ), "MuMu_left_upstream", 18) == 0)
@@ -37,7 +52,7 @@ Double_t FitGetPars(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
   else if (strncmp(Form("%s", h[bin]->GetTitle() ),"MuMu_right_upstream",19)==0)
     hIsUpS =true;
 
-  //Fit Setup_____
+  //Fit Setups_____
   TF1 *fitFunc = NULL;
   Int_t nPar;
   if (whichFit =="six"){
@@ -48,6 +63,10 @@ Double_t FitGetPars(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
     DoFit(h[bin], cov, Mmin, Mmax);
     
     ProcessPars_six(fitFunc, processPars, LR_cov, cov, process,nPar,hIsUpS);
+    TF1 *f_LR =ComponentFuncts_six(processPars, Mmin, Mmax, process);
+
+    IntegrateLR_six(f_LR, processPars, LR_cov, LR_Mmin, LR_Mmax,
+		    &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, process);
   }
   else if (whichFit =="seven"){
     fitFunc = SetupFunc_seven(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar);
@@ -57,65 +76,73 @@ Double_t FitGetPars(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
     DoFit(h[bin], cov, Mmin, Mmax);
     
     ProcessPars_seven(fitFunc, processPars, LR_cov, cov, process,nPar,hIsUpS);
+
+    TF1 *f_LR =ComponentFuncts_seven(processPars, Mmin, Mmax, process);
+
+    IntegrateLR_seven(f_LR, processPars, LR_cov, LR_Mmin, LR_Mmax,
+		      &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, process);
+  }
+  else if (whichFit =="eight"){
+    fitFunc = SetupFunc_eight(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar);
+    TMatrixDSym cov;
+    cov.ResizeTo(nPar, nPar);
+    DoFit(h[bin], cov, Mmin, Mmax);
+
+    ProcessPars_eight(fitFunc, processPars, LR_cov, cov, process,nPar,hIsUpS);
+    
+    Double_t *pars = fitFunc->GetParameters();
+    TF1 *f_LR =ComponentFuncts_eight(pars, Mmin, Mmax, process, hIsUpS);
+    IntegrateLR_eight(f_LR, processPars, LR_cov, (LR_Mmax - LR_Mmin)/2.0,
+		      &(LR[bin]), &(e_LR[bin]), hIsUpS, process);
+  }
+  else if (whichFit =="nine"){
+    fitFunc = SetupFunc_nine(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar);
+    
+    TMatrixDSym cov;
+    cov.ResizeTo(nPar, nPar);
+    DoFit(h[bin], cov, Mmin, Mmax);
+    
+    ProcessPars_nine(fitFunc, processPars, LR_cov, cov, process,nPar,hIsUpS);
+
+    Double_t *pars = fitFunc->GetParameters();
+    TF1 *f_LR =ComponentFuncts_nine(pars, Mmin, Mmax, process);
+    IntegrateLR_nine(f_LR, pars, LR_cov, LR_Mmin, LR_Mmax,
+		    &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, process);    
   }
   else{
     cout << "Int valid fit type:   " << whichFit << endl;
     exit(EXIT_FAILURE);
   }
 
-  //Draw physics processes
-  Double_t *pars = fitFunc->GetParameters();
-  const Double_t *e_pars = fitFunc->GetParErrors();
-  TF1 *f_JPsi =
-    new TF1("f_JPsi", "[0]*TMath::Exp(  -0.5*( ([1]-x)*([1]-x) )/( [2]*[2]))",
-	    Mmin, Mmax);
-  f_JPsi->SetParameters(processPars[0], processPars[1], processPars[2]);
-  f_JPsi->SetLineColor(kGreen); f_JPsi->Draw("same");
-
-  TF1 *f_psi =
-    new TF1("f_psi", "[0]*TMath::Exp(  -0.5*( ([1]-x)*([1]-x) )/( [2]*[2]) )",
-	    Mmin, Mmax);
-  f_psi->SetParameters(processPars[3], processPars[4], processPars[5]);
-  f_psi->SetLineColor(kGreen); f_psi->Draw("same");
-
-  Double_t DY_pars[] = {processPars[6], processPars[7], Mmin};
-  TF1 *f_DY = new TF1("f_DY", "[0]*TMath::Exp([1]*(x-[2]) )", 0, Mmax);
-  f_DY->SetParameters(DY_pars[0], DY_pars[1], DY_pars[2]);
-  f_DY->SetLineColor(kGreen); f_DY->Draw("same");
-
-  //Tmp
-  //TF1 *f_Bg = new TF1("f_Bg", "[0]*TMath::Exp([1]*(x-[2]) )", 0, Mmax);
-  //f_Bg->SetParameters(pars[4], pars[5], Mmin);
-  //f_Bg->SetLineColor(kGreen); f_Bg->Draw("same");
-  //Tmp
-
-  //Integrate for L/R counts
-  if (process =="JPsi"){
-    f_JPsi->SetLineColor(kBlack);
+  //Determine ratio of fit to data
+  TGraphErrors *gError = new TGraphErrors(hRatio[bin]->GetNbinsX() );
+  for (Int_t i=1; i<hRatio[bin]->GetNbinsX()+1; i++) 
+    gError->SetPoint(i, h[bin]->GetBinCenter(i), 0);
+  (TVirtualFitter::GetFitter())->GetConfidenceIntervals(gError);
+  
+  for (Int_t bi=1; bi<h[bin]->GetNbinsX()+1; bi++) {
+    Double_t RealData = hRatio[bin]->GetBinContent(bi);
+    Double_t RDerror = hRatio[bin]->GetBinError(bi);
     
-    LR[bin] = f_JPsi->Integral(LR_Mmin, LR_Mmax);
-    e_LR[bin] = f_JPsi->IntegralError(LR_Mmin, LR_Mmax, processPars, LR_cov);
+    Double_t fitValue = gError->Eval(h[bin]->GetBinCenter(bi) );
+    Double_t fitError = gError->GetErrorY(bi);
+    
+    Double_t error = RatioError(RealData, fitValue, RDerror, fitError);
+    Double_t ratio = RealData/fitValue;
+    //cout << RealData << " " << fitValue << " " << ratio <<endl;
+    hRatio[bin]->SetBinContent(bi, ratio);
+    hRatio[bin]->SetBinError(bi, error);
   }
-  else if (process =="psi"){
-    f_psi->SetLineColor(kBlack); 
-  
-    LR[bin] = f_psi->Integral(LR_Mmin, LR_Mmax);
-    e_LR[bin] = f_psi->IntegralError(LR_Mmin, LR_Mmax, &processPars[3], LR_cov);
-  }
-  else if (process =="DY"){
-    f_DY->SetLineColor(kBlack);
 
-    LR[bin] = f_DY->Integral(LR_Mmin, LR_Mmax);
-    e_LR[bin] = f_DY->IntegralError(LR_Mmin, LR_Mmax, DY_pars, LR_cov);
-  }
-  
+  //Get reduced Chi2
   Double_t Chi2 =fitFunc->GetChisquare();
   Double_t ndf =fitFunc->GetNDF();
   return Chi2/ndf;
 }
 
 
-void WrapperFitGetPars(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
+void WrapperFitGetPars(TH1D **h, TH1D **hRatio, Int_t bin,
+		       Double_t *LR, Double_t *e_LR,
 		       Double_t LR_Mmin, Double_t LR_Mmax, TString process,
 		       TString whichFit, Double_t Mmin, Double_t Mmax,
 		       TCanvas *c1, TH1D *hChi2){
@@ -128,7 +155,7 @@ void WrapperFitGetPars(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
     c1->cd(2*bin+2);
 
   gPad->SetLogy();
-  Double_t Chi =FitGetPars(h, bin, LR, e_LR, LR_Mmin, LR_Mmax, process,
+  Double_t Chi =FitGetPars(h, hRatio, bin, LR, e_LR, LR_Mmin, LR_Mmax, process,
 			   whichFit, Mmin, Mmax);
   hChi2->Fill(Chi);
 }
@@ -157,29 +184,46 @@ Double_t MakeAsymError(Double_t L, Double_t R, Double_t e_L, Double_t e_R,
 }
 
 
-void functMFit(Bool_t PolCorr =true, TString start=""){
-  //Setup_______________
-  TString period_Mtype ="W09_LowM_AMDY";
-  Int_t hbins =150;//# of histogram bins using in mass fitting
-  const Int_t nBins =5;//# of bins M is binned (must exist for input files)
-      
-  TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Local_leftRight_Analysis/Data/";
-  TString RDfile =Form("leftRight_byTarget_%s_%ibins_%ihbin.root",
-		       period_Mtype.Data(), nBins, hbins);
-  TString RDfile_noCorr =Form("leftRight_byTarget_%s_%ibins_noCorr.root",
-			      period_Mtype.Data(), nBins);
+void SetupRatio(TH1D* h, Double_t RatioPercent){
+  h->GetYaxis()->SetRangeUser(1-RatioPercent,1+RatioPercent);
+  DrawLine(h, 1.0);
+}
 
-  TString physBinned ="xN";//"xF", "pT"
+
+void functMFit(Bool_t PolCorr =true, TString start=""){
+  
+  //Setup_______________
+  TString period_Mtype ="WAll_LowM_AMDY";
+  Int_t hbins =150;//# of histogram bins using in mass fitting
+  const Int_t nBins =5;
+  TString binRange ="25_43";
+  TString physBinned ="xPi";//"xN", "xPi", "xF", "pT"
   TString process ="JPsi";//JPsi, psi, DY
-  Double_t LR_Mmin =2.80;
-  Double_t LR_Mmax =3.50;//L/R counts mass range
-  Double_t Mmin =2.50;//Fit Mass minimum
-  Double_t Mmax =8.50;//Fit Mass maximum
+  Double_t LR_Mmin =2.92;
+  Double_t LR_Mmax =3.32;//L/R counts mass range
+  Double_t Mmin =1.75;//Fit Mass minimum
+  Double_t Mmax =8.00;//Fit Mass maximum
   TString whichFit ="seven";
   
   Bool_t toWrite =false;
   //Setup_______________
+
+  Double_t nominal_Mmin =Mmin, nominal_Mmax =Mmax;
+  if (whichFit == "eight"){
+    cout << "Mass fitting range preset for fit eight" << endl;
+    if (physBinned=="pT") {Mmin = 1.75; Mmax = 8.00;}
+    else if (physBinned=="xF") {Mmin = 1.75; Mmax = 7.50;}
+    
+    cout << "Fit mass range updated to:  " << Mmin << "  -  " << Mmax << endl;
+  }
+  
+  TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Local_leftRight_Analysis/Data/";
+  TString RDfile =Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_%ihbin.root",
+		       period_Mtype.Data(), nBins, binRange.Data(), hbins);
+  TString RDfile_noCorr
+    =Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_noCorr.root",
+	  period_Mtype.Data(), nBins, binRange.Data() );
   
   if (start==""){
     cout<<"Script outputs AN and left/right counts per target and polarization";
@@ -231,11 +275,16 @@ TGeant/Local_leftRight_Analysis/Data/";
     for (Int_t bi=0; bi<nBins; bi++) Pol[bi] = 1.0;
   }
 
-  //Get Input Hist/Determine LR counts for specified process
+  //Get Input Hist/fit ratio/Determine LR counts for specified process
   TH1D *hRD_upS_up_L[nBins], *hRD_upS_up_R[nBins]; //Invariant M dist to be Fit
   TH1D *hRD_upS_down_L[nBins], *hRD_upS_down_R[nBins];
   TH1D *hRD_downS_up_L[nBins], *hRD_downS_up_R[nBins];
   TH1D *hRD_downS_down_L[nBins], *hRD_downS_down_R[nBins];
+
+  TH1D *hRatio_upS_up_L[nBins], *hRatio_upS_up_R[nBins]; //RD/fit ratio
+  TH1D *hRatio_upS_down_L[nBins], *hRatio_upS_down_R[nBins];
+  TH1D *hRatio_downS_up_L[nBins], *hRatio_downS_up_R[nBins];
+  TH1D *hRatio_downS_down_L[nBins], *hRatio_downS_down_R[nBins];
 
   //L/R counts for specified process
   Double_t LR_upS_up_L[nBins], LR_upS_up_R[nBins]; 
@@ -278,30 +327,72 @@ TGeant/Local_leftRight_Analysis/Data/";
 					      physBinned.Data(), bi) );
     SetUpHist(hRD_downS_up_L[bi]); SetUpHist(hRD_downS_up_R[bi]);
     SetUpHist(hRD_downS_down_L[bi]); SetUpHist(hRD_downS_down_R[bi]);
-    
 
-    WrapperFitGetPars(hRD_upS_up_L, bi, LR_upS_up_L, e_LR_upS_up_L, LR_Mmin,
-		      LR_Mmax, process, whichFit, Mmin, Mmax, cFit[0], hChi2);
-    WrapperFitGetPars(hRD_upS_up_R, bi, LR_upS_up_R, e_LR_upS_up_R, LR_Mmin,
-		      LR_Mmax, process, whichFit, Mmin, Mmax, cFit[0], hChi2);
-    WrapperFitGetPars(hRD_upS_down_L, bi, LR_upS_down_L, e_LR_upS_down_L,
-		      LR_Mmin, LR_Mmax, process, whichFit, Mmin, Mmax,
-		      cFit[1], hChi2);
-    WrapperFitGetPars(hRD_upS_down_R, bi, LR_upS_down_R, e_LR_upS_down_R,
-		      LR_Mmin, LR_Mmax, process, whichFit, Mmin, Mmax,
-		      cFit[1], hChi2);
+    hRatio_upS_up_L[bi] = (TH1D*)hRD_upS_up_L[bi]->Clone();
+    hRatio_upS_up_R[bi] = (TH1D*)hRD_upS_up_R[bi]->Clone();
+    hRatio_upS_down_L[bi] = (TH1D*)hRD_upS_down_L[bi]->Clone();
+    hRatio_upS_down_R[bi] = (TH1D*)hRD_upS_down_R[bi]->Clone();
+    SetUpHist(hRatio_upS_up_L[bi]); SetUpHist(hRatio_upS_up_R[bi]); 
+    SetUpHist(hRatio_upS_down_L[bi]); SetUpHist(hRatio_upS_down_R[bi]);
 
-    WrapperFitGetPars(hRD_downS_up_L, bi, LR_downS_up_L,e_LR_downS_up_L,LR_Mmin,
+    hRatio_downS_up_L[bi] = (TH1D*)hRD_downS_up_L[bi]->Clone();
+    hRatio_downS_up_R[bi] = (TH1D*)hRD_downS_up_R[bi]->Clone();
+    hRatio_downS_down_L[bi] = (TH1D*)hRD_downS_down_L[bi]->Clone();
+    hRatio_downS_down_R[bi] = (TH1D*)hRD_downS_down_R[bi]->Clone();
+    SetUpHist(hRatio_downS_up_L[bi]); SetUpHist(hRatio_downS_up_R[bi]); 
+    SetUpHist(hRatio_downS_down_L[bi]); SetUpHist(hRatio_downS_down_R[bi]);
+
+    WrapperFitGetPars(hRD_upS_up_L, hRatio_upS_up_L, bi,
+		      LR_upS_up_L, e_LR_upS_up_L, LR_Mmin,
+		      LR_Mmax, process, whichFit, Mmin, Mmax, cFit[0], hChi2);
+    WrapperFitGetPars(hRD_upS_up_R, hRatio_upS_up_R, bi,
+		      LR_upS_up_R, e_LR_upS_up_R, LR_Mmin,
+		      LR_Mmax, process, whichFit, Mmin, Mmax, cFit[0], hChi2);
+    WrapperFitGetPars(hRD_upS_down_L, hRatio_upS_down_L, bi,
+		      LR_upS_down_L, e_LR_upS_down_L, LR_Mmin,
+		      LR_Mmax, process, whichFit, Mmin, Mmax, cFit[1], hChi2);
+    WrapperFitGetPars(hRD_upS_down_R, hRatio_upS_down_R, bi,
+		      LR_upS_down_R, e_LR_upS_down_R, LR_Mmin,
+		      LR_Mmax, process, whichFit, Mmin, Mmax, cFit[1], hChi2);
+
+    WrapperFitGetPars(hRD_downS_up_L, hRatio_downS_up_L, bi,
+		      LR_downS_up_L, e_LR_downS_up_L, LR_Mmin,
 		      LR_Mmax, process, whichFit, Mmin, Mmax, cFit[2], hChi2);
-    WrapperFitGetPars(hRD_downS_up_R, bi, LR_downS_up_R,e_LR_downS_up_R,LR_Mmin,
+    WrapperFitGetPars(hRD_downS_up_R, hRatio_downS_up_R, bi,
+		      LR_downS_up_R, e_LR_downS_up_R, LR_Mmin,
 		      LR_Mmax, process, whichFit, Mmin, Mmax, cFit[2], hChi2);
-    WrapperFitGetPars(hRD_downS_down_L, bi, LR_downS_down_L, e_LR_downS_down_L,
-		      LR_Mmin, LR_Mmax, process, whichFit, Mmin, Mmax,
-		      cFit[3], hChi2);
-    WrapperFitGetPars(hRD_downS_down_R, bi, LR_downS_down_R, e_LR_downS_down_R,
-		      LR_Mmin, LR_Mmax, process, whichFit, Mmin, Mmax, cFit[3],
-		      hChi2);
+    WrapperFitGetPars(hRD_downS_down_L, hRatio_downS_down_L, bi,
+		      LR_downS_down_L, e_LR_downS_down_L, LR_Mmin,
+		      LR_Mmax, process, whichFit, Mmin, Mmax, cFit[3], hChi2);
+    WrapperFitGetPars(hRD_downS_down_R, hRatio_downS_down_R, bi,
+		      LR_downS_down_R, e_LR_downS_down_R, LR_Mmin,
+		      LR_Mmax, process, whichFit, Mmin, Mmax, cFit[3], hChi2);
   }//Loop over nBins physics binning
+
+  //Draw RD/fit ratios
+  TCanvas* cRatio[nTargPol];
+  for (Int_t c=0; c<nTargPol; c++) {
+    cRatio[c] = new TCanvas("Ratio_"+targNames[c]);cRatio[c]->Divide(2, nBins);}
+  Double_t RatioPercent =0.2;
+  for (Int_t bi=0; bi<nBins; bi++) {
+    cRatio[0]->cd(2*bi + 1); hRatio_upS_up_L[bi]->Draw();
+    SetupRatio(hRatio_upS_up_L[bi], RatioPercent);
+    cRatio[0]->cd(2*bi + 2); hRatio_upS_up_R[bi]->Draw();
+    SetupRatio(hRatio_upS_up_R[bi], RatioPercent);
+    cRatio[1]->cd(2*bi + 1); hRatio_upS_down_L[bi]->Draw();
+    SetupRatio(hRatio_upS_down_L[bi], RatioPercent);
+    cRatio[1]->cd(2*bi + 2); hRatio_upS_down_R[bi]->Draw();
+    SetupRatio(hRatio_upS_down_R[bi], RatioPercent);
+
+    cRatio[2]->cd(2*bi + 1); hRatio_downS_up_L[bi]->Draw();
+    SetupRatio(hRatio_downS_up_L[bi], RatioPercent);
+    cRatio[2]->cd(2*bi + 2); hRatio_downS_up_R[bi]->Draw();
+    SetupRatio(hRatio_downS_up_R[bi], RatioPercent);
+    cRatio[3]->cd(2*bi + 1); hRatio_downS_down_L[bi]->Draw();
+    SetupRatio(hRatio_downS_down_L[bi], RatioPercent);
+    cRatio[3]->cd(2*bi + 2); hRatio_downS_down_R[bi]->Draw();
+    SetupRatio(hRatio_downS_down_R[bi], RatioPercent);
+  }
   
   //Draw hChi2
   TCanvas* cChi2 = new TCanvas("Chi2");
@@ -422,7 +513,7 @@ TGeant/Local_leftRight_Analysis/Data/";
 /TGeant/Local_LeftRight_Analysis/Macros/AN_calculation";
   TString fOutput
     = Form("%s/Data/functMFit/functMFit_%s%.2f_%.2f_%s_%s%.2f_%.2f_%s%i_%ihbin",
-	   thisDirPath.Data(), whichFit.Data(), Mmin, Mmax,
+	   thisDirPath.Data(), whichFit.Data(), nominal_Mmin, nominal_Mmax,
 	   period_Mtype.Data(), process.Data(), LR_Mmin, LR_Mmax,
 	   physBinned.Data(), nBins, hbins);
   fOutput += (PolCorr) ? "_corr.root" : "_noCorr.root";

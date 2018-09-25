@@ -347,9 +347,11 @@ Double_t RatioError(Double_t A, Double_t B,
   
   Double_t r = A/B;
   if (r<0) r *= -1.0;
- 
+  if (A == 0.0) return eB;
+
   Double_t e = eA*eA/(A*A) + eB*eB/(B*B);
   e = TMath::Sqrt( e );
+  
   e *= r;
   
   return e;

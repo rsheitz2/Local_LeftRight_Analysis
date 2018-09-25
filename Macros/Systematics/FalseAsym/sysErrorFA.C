@@ -61,14 +61,14 @@ void CalAbsSys(vector<TGraphErrors*> &v_FA, Double_t *systematics){
 
 void sysErrorFA(TString start =""){
   //Setup_______________
-  const Int_t nBins =3;
-  TString period_Mtype ="WAll_HMDY";
+  const Int_t nBins =5;
+  TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
-  TString physBinned ="xF";//xN, xPi, xF, pT, M
-  TString process ="DY";//JPsi, psi, DY
-  TString lrMrange ="4.30_8.50";
-  TString fitMrange ="4.30_8.50";
-  TString whichFit ="true";
+  TString physBinned ="pT";//xN, xPi, xF, pT, M
+  TString process ="JPsi";//JPsi, psi, DY
+  TString lrMrange ="2.90_3.30";
+  TString fitMrange ="1.00_8.50";
+  TString whichFit ="eight";
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -122,12 +122,12 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/";
   }
   else{
     inFileFA =
-      Form("TargFlip/falseGeoMean4Targ_%s%s_%s_%s%s_%s%i_%ihbin.root",
+      Form("TargFlip/falseGeoMean4Targ_%s%s_%s_%s%s_%s%i_%ihbins.root",
 	   whichFit.Data(), fitMrange.Data(),period_Mtype.Data(),
 	   process.Data(),lrMrange.Data(), physBinned.Data(), nBins, hbins);
 
     inSplitTarg =
-      Form("SplitTarg/falseGeoMeanSplitTarg_%s%s_%s_%s%s_%s%i_%ihbin.root",
+      Form("SplitTarg/falseGeoMeanSplitTarg_%s%s_%s_%s%s_%s%i_%ihbins.root",
 	   whichFit.Data(), fitMrange.Data(),period_Mtype.Data(), process.Data(),
 	   lrMrange.Data(), physBinned.Data(), nBins, hbins);
   }
@@ -149,14 +149,14 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/";
   TGraphErrors *gsT_sb1_Sup= (TGraphErrors*)fFA_sT->Get("sb1_Sup");
   TGraphErrors *gsT_sb2_Sup= (TGraphErrors*)fFA_sT->Get("sb2_Sup");
   
-  vector<TGraphErrors*> vecFA{gFA_pol, gFA_subper,
+  //vector<TGraphErrors*> vecFA{gFA_pol, gFA_subper,
+  vector<TGraphErrors*> vecFA{gFA_subper,
       gsT_sb1_center, gsT_sb2_center, gsT_sb1_Sup, gsT_sb2_Sup};
 
   //Make FA/statisics average
   Double_t FA_sys[nBins] ={0.0};
   Double_t *xvals = gFA_pol->GetX();
   CalAbsSys(vecFA, FA_sys);
-  //CalAbsSys(gFA_pol, gFA_subper, FA_sys); //old
     
   //Draw systematic error
   TGraph *gSys = new TGraphErrors(nBins, xvals, FA_sys);
@@ -177,9 +177,9 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/";
   }
   else{
     fOutput =
-      Form("%s/sysErrorFA_%s%s_%s_%s%s_%s%i.root", thisDirPath.Data(),
+      Form("%s/sysErrorFA_%s%s_%s_%s%s_%s%i_%ihbin.root", thisDirPath.Data(),
 	   whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
-	   process.Data(), lrMrange.Data(), physBinned.Data(), nBins);
+	   process.Data(), lrMrange.Data(), physBinned.Data(), nBins, hbins);
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
@@ -207,4 +207,5 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/";
     cout << "File:  " << fOutput << "   was written" << endl;
   }
   else cout << "File: " << fOutput << " was NOT written" << endl;
+  cout << "\nTargFlip pol false asym was not used!!!" << endl;
 }

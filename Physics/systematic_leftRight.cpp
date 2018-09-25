@@ -206,9 +206,9 @@ int main(int argc, char **argv){
   //Event
   Errors+=tree->SetBranchAddress("trigMask", &trigMask);
   Errors+=tree->SetBranchAddress("MasterTrigMask", &MasterTrigMask);
-  Errors+=tree->SetBranchAddress("RunNum", &RunNum);
-  Errors+=tree->SetBranchAddress("SpillNum", &SpillNum);
-  Errors+=tree->SetBranchAddress("event", &event);
+  //Errors+=tree->SetBranchAddress("RunNum", &RunNum);
+  //Errors+=tree->SetBranchAddress("SpillNum", &SpillNum);
+  //Errors+=tree->SetBranchAddress("event", &event);
   //Target values
   Errors+=tree->SetBranchAddress("Spin_0", &Spin_0);
   Errors+=tree->SetBranchAddress("Spin_1", &Spin_1);
@@ -250,7 +250,6 @@ int main(int argc, char **argv){
   Double_t *basicValues[nBasics] = {&x_target, &x_beam, &x_feynman,
 				    &q_transverse, &Mmumu};
 
-  //need to cleanup
   binDist *MuMu_b_xN =
     new binDist4Targ("MuMu", "xN", binFile, nHbins, M_min, M_max);
   binDist *MuMu_b_xPi =
@@ -261,44 +260,10 @@ int main(int argc, char **argv){
     new binDist4Targ("MuMu", "pT", binFile, nHbins, M_min, M_max);
   binDist *MuMu_b[nBasics-1] = {MuMu_b_xN, MuMu_b_xPi, MuMu_b_xF, MuMu_b_pT};
 
-  //need to cleanup
-  //1st tree loop, equal out by target data
-  //Int_t nUpStream=0, nDownStream=0;
   Int_t tree_entries = (!Dflag) ? tree->GetEntries() : 1000;//Tree Loop
-  /*if (Cflag || Gflag || Vflag) {
-    for (Int_t ev=0; ev<tree_entries; ev++) {
-      tree->GetEntry(ev, 0);
-
-      //Additional Optional cuts
-      if (Tflag && (trigMask != trigChoice)) continue;
-      if (Mmumu < M_min || Mmumu > M_max) continue;
-      if (Gflag && (targetPosition!=0 && targetPosition!=1) ) continue;
-      
-      //General useful quantities
-      radius = TMath::Sqrt(vx_x*vx_x + vx_y*vx_y);
-
-      if (targetPosition == 0) {
-	nUpStream++;
-	if (Vflag) genericPhys->SetUpBounds("upstream", *boundValue);
-      }
-      else if (targetPosition == 1) {
-	nDownStream++;
-	if (Vflag) genericPhys->SetUpBounds("downstream", *boundValue);
-      }
-      else {if (!Gflag) cout << "Not in NH3 targets" << endl;}
-    }
-
-    if (Cflag || Gflag){
-    (nUpStream>nDownStream) ? nUpStream=nDownStream : nDownStream=nUpStream;
-    cout << "Number of Entries    UpStream: " << nUpStream << "   DownStream: "
-	 << nDownStream << endl;}
-
-    if (Vflag) genericPhys->MakeBounds();
-    }*/
 
   //Tree loop
   Bool_t first = true;
-  //Int_t stopUpStream=0, stopDownStream=0;
   cout << "Number of entries in tree: " << tree->GetEntries() << endl;
   for (Int_t ev=0; ev<tree_entries; ev++) {
     tree->GetEntry(ev, 0);
@@ -323,8 +288,6 @@ int main(int argc, char **argv){
       cout << " " << endl;
       first = false;
     }
-    //cleanup
-    //else if ( (stopUpStream>=nUpStream && stopDownStream>=nDownStream) ){break;}
 
     //Additional Optional cuts
     if (Tflag && (trigMask != trigChoice)) continue;
@@ -336,24 +299,24 @@ int main(int argc, char **argv){
     Double_t pol = TMath::Abs(Polarization);
     Double_t upS_vxSplit =-266.847;//HMDY
     Double_t downS_vxSplit =-191.829;//HMDY
-    if ( (vx_z > -294.5) && (vx_z < upS_vxSplit) ) {//upSup
+    if ( (vx_z >= -294.5) && (vx_z <= upS_vxSplit) ) {//upSup
       targetPosition = 0;      
       correct_dil = 0.95*dil;
     }
-    else if ( (vx_z > upS_vxSplit) && (vx_z < -239.3) ) {//upSdown
+    else if ( (vx_z > upS_vxSplit) && (vx_z <= -239.3) ) {//upSdown
       targetPosition = 1;
       correct_dil = 0.95*dil;
     }
-    else if ( (vx_z > -219.5) && (vx_z < downS_vxSplit) ) {//downSup
+    else if ( (vx_z >= -219.5) && (vx_z <= downS_vxSplit) ) {//downSup
       targetPosition = 2;
       correct_dil = 0.91*dil;
     }
-    else if ( (vx_z > downS_vxSplit) && (vx_z < -164.3) ) {//downSdown
+    else if ( (vx_z > downS_vxSplit) && (vx_z <= -164.3) ) {//downSdown
       targetPosition = 3;
       correct_dil = 0.91*dil;
     }
     else {
-      cout << "No target position defined!\n" << endl;
+      cout << vx_z << "  No target position defined!\n" << endl;
       exit(EXIT_FAILURE);
     }
 

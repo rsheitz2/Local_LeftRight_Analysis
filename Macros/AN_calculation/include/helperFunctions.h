@@ -1,3 +1,7 @@
+#ifndef HELPERFUNCTIONS_H
+#define HELPERFUNCTIONS_H
+
+
 //Conventions
 enum TargPol {upS_up, upS_down, downS_up, downS_down};
 
@@ -67,6 +71,9 @@ Double_t RatioError(Double_t A, Double_t B,
   
   Double_t r = A/B;
   if (r<0) r *= -1.0;
+  if (A==0){
+    return TMath::Sqrt( eB*eB/(B*B) );
+  }
  
   Double_t e = eA*eA/(A*A) + eB*eB/(B*B);
   e = TMath::Sqrt( e );
@@ -278,3 +285,20 @@ void GetPolarization(Double_t *vals_noPcorr, Double_t *vals, Double_t *Pol,
   }
 }
 
+
+Double_t f_CrystalBall(Double_t *x, Double_t *par){
+  //Remember the number of parameters must be in constructor!!!
+  //par[3] =alpha, par[4] =n
+  Double_t A = TMath::Power(par[4]/par[3], par[4])*TMath::Exp(-par[3]*par[3]/2.0);
+  Double_t B = par[4]/par[3] - par[3];
+  Double_t C = (par[4]/par[3])*(1.0/(par[4]-1.0))*TMath::Exp(-par[3]*par[3]/2.0);
+  Double_t D = TMath::Pi()*(1+TMath::Erf( par[3]/TMath::Sqrt(2)) );
+  
+  Double_t Norm = 1.0/(par[2]*(C+D) );
+
+  Double_t arg = (x[0] - par[1])/par[2];
+  if (arg > -par[3] ) return par[0]*Norm*TMath::Exp(-0.5*arg*arg);
+  else return par[0]*Norm*A*TMath::Power((B - arg), -par[1]);
+}
+
+#endif

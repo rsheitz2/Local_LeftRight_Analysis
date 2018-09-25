@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -ne 8 ]; then
+if [ $# -ne 9 ]; then
     echo "" 
     echo "Script updates falseGeoMean4Targ_splitTarg.C with input paramters"
     echo ""
@@ -15,6 +15,7 @@ process=$5
 lrMrange=$6
 fitMrange=$7
 whichFit=$8
+binRange=$9
 
 changeFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/falseGeoMean4Targ_splitTarg.C
 sed -i.bak "s/const Int_t nBins =.*;/const Int_t nBins =${nBins};/" ${changeFile}
@@ -26,3 +27,4 @@ sed -i.bak "s/TString lrMrange =.*;/TString lrMrange =\"${lrMrange}\";/" ${chang
 sed -i.bak "s/TString fitMrange =.*;/TString fitMrange =\"${fitMrange}\";/" ${changeFile}
 sed -i.bak "s/TString whichFit =.*;/TString whichFit =\"${whichFit}\";/" ${changeFile}
 sed -i.bak "s/Bool_t toWrite =.*;/Bool_t toWrite =true;/" ${changeFile}
+sed -i.bak "s/TString binRange =.*;/TString binRange =\"${binRange}\";/" ${changeFile}

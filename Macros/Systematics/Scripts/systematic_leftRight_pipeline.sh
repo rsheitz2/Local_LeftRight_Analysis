@@ -23,9 +23,11 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 period="WAll"
 fitMrangeType="HMDY"
 nBins=3
+binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/Wall_JPsi25_43_5bins.txt
 hbins=150
 fitMmin=4.30 #true fit mass range
 fitMmax=8.50 #true fit mass range
+binRange="25_43"
 
 
 
@@ -35,11 +37,7 @@ fitMmax=8.50 #true fit mass range
 
 
 
-
-
-##Setup ends, last setup search line
-
-binFile=${analysisPath}/Presents/DATA/RealData/${fitMrangeType}/BinValues/WAll_${fitMrangeType}_${nBins}bins.txt
+##Setup ends, last setup search line (40)
 InputData=${analysisPath}/Presents/DATA/RealData/
 if [ ${fitMrangeType} == "HMDY" ]; then #Speed optimization for lower data set HMDY
     InputData+=${fitMrangeType}/${period}_${fitMrangeType}.root
@@ -82,8 +80,8 @@ if [ ! -f ${binFile} ] || [ ! -f ${InputData} ]; then
 fi
 
 #Execute Step ONE if files don't already exist
-stepOne_Out=${pathOne}"/Data/systematic_leftRight_"${period}"_"${fitMrangeType}${fitMmin}_${fitMmax}"_"${nBins}"bins_"${hbins}"hbin.root"
-if [ ! -f ${stepOne_OutData} ]; then
+stepOne_Out=${pathOne}"/Data/systematic_leftRight_"${period}"_"${fitMrangeType}${fitMmin}_${fitMmax}"_"${nBins}"bins"${binRange}"_"${hbins}"hbin.root"
+if [ ! -f ${stepOne_Out} ]; then
     echo "Making systematic_leftRight data:"
     echo ""
     echo ""

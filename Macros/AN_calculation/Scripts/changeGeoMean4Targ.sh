@@ -19,9 +19,9 @@ else
     whichFit=${11}
     
     changeFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/GeoMean4Targ.C
-    sed -i.bak "s/nBins =[1-255]/nBins =${nBins}/" ${changeFile}
-    sed -i.bak "s/period_Mtype =.*;/period_Mtype =\"${period}_${fitMrangeType}\";/" ${changeFile}
-    sed -i.bak "s/hbins =.*;/hbins =${hbins};/" ${changeFile}
+    sed -i.bak "s/const Int_t nBins =.*;/const Int_t nBins =${nBins};/" ${changeFile}
+    sed -i.bak "s/TString period_Mtype =.*;/TString period_Mtype =\"${period}_${fitMrangeType}\";/" ${changeFile}
+    sed -i.bak "s/Int_t hbins =.*;/Int_t hbins =${hbins};/" ${changeFile}
     sed -i.bak "s/TString physBinned =.*;/TString physBinned =\"${physBinned}\";/" ${changeFile}
     sed -i.bak "s/TString process =.*;/TString process =\"${process}\";/" ${changeFile}
     sed -i.bak "s/TString lrMrange =.*;/TString lrMrange =\"${LR_Mmin}_${LR_Mmax}\";/" ${changeFile}

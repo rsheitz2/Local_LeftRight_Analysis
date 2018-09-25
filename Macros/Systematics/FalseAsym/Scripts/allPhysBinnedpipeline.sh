@@ -34,14 +34,14 @@ period="WAll"
 fitMrangeType="LowM_AMDY"
 nBins=5
 hbins=150
-fitMmin=1.0  #true fit mass range
+fitMmin=2.50  #true fit mass range
 fitMmax=8.50  #true fit mass range
 ##Step TWO settings
 process="JPsi"
 LR_Mmin=2.80
 LR_Mmax=3.50
 physBinned=("xN" "xPi" "xF" "pT")
-whichFit=("six" "six" "seven" "seven")
+whichFit=("seven" "seven" "six" "six")
 ##Step THREE settings
 
 

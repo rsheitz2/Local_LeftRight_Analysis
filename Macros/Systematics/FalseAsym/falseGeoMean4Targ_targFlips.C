@@ -136,11 +136,11 @@ void falseGeoMean4Targ_targFlips(TString start =""){
   const Int_t nBins =5;
   TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
-  TString physBinned ="xF";//xN, xPi, xF, pT, M
+  TString physBinned ="pT";//xN, xPi, xF, pT, M
   TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="4.30_8.50";
-  TString fitMrange ="4.30_8.50";
-  TString whichFit ="true";
+  TString lrMrange ="2.90_3.30";
+  TString fitMrange ="1.00_8.50";
+  TString whichFit ="eight";
 
   Bool_t toWrite =false;
   //Setup_______________

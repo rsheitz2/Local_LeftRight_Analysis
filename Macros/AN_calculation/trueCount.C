@@ -65,26 +65,24 @@ void GetLR_CountsErrors(TGraphErrors *g,
 
 
 void trueCount(Bool_t PolCorr =true, TString start=""){
-  TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Local_leftRight_Analysis/Data/";
-  
   //Setup_______________
   const Int_t nBins =4;//# of physBinned bins
   TString period_Mtype ="W07_AMDY";
   Double_t Mmin =4.20;//LR Mass minimum
   Double_t Mmax =5.00;//LR Mass maximum
-
+  TString physBinned ="x2";//"xF", "pT"
+  TString process ="DY1";//JPsi, psi, DY
+    
+  Bool_t toWrite =true;
+  
+  //Setup_______________
+    TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Local_leftRight_Analysis/Data/";
   TString RDfile =Form("leftRight_byTarget_%s%.2f_%.2f_%ibins_150hbin.root",
 		       period_Mtype.Data(), Mmin, Mmax, nBins);
   TString RDfile_noCorr
     =Form("leftRight_byTarget_%s%.2f_%.2f_%ibins_noCorr.root",
     period_Mtype.Data(), Mmin, Mmax, nBins);
-
-  TString physBinned ="x2";//"xF", "pT"
-  TString process ="DY1";//JPsi, psi, DY
-    
-  Bool_t toWrite =true;
-  //Setup_______________
   
   if (start==""){
     cout<<"Script outputs AN and left/right counts per target and polarization";
