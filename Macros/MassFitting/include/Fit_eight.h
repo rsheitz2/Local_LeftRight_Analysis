@@ -373,6 +373,43 @@ void ProcessPars_eight(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
 }
 
 
+void ProcessPars_eight(TF1 *fitFunc, Double_t *processPars,
+		     Double_t *e_processPars, TString process, Bool_t hIsUpS){
+  Double_t *pars = fitFunc->GetParameters();
+  const Double_t *e_pars = fitFunc->GetParErrors();
+  
+  Double_t psiMW;
+  if (hIsUpS) psiMW = Get_eight_Ratio("UpS");
+  else psiMW = Get_eight_Ratio("DownS");
+
+  if (process=="JPsi"){
+    processPars[0] = pars[1]; //Mass
+    processPars[1] = pars[2]; //Width
+
+    e_processPars[0] = e_pars[1]; //Mass
+    e_processPars[1] = e_pars[2]; //Width
+  }
+  else if (process=="psi"){
+    processPars[0] = pars[1]*psiMW; //Mass
+    processPars[1] = pars[2]*psiMW; //Width
+
+    e_processPars[0] = e_pars[1]*psiMW; //Mass
+    e_processPars[1] = e_pars[2]*psiMW; //Width
+  }
+  else if (process=="DY"){
+    processPars[0] = pars[8]; //Amplitude
+    processPars[1] = pars[9]; //Slope
+
+    e_processPars[0] = e_pars[8]; //Amplitude
+    e_processPars[1] = e_pars[9]; //Slope
+  }
+  else{
+    cout << "Process not defined well in Fit_eight" << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+
 TF1* ComponentFuncts_eight(Double_t *pars, Double_t Mmin, Double_t Mmax,
 			   TString process, Bool_t hIsUpS){
   Double_t psiMW = (hIsUpS) ? Get_eight_Ratio("UpS") : Get_eight_Ratio("DownS");
@@ -419,28 +456,28 @@ TF1* ComponentFuncts_eight(Double_t *pars, Double_t Mmin, Double_t Mmax,
 
 
 void IntegrateLR_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
-		       Double_t LR_Mmin, Double_t LR_Mmax,
-		       Double_t *LR, Double_t *e_LR,
-		       Double_t Mmin, Double_t Mmax, TString process){
-  (*LR) = f->Integral(LR_Mmin, LR_Mmax);
+		       Double_t binWidth, Double_t LR_Mmin, Double_t LR_Mmax,
+		       Double_t *LR, Double_t *e_LR, Double_t Mmin,
+		       Double_t Mmax, TString process){
+  (*LR) = f->Integral(LR_Mmin, LR_Mmax)/binWidth;
   
   if (process =="JPsi"){
-    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, pars, LR_cov);
+    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, pars, LR_cov)/binWidth;
   }
   else if (process =="psi"){
     Double_t psi_pars[] = {pars[5], pars[1], pars[2], pars[3], pars[4]};
-    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, psi_pars, LR_cov);
+    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, psi_pars, LR_cov)/binWidth;
   }
   else if (process =="DY"){
     Double_t DY_pars[] = {pars[8], pars[9], Mmin};
-    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, DY_pars, LR_cov);
+    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, DY_pars, LR_cov)/binWidth;
   }
 }
 
 
 void IntegrateLR_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
-		       Double_t LR_width, Double_t *LR, Double_t *e_LR,
-		       Bool_t hIsUpS, TString process){
+		       Double_t binWidth, Double_t LR_width, Double_t *LR,
+		       Double_t *e_LR, Bool_t hIsUpS, TString process){
   //Integrate around mass value
   Double_t Mass = pars[1];
   if (process == "psi") {
@@ -450,13 +487,13 @@ void IntegrateLR_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
   Double_t LR_Mmin = Mass - LR_width;
   Double_t LR_Mmax = Mass + LR_width;
   
-  (*LR) = f->Integral(LR_Mmin, LR_Mmax);
+  (*LR) = f->Integral(LR_Mmin, LR_Mmax)/binWidth;
   if (process =="JPsi"){
-    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, pars, LR_cov);
+    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, pars, LR_cov)/binWidth;
   }
   else if (process =="psi"){
     Double_t psi_pars[] = {pars[5], pars[1], pars[2], pars[3], pars[4]};
-    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, psi_pars, LR_cov);
+    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, psi_pars, LR_cov)/binWidth;
   }
   else {
     cout << "Process not defined for this IntegrateLR_eight" << endl;

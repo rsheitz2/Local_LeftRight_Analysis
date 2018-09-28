@@ -45,6 +45,7 @@ Double_t FitGetPars(TH1D **h, Int_t bin,
   
   Double_t processPars[8] = {0.0};//{aJPsi,mJPsi,wJPsi,Apsi,Mpsi,Wpsi,aDY,cDY}
   Double_t LR_cov[25] = {0.0};
+  Double_t binWidth = h[bin]->GetBinWidth(1);
   
   Bool_t hIsUpS =false;
   if (strncmp(Form("%s", h[bin]->GetTitle() ), "MuMu_left_upstream", 18) == 0)
@@ -65,7 +66,7 @@ Double_t FitGetPars(TH1D **h, Int_t bin,
     ProcessPars_six(fitFunc, processPars, LR_cov, cov, process,nPar,hIsUpS);
     TF1 *f_LR =ComponentFuncts_six(processPars, Mmin, Mmax, process);
 
-    IntegrateLR_six(f_LR, processPars, LR_cov, LR_Mmin, LR_Mmax,
+    IntegrateLR_six(f_LR, processPars, LR_cov, binWidth, LR_Mmin, LR_Mmax,
 		    &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, process);
   }
   else if (whichFit =="seven"){
@@ -79,7 +80,7 @@ Double_t FitGetPars(TH1D **h, Int_t bin,
 
     TF1 *f_LR =ComponentFuncts_seven(processPars, Mmin, Mmax, process);
 
-    IntegrateLR_seven(f_LR, processPars, LR_cov, LR_Mmin, LR_Mmax,
+    IntegrateLR_seven(f_LR, processPars, LR_cov, binWidth, LR_Mmin, LR_Mmax,
 		      &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, process);
   }
   else if (whichFit =="eight"){
@@ -92,8 +93,9 @@ Double_t FitGetPars(TH1D **h, Int_t bin,
     
     Double_t *pars = fitFunc->GetParameters();
     TF1 *f_LR =ComponentFuncts_eight(pars, Mmin, Mmax, process, hIsUpS);
-    IntegrateLR_eight(f_LR, processPars, LR_cov, (LR_Mmax - LR_Mmin)/2.0,
-		      &(LR[bin]), &(e_LR[bin]), hIsUpS, process);
+    IntegrateLR_eight(f_LR, processPars, LR_cov, binWidth,
+		      (LR_Mmax - LR_Mmin)/2.0, &(LR[bin]), &(e_LR[bin]), hIsUpS,
+		      process);
   }
   else if (whichFit =="nine"){
     fitFunc = SetupFunc_nine(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar);
@@ -106,7 +108,7 @@ Double_t FitGetPars(TH1D **h, Int_t bin,
 
     Double_t *pars = fitFunc->GetParameters();
     TF1 *f_LR =ComponentFuncts_nine(pars, Mmin, Mmax, process);
-    IntegrateLR_nine(f_LR, pars, LR_cov, LR_Mmin, LR_Mmax,
+    IntegrateLR_nine(f_LR, pars, LR_cov, binWidth, LR_Mmin, LR_Mmax,
 		    &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, process);    
   }
   else{
@@ -163,7 +165,7 @@ void sysFunctMFit(TString start=""){
   Int_t hbins =150;//# of histogram bins using in mass fitting
   const Int_t nBins =5;
   TString binRange ="25_43";
-  TString physBinned ="xF";//"xN", "xPi", "xF", "pT"
+  TString physBinned ="pT";//"xN", "xPi", "xF", "pT"
   TString process ="JPsi";//JPsi, psi, DY
   Double_t LR_Mmin =2.90;
   Double_t LR_Mmax =3.30;//L/R counts mass range
@@ -171,7 +173,7 @@ void sysFunctMFit(TString start=""){
   Double_t Mmax =8.50;//Fit Mass maximum
   TString whichFit ="eight";
   
-  Bool_t toWrite =true;
+  Bool_t toWrite =false;
   //Setup_______________
 
   Double_t nominal_Mmin =Mmin, nominal_Mmax =Mmax;

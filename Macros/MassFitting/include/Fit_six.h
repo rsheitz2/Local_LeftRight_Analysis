@@ -366,6 +366,43 @@ void ProcessPars_six(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
 }
 
 
+void ProcessPars_six(TF1 *fitFunc, Double_t *processPars,
+		     Double_t *e_processPars, TString process, Bool_t hIsUpS){
+  Double_t *pars = fitFunc->GetParameters();
+  const Double_t *e_pars = fitFunc->GetParErrors();
+  
+  Double_t psiMW;
+  if (hIsUpS) psiMW = Get_six_Ratio("UpS");
+  else psiMW = Get_six_Ratio("DownS");
+
+  if (process=="JPsi"){
+    processPars[0] = pars[1]; //Mass
+    processPars[1] = pars[2]; //Width
+
+    e_processPars[0] = e_pars[1]; //Mass
+    e_processPars[1] = e_pars[2]; //Width
+  }
+  else if (process=="psi"){
+    processPars[0] = pars[1]*psiMW; //Mass
+    processPars[1] = pars[2]*psiMW; //Width
+
+    e_processPars[0] = e_pars[1]*psiMW; //Mass
+    e_processPars[1] = e_pars[2]*psiMW; //Width
+  }
+  else if (process=="DY"){
+    processPars[0] = pars[6]; //Amplitude
+    processPars[1] = pars[7]; //Slope
+
+    e_processPars[0] = e_pars[6]; //Amplitude
+    e_processPars[1] = e_pars[7]; //Slope
+  }
+  else{
+    cout << "Process not defined well in Fit_six" << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
+
 TF1* ComponentFuncts_six(Double_t *processPars, Double_t Mmin, Double_t Mmax,
 			 TString process){
   TF1 *JPsi =
@@ -409,21 +446,21 @@ TF1* ComponentFuncts_six(Double_t *processPars, Double_t Mmin, Double_t Mmax,
 
 
 void IntegrateLR_six(TF1 *f, Double_t *processPars, Double_t *LR_cov,
-		     Double_t LR_Mmin, Double_t LR_Mmax,
+		     Double_t binWidth, Double_t LR_Mmin, Double_t LR_Mmax,
 		     Double_t *LR, Double_t *e_LR, Double_t Mmin, Double_t Mmax,
 		     TString process){
-
-  (*LR) = f->Integral(LR_Mmin, LR_Mmax);
+  (*LR) = f->Integral(LR_Mmin, LR_Mmax)/binWidth;
    
   if (process =="JPsi"){
-    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, processPars, LR_cov);
+    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, processPars, LR_cov)/binWidth;
   }
   else if (process =="psi"){
-    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, &processPars[3], LR_cov);
+    (*e_LR) =
+      f->IntegralError(LR_Mmin, LR_Mmax, &processPars[3], LR_cov)/binWidth;
   }
   else if (process =="DY"){
     Double_t DY_pars[] = {processPars[6], processPars[7], Mmin};
-    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, DY_pars, LR_cov);
+    (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, DY_pars, LR_cov)/binWidth;
   }
   
 }

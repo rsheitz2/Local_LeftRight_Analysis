@@ -54,7 +54,7 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   const Int_t nBins =5;
   TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
-  TString physBinned ="xF";//xN, xPi, xF, pT, M
+  TString physBinned ="pT";//xN, xPi, xF, pT, M
   TString process ="JPsi";//JPsi, psi, DY
   TString lrMrange ="2.90_3.30";
   TString fitMrange ="1.00_8.50";
@@ -106,6 +106,17 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
 			 period_Mtype.Data(), process.Data(), fitMrange.Data(),
 			 physBinned.Data(), nBins);
     pathAN += "trueCount/";
+  }
+  else if (whichFit=="MC"){
+    inputFiles[0] = Form("mcMFit_%s%s_%s_%s%s_%s%i_%ihbin_corr.root",
+			 whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
+			 process.Data(), lrMrange.Data(), physBinned.Data(),
+			 nBins, hbins);
+    inputFiles[1] = Form("mcMFit_%s%s_%s_%s%s_%s%i_%ihbin_noCorr.root",
+			 whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
+			 process.Data(), lrMrange.Data(), physBinned.Data(),
+			 nBins, hbins);
+    pathAN += "mcMFit/";
   }
   else{
     inputFiles[0] = Form("functMFit_%s%s_%s_%s%s_%s%i_%ihbin_corr.root",

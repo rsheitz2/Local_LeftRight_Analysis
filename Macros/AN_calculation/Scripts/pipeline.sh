@@ -27,18 +27,18 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 ##Step ONE settings
 period="WAll"
 fitMrangeType="LowM_AMDY"
-nBins=5
+nBins=3
 binFile=${analysisPath}/Presents/DATA/RealData/${fitMrangeType}/BinValues/WAll_${fitMrangeType}_${nBins}bins.txt
-hbins=150
-fitMmin=1.00 #true fit mass range
+hbins=70
+fitMmin=2.00 #true fit mass range
 fitMmax=8.50 #true fit mass range
 binRange="25_43"
 ##Step TWO settings
-physBinned="pT"
+physBinned="xF"
 process="JPsi"
-LR_Mmin=2.90 #does nothing with whichFit==true
-LR_Mmax=3.30 #does nothing with whichFit==true
-whichFit="eight"
+LR_Mmin=3.00 #does nothing with whichFit==true
+LR_Mmax=3.20 #does nothing with whichFit==true
+whichFit="MC"
 ##Step THREE settings
 
 
@@ -166,6 +166,9 @@ stepTwo_OutData=${pathTwo}/Data
 if [ ${whichFit} == "true" ]; then
     echo "trueCount.C"
     stepTwo_OutData+=/trueCount/trueCount_${period}_${fitMrangeType}_${process}${fitMmin}_${fitMmax}_${physBinned}${nBins}
+elif [ ${whichFit} == "MC" ]; then
+    echo "mcMFit.C"
+    stepTwo_OutData+=/mcMFit/mcMFit_${whichFit}${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${LR_Mmin}_${LR_Mmax}_${physBinned}${nBins}_${hbins}hbin
 else
     echo "functMFit.C"
     stepTwo_OutData+=/functMFit/functMFit_${whichFit}${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${LR_Mmin}_${LR_Mmax}_${physBinned}${nBins}_${hbins}hbin
@@ -197,6 +200,25 @@ if [ ! -f ${stepTwo_OutData} ]; then
 	    mv ${pathTwo}/tmpTrueTwo.C ${pathTwo}/trueCount.C
 	    rm ${pathTwo}/trueCount.C.bak
 	    rm ${pathTwo}/log_trueCount.txt
+	fi
+    elif [ ${whichFit} == "MC" ];then
+	#Prepare mcMFit.C macro settings
+	cp ${pathTwo}/mcMFit.C ${pathTwo}/tmpMcTwo.C
+	${pathTwo}/Scripts/changeMcMFit.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange
+	
+	#Execute pol corrected and pol unCorr
+	root -l -b -q "${pathTwo}/mcMFit.C(true, 1)" >> ${pathTwo}/log_mcMFit.txt
+	root -l -b -q "${pathTwo}/mcMFit.C(false, 1)" >> ${pathTwo}/log_mcMFit.txt
+	if [ $? != 0 ]; then
+	    echo "mcMFit.C did not execute well"
+	    mv ${pathTwo}/mcMFit.C ${pathTwo}/mcMFit.C.bak	    
+	    mv ${pathTwo}/tmpMcTwo.C ${pathTwo}/mcMFit.C
+	    exit 1
+	else
+	    #clean up mcMFit.C
+	    mv ${pathTwo}/tmpMcTwo.C ${pathTwo}/mcMFit.C
+	    rm ${pathTwo}/mcMFit.C.bak
+	    rm ${pathTwo}/log_mcMFit.txt
 	fi
     else
 	#Prepare functMFit.C macro settings

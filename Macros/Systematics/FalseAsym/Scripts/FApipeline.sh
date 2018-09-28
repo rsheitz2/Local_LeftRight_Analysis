@@ -35,7 +35,7 @@ fitMrangeType="LowM_AMDY"
 nBins=5
 binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/Wall_JPsi25_43_5bins.txt
 hbins=150
-fitMmin=1.00  #true fit mass range
+fitMmin=2.00  #true fit mass range
 fitMmax=8.50  #true fit mass range
 binRange="25_43"
 ##Step TWO settings
@@ -43,7 +43,7 @@ physBinned="xF"
 process="JPsi"
 LR_Mmin=2.90
 LR_Mmax=3.30
-whichFit="eight"
+whichFit="MC"
 ##Step THREE settings
 
 
