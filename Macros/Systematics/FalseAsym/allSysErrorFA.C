@@ -45,21 +45,23 @@ void allSysErrorFA(TString start=""){
   TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/\
 Data";
-  //const Int_t nPhysBinned =4;
-  //TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
-  const Int_t nPhysBinned =2;
-  TString physBinned[nPhysBinned] ={"xF", "pT"};
+  const Int_t nPhysBinned =4;
+  TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
+  //const Int_t nPhysBinned =2;
+  //TString physBinned[nPhysBinned] ={"xF", "pT"};
   
   //Setup_______________
-  const Int_t nBins =5;
+  const Int_t nBins =3;
   TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
   TString process ="JPsi";//JPsi, psi, DY
   TString lrMrange ="2.90_3.30";
-  TString fitMrange ="1.00_8.50";
+  TString fitMrange ="2.00_7.50";
   //TString whichFit[] ={"true", "true", "true", "true"};
   //TString whichFit[] ={"seven", "seven", "six", "six"};
-  TString whichFit[] ={"eight", "eight"};
+  TString whichFit[] ={"ten", "ten", "ten", "ten"};
+  //TString whichFit[] ={"eight", "eight", "eight", "eight"};
+  //TString whichFit[] ={"eight", "eight"};
 
   Bool_t toWrite =false;
   //Setup_______________  
@@ -89,24 +91,22 @@ Data";
   }
   
   //Aesthetics setup
-  //TCanvas* cFA = new TCanvas(); cFA->Divide(4, 1, 0, 0.01);
-  TCanvas* cFA = new TCanvas(); cFA->Divide(2, 1, 0.01, 0.01);
-  //TCanvas* cSysFA = new TCanvas(); cSysFA->Divide(4, 1, 0, 0.01);
-  TCanvas* cSysFA = new TCanvas(); cSysFA->Divide(2, 1, 0.01, 0.01);
-  //TCanvas* cWavg = new TCanvas(); cWavg->Divide(4, 1, 0, 0.01);
-  TCanvas* cWavg = new TCanvas(); cWavg->Divide(2, 1, 0.01, 0.01);
-  //Double_t offsets[nPhysBinned] = {0.006, 0.01, 0.01, 0.05};
-  Double_t offsets[nPhysBinned] = {0.01, 0.05};
-  Double_t yMax =0.2;
-  
+  TCanvas* cFA = new TCanvas(); cFA->Divide(4, 1, 0, 0.01);
+  TCanvas* cSysFA = new TCanvas(); cSysFA->Divide(4, 1, 0, 0.01);
+  TCanvas* cWavg = new TCanvas(); cWavg->Divide(4, 1, 0, 0.01);
+  Double_t offsets[nPhysBinned] = {0.007, 0.015, 0.018, 0.05};
+  Double_t minX[nPhysBinned] = {0.08, 0.25, 0.05, 0.5};
+  Double_t maxX[nPhysBinned] = {0.3, 0.8, 0.7, 2.5};
+
   //Get Data file/Get graphs and plot
-  TH1D* hSys = new TH1D("hSys", "hSys", 5, 0, 0.60);
+  //TH1D* hSys = new TH1D("hSys", "hSys", 12, 0, 1);
+  TH1D* hSys = new TH1D("hSys", "hSys", 12, 0, 5);
   TString physBinnedNames ="", fitNames="";
   Double_t FA_wAvg[nPhysBinned][nBins], eFA_wAvg[nPhysBinned][nBins];
   Double_t ex[nBins] = {0.0};
   TGraphErrors *gFA_wAvg[nPhysBinned];
   for (Int_t phys=0; phys<nPhysBinned; phys++) {
-    TString inFileFA, inSplitTarg, sysName;
+    TString inFileFA, inSplitTarg, inRunNum, sysName;
     if (whichFit[phys] == "true"){
       if (fitMrange != lrMrange){
 	cout << "fit Mass range != left/right mass range with true fit" << endl;
@@ -119,6 +119,10 @@ Data";
 	     physBinned[phys].Data(), nBins);
       inSplitTarg =
 	Form("%s/SplitTarg/falseGeoMeanSplitTarg_true_%s_%s%s_%s%i.root",
+	     path.Data(), period_Mtype.Data(), process.Data(), lrMrange.Data(),
+	     physBinned[phys].Data(), nBins);
+      inRunNum =
+	Form("%s/RunNums/falseGeoMeanRunNums_true_%s_%s%s_%s%i.root",
 	     path.Data(), period_Mtype.Data(), process.Data(), lrMrange.Data(),
 	     physBinned[phys].Data(), nBins);
       sysName =
@@ -137,6 +141,11 @@ Data";
 	     path.Data(), whichFit[phys].Data(), fitMrange.Data(),
 	     period_Mtype.Data(), process.Data(), lrMrange.Data(),
 	     physBinned[phys].Data(), nBins, hbins);
+      inRunNum =
+	Form("%s/RunNums/falseGeoMeanRunNums_%s%s_%s_%s%s_%s%i_%ihbins.root",
+	     path.Data(), whichFit[phys].Data(), fitMrange.Data(),
+	     period_Mtype.Data(), process.Data(), lrMrange.Data(),
+	     physBinned[phys].Data(), nBins, hbins);
       sysName =
 	Form("%s/sysError/sysErrorFA_%s%s_%s_%s%s_%s%i_%ihbin.root", 
 	     path.Data(), whichFit[phys].Data(), fitMrange.Data(),
@@ -146,8 +155,9 @@ Data";
     
     TFile *f_FA = TFile::Open(inFileFA);
     TFile *fFA_sT = TFile::Open(inSplitTarg);
+    TFile *fFA_runNum = TFile::Open(inRunNum);
     TFile *f_sys = TFile::Open(sysName);
-    if (!f_FA || !fFA_sT || !f_sys){
+    if ( !f_FA || !fFA_sT || !fFA_runNum || !f_sys ){
       cout << "False asymmetries or systematic error file does not exist"<<endl;
       exit(EXIT_FAILURE);
     }
@@ -164,29 +174,37 @@ Data";
     TGraphErrors *gsT_sb2_center= (TGraphErrors*)fFA_sT->Get("sb2_center");
     TGraphErrors *gsT_sb1_Sup= (TGraphErrors*)fFA_sT->Get("sb1_Sup");
     TGraphErrors *gsT_sb2_Sup= (TGraphErrors*)fFA_sT->Get("sb2_Sup");
-    vector<TGraphErrors*> vecFA{g_FA_subper,
-      gsT_sb1_center, gsT_sb2_center, gsT_sb1_Sup, gsT_sb2_Sup};
-    //vector<TGraphErrors*> vecFA{g_FA_pol, g_FA_subper};
+    //     RunNum
+    TGraphErrors *gFA_runNum= (TGraphErrors*)fFA_runNum->Get("FA_RunNums");
+
+    vector<TGraphErrors*> vecFA{g_FA_pol, g_FA_subper,
+	gsT_sb1_center, gsT_sb2_center, gsT_sb1_Sup, gsT_sb2_Sup,
+	gFA_runNum};
     
-    OffSet(gsT_sb1_center, offsets[phys]);
-    OffSet(gsT_sb2_center, offsets[phys]);
-    OffSet(gsT_sb1_Sup, offsets[phys]);
-    OffSet(gsT_sb2_Sup, offsets[phys]);
-    gsT_sb2_center->SetMarkerColor(7);
-    gsT_sb2_Sup->SetMarkerColor(28);
+    OffSet(gsT_sb1_center, 2*offsets[phys]);
+    OffSet(gsT_sb2_center, 3*offsets[phys]);
+    OffSet(gsT_sb1_Sup, 4*offsets[phys]);
+    OffSet(gsT_sb2_Sup, 5*offsets[phys]);
+    OffSet(gFA_runNum, 6*offsets[phys]);
+    //gsT_sb2_center->SetMarkerColor(7);
+    //gsT_sb2_Sup->SetMarkerColor(28);
     
-    //g_FA_pol->Draw("AP");
-    //g_FA_subper->Draw("Psame");
-    g_FA_subper->Draw("AP"); g_FA_subper->GetYaxis()->SetRangeUser(-0.3, 0.3);
+    //g_FA_pol->Draw("AP"); g_FA_pol->GetYaxis()->SetRangeUser(-0.5, 0.5);
+    g_FA_pol->Draw("AP"); g_FA_pol->GetYaxis()->SetRangeUser(-0.25, 0.25);
+    g_FA_subper->Draw("Psame");
     gsT_sb1_center->Draw("Psame"); gsT_sb2_center->Draw("Psame");
     gsT_sb1_Sup->Draw("Psame"); gsT_sb2_Sup->Draw("Psame");
+    gFA_runNum->Draw("Psame");
+    
     g_FA_pol->SetTitle("False Asym");
+    g_FA_pol->GetXaxis()->SetLimits(minX[phys], maxX[phys]);
     DrawLine(g_FA_pol, 0.0);
 
     cSysFA->cd(phys+1);
     TGraphErrors *g_sys =(TGraphErrors*)f_sys->Get("gSys");
     g_sys->Draw("AP"); g_sys->SetTitle("Sys Error/Stat Error");
-    g_sys->GetYaxis()->SetRangeUser(0, 0.6);
+    //g_sys->GetYaxis()->SetRangeUser(0, 1.0);
+    g_sys->GetYaxis()->SetRangeUser(0, 5.0);
 
     FillValues(hSys, g_sys);
 
@@ -199,9 +217,10 @@ Data";
     Double_t *xvals = g_FA_pol->GetX();
     gFA_wAvg[phys] = new TGraphErrors(nBins, xvals, FA_wAvg[phys],
 				      ex, eFA_wAvg[phys]);
-    SetUp(gFA_wAvg[phys]); gFA_wAvg[phys]->GetYaxis()->SetRangeUser(-0.2, 0.2);
+    SetUp(gFA_wAvg[phys]); gFA_wAvg[phys]->GetYaxis()->SetRangeUser(-0.25, 0.25);
     cWavg->cd(phys+1);
     gFA_wAvg[phys]->Draw("AP"); gFA_wAvg[phys]->SetTitle("WAvg");
+    DrawLine(gFA_wAvg[phys], 0.0);
   }//phys binned loop
 
   TCanvas* cDist = new TCanvas();
@@ -220,9 +239,9 @@ Data";
   }
   else {
     fOutput =
-      Form("%s/allSysErrorFA_%s_%s_%s%s_%ibins_%ihbin.root", thisDirPath.Data(),
-	   fitMrange.Data(), period_Mtype.Data(), process.Data(),
-	   lrMrange.Data(), nBins, hbins);
+      Form("%s/allSysErrorFA_%s%s_%s_%s%s_%ibins_%ihbin.root",
+	   thisDirPath.Data(), whichFit[0].Data(), fitMrange.Data(),
+	   period_Mtype.Data(), process.Data(), lrMrange.Data(), nBins, hbins);
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
@@ -252,6 +271,5 @@ Data";
   cout << " " << endl;
   if (toWrite) cout << "File:  " << fOutput << "   was written" << endl;
   else cout << "File: " << fOutput << " was NOT written" << endl;
-  cout << "\nTargFlip pol false asym was not used!!!" << endl;
 }
 

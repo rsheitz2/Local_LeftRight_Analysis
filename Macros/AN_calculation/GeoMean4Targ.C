@@ -15,11 +15,11 @@ Double_t Amp(Double_t NL[][4], Double_t NR[][4],
   Double_t L=Lup*Ldown, R=Rup*Rdown;
   L = TMath::Power(L, 0.25);
   R = TMath::Power(R, 0.25);
-
+  
   Double_t A = L - R;
   A /= ( L + R );
   A /= Pol;
-
+  
   return A;
 }
 
@@ -42,6 +42,7 @@ Double_t e_Amp(Double_t NL[][4], Double_t NR[][4],
 
   Double_t e = L*R/( 2*(L + R)*(L + R) );
   Double_t error = e*TMath::Sqrt(LinvSum2 + RinvSum2)/Pol;
+
   return error;
 }
 
@@ -57,8 +58,8 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   TString physBinned ="pT";//xN, xPi, xF, pT, M
   TString process ="JPsi";//JPsi, psi, DY
   TString lrMrange ="2.90_3.30";
-  TString fitMrange ="1.00_8.50";
-  TString whichFit ="eight";
+  TString fitMrange ="2.00_7.50";
+  TString whichFit ="ten";
 
   Bool_t toWrite =false;
   //Setup_______________

@@ -8,16 +8,18 @@ Double_t Amp(Double_t NL_t1, Double_t NR_t1,
 	     Double_t Pol){
   
   Double_t L = NL_t1*NL_t2*NL_t3*NL_t4;
-  L = TMath::Power(L, 0.25);
-    
   Double_t R = NR_t1*NR_t2*NR_t3*NR_t4;
+  
+  //L = TMath::Sqrt(L);
+  //R = TMath::Sqrt(R);
+  
+  L = TMath::Power(L, 0.25);
   R = TMath::Power(R, 0.25);
 
   Double_t A = L - R;
   A /= ( L + R );
-  A /= Pol;
 
-  return A;
+  return A/Pol;
 }
 
 
@@ -30,24 +32,40 @@ Double_t e_Amp(Double_t NL_t1, Double_t NR_t1,
 	       Double_t e_NL_t3, Double_t e_NR_t3,
 	       Double_t e_NL_t4, Double_t e_NR_t4,
 	       Double_t Pol){
-  Double_t L =NL_t1*NL_t2*NL_t3*NL_t4;
-  L = TMath::Power(L, 0.25);
+  
   Double_t LinvSum2 =
     e_NL_t1*e_NL_t1/(NL_t1*NL_t1) +
     e_NL_t2*e_NL_t2/(NL_t2*NL_t2) +
     e_NL_t3*e_NL_t3/(NL_t3*NL_t3) +
     e_NL_t4*e_NL_t4/(NL_t4*NL_t4);
-  
-  Double_t R = NR_t1*NR_t2*NR_t3*NR_t4;
-  R = TMath::Power(R, 0.25);
+  LinvSum2 = TMath::Sqrt(LinvSum2);
   Double_t RinvSum2 =
     e_NR_t1*e_NR_t1/(NR_t1*NR_t1) +
     e_NR_t2*e_NR_t2/(NR_t2*NR_t2) +
     e_NR_t3*e_NR_t3/(NR_t3*NR_t3) +
     e_NR_t4*e_NR_t4/(NR_t4*NR_t4);
-    
-  Double_t e = L*R/( 2*(L + R)*(L + R) );
-  return e*TMath::Sqrt(LinvSum2 + RinvSum2)/Pol;
+  RinvSum2 = TMath::Sqrt(RinvSum2);
+  
+  Double_t L =NL_t1*NL_t2*NL_t3*NL_t4;
+  Double_t R = NR_t1*NR_t2*NR_t3*NR_t4;
+
+  //L = TMath::Sqrt(L);
+  //R = TMath::Sqrt(R);
+  //Double_t dL = 0.5*L*LinvSum2;
+  //Double_t dR = 0.5*R*RinvSum2;
+
+  L = TMath::Power(L, 0.25);
+  R = TMath::Power(R, 0.25);
+  Double_t dL = 0.25*L*LinvSum2;
+  Double_t dR = 0.25*R*RinvSum2;
+
+  Double_t epsilon = (L - R)/(L + R);
+  Double_t error =
+    (1 - epsilon)*(1-epsilon)*dL*dL + (1 + epsilon)*(1 + epsilon)*dR*dR;
+  error = TMath::Sqrt(error);
+  error *= 1.0/(L + R);
+  
+  return error/Pol;
 }
 
 
@@ -155,11 +173,11 @@ void falseGeoMean4Targ_splitTarg(TString start =""){
   TString binRange ="25_43";
   TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
-  TString physBinned ="pT";//xN, xPi, xF, pT, M
+  TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="JPsi";//JPsi, psi, DY
   TString lrMrange ="2.90_3.30";
-  TString fitMrange ="1.00_8.50";
-  TString whichFit ="eight";
+  TString fitMrange ="2.00_7.50";
+  TString whichFit ="ten";
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -216,9 +234,8 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/sysFunctMFit/"
 		     binRange.Data(), hbins);
   }
   else{
-    inputFile = Form("Data/systematic_leftRight_%s%s_%ibins%s_%ihbin.root",
-		     period_Mtype.Data(), fitMrange.Data(), nBins,
-		     binRange.Data(), hbins);
+    inputFile = Form("Data/systematic_leftRight_%s1.00_8.50_%ibins%s_%ihbin.root",
+		     period_Mtype.Data(), nBins, binRange.Data(), hbins);
     
     inputLR = Form("sysFunctMFit_%s%s_%s_%s%s_%s%i_%ihbin.root",
 		   whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
@@ -339,7 +356,8 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/sysFunctMFit/"
   
   TCanvas* c1 = new TCanvas();
   Double_t yMax = 0.3;
-  Double_t offset =0.01;
+  //Double_t offset =0.01;
+  Double_t offset =0.0;
   SetUp(g_sb1_center); SetUp(g_sb2_center, offset);
   SetUp(g_sb1_Sup, offset*2); SetUp(g_sb2_Sup, offset*3);
   g_sb1_center->Draw("AP"); g_sb1_center->SetMarkerColor(36);

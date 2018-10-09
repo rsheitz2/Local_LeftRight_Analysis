@@ -27,21 +27,23 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 
 
 
-##Setup___  first line to seach setup
+##Setup___  first line (30) to seach setup
 ##########
 ##Step ONE settings
 period="WAll"
 fitMrangeType="LowM_AMDY"
 nBins=5
+binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/WAll_JPsi25_43_${nBins}bins.txt
 hbins=150
-fitMmin=2.50  #true fit mass range
-fitMmax=8.50  #true fit mass range
+fitMmin=2.00  #true fit mass range
+fitMmax=7.50  #true fit mass range
+binRange="25_43"
 ##Step TWO settings
 process="JPsi"
-LR_Mmin=2.80
-LR_Mmax=3.50
+LR_Mmin=2.90
+LR_Mmax=3.30
 physBinned=("xN" "xPi" "xF" "pT")
-whichFit=("seven" "seven" "six" "six")
+whichFit=("ten" "ten" "ten" "ten")
 ##Step THREE settings
 
 
@@ -57,7 +59,7 @@ whichFit=("seven" "seven" "six" "six")
 
 
 
-##Setup___ last line to search setup
+##Setup___ last line (60) to search setup
 lrMrange="${LR_Mmin}_${LR_Mmax}"
 fitMrange="${fitMmin}_${fitMmax}"
 
@@ -103,9 +105,14 @@ sysPath=${HOME}/Systematics/FalseAsym
 cp ${sysPath}/Scripts/FApipeline.sh ${sysPath}/Scripts/tmp_FApipeline.sh
 
 for i in `seq 0 3`; do
+    echo ""
+    echo "Physics Binned ${physBinned[$i]}"
+    echo ""
+    
     #Step THREE falseAsymmetry setup/checks    
     #FApipeline changes
-    ${sysPath}/Scripts/changeFApipeline.sh ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax ${physBinned[$i]} $process $LR_Mmin $LR_Mmax ${whichFit[$i]}
+    ${sysPath}/Scripts/changeFApipeline.sh ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax ${physBinned[$i]} $process $LR_Mmin $LR_Mmax ${whichFit[$i]} \
+	      ${binRange} ${binFile}
     #Execute
     ${sysPath}/Scripts/FApipeline.sh 1 >> ${sysPath}/Scripts/log_FApipeline.txt
     if [ $? != 0 ]; then
@@ -134,24 +141,20 @@ else
     stepFiveFile+=${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${lrMrange}_${physBinned[$i]}${nBins}.root
 fi
 
-if [ ! -f ${stepFiveFile} ]; then
-    #allSysErrorFA.C changes
-    cp ${sysPath}/allSysErrorFA.C ${sysPath}/tmp_allSysErrorFA.C
-    ${sysPath}/Scripts/changeAllSysErrorFA.sh $nBins ${period}_${fitMrangeType} $hbins $process $lrMrange $fitMrange ${whichFit[@]}
+#allSysErrorFA.C changes
+cp ${sysPath}/allSysErrorFA.C ${sysPath}/tmp_allSysErrorFA.C
+${sysPath}/Scripts/changeAllSysErrorFA.sh $nBins ${period}_${fitMrangeType} $hbins $process $lrMrange $fitMrange ${whichFit[@]}
 
-    #Execute allSysErrorFA.C
-    root -l -b -q "${sysPath}/allSysErrorFA.C(1)" >> ${sysPath}/log_allSysErrorFA.txt
-    if [ $? != 0 ]; then
-	echo "allSysErrorFA.C did not execute well"
-	mv ${sysPath}/allSysErrorFA.C ${sysPath}/allSysErrorFA.C.bak
-	mv ${sysPath}/tmp_allSysErrorFA.C ${sysPath}/allSysErrorFA.C
-	exit 1
-    else
-	#cleanup allSysErrorFA.C
-	mv ${sysPath}/tmp_allSysErrorFA.C ${sysPath}/allSysErrorFA.C
-	rm ${sysPath}/allSysErrorFA.C.bak
-	rm ${sysPath}/log_allSysErrorFA.txt
-    fi
+#Execute allSysErrorFA.C
+root -l -b -q "${sysPath}/allSysErrorFA.C(1)" >> ${sysPath}/log_allSysErrorFA.txt
+if [ $? != 0 ]; then
+    echo "allSysErrorFA.C did not execute well"
+    mv ${sysPath}/allSysErrorFA.C ${sysPath}/allSysErrorFA.C.bak
+    mv ${sysPath}/tmp_allSysErrorFA.C ${sysPath}/allSysErrorFA.C
+    exit 1
 else
-    echo "File  $stepFiveFile  file already exist"
+    #cleanup allSysErrorFA.C
+    mv ${sysPath}/tmp_allSysErrorFA.C ${sysPath}/allSysErrorFA.C
+    rm ${sysPath}/allSysErrorFA.C.bak
+    rm ${sysPath}/log_allSysErrorFA.txt
 fi

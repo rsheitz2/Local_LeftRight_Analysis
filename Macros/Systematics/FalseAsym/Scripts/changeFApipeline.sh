@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -ne 11 ]; then
+if [ $# -ne 13 ]; then
      echo "" 
      echo "Script updates FApipeline.C with input paramters"
      echo ""
@@ -18,6 +18,9 @@ process=$8
 LR_Mmin=$9
 LR_Mmax=${10}
 whichFit=${11}
+binRange=${12}
+binFile=${13}
+
 
 changeFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Scripts/FApipeline.sh
 sed -i.bak "30,60s/period=\".*\"/period=\"${period}\"/" ${changeFile}
@@ -31,3 +34,5 @@ sed -i.bak "30,60s/process=.*/process=\"${process}\"/" ${changeFile}
 sed -i.bak "30,60s/LR_Mmin=.*/LR_Mmin=${LR_Mmin}/" ${changeFile}
 sed -i.bak "30,60s/LR_Mmax=.*/LR_Mmax=${LR_Mmax}/" ${changeFile}
 sed -i.bak "30,60s/whichFit=.*/whichFit=\"${whichFit}\"/" ${changeFile}
+sed -i.bak "30,60s/binRange=.*/binRange=\"${binRange}\"/" ${changeFile}
+sed -i.bak "30,60s%binFile=.*%binFile=\"${binFile}\"%" ${changeFile}

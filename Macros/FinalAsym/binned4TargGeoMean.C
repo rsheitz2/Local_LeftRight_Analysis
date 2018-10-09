@@ -3,8 +3,10 @@
 
 void CalTotalSysErrors(Double_t *sysErr, TGraphErrors *g_AN,
 		       vector<TGraphErrors*> &vec, Int_t nBins){
+  //This function has errors!!!  stat errors should be something else
+  
   for (vector<TGraphErrors*>::iterator it=vec.begin(); it!=vec.end(); it++){
-    
+
     Double_t *yvals = (*it)->GetY();
     Double_t *e_AN = g_AN->GetEY();
     for (Int_t bi=0; bi<nBins; bi++) {
@@ -26,22 +28,20 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
 TGeant/Local_LeftRight_Analysis/Macros/Systematics";
   const Int_t nPhysBinned =4;
   TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
-  //const Int_t nPhysBinned =2;
-  //TString physBinned[nPhysBinned] ={"xF", "pT"};
   
   //Setup_______________
-  const Int_t nBins =5;
-  TString period_Mtype ="WAll_LowM_AMDY";
+  const Int_t nBins =3;
+  TString period_Mtype ="WAll_HMDY";
   Int_t hbins =150;
-  TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="2.90_3.30";
-  TString fitMrange ="1.00_8.50";
-  //TString whichFit[nPhysBinned] = {"true", "true", "true", "true"};
-  //TString whichFit[nPhysBinned] = {"six", "six", "seven", "seven"};
-  TString whichFit[nPhysBinned] = {"MC", "MC", "MC", "MC"};
-  //TString whichFit[nPhysBinned] = {"eight", "eight"};
+  TString process ="DY";//JPsi, psi, DY
+  TString lrMrange ="4.30_8.50";
+  TString fitMrange ="4.30_8.50";
+  TString whichFit[nPhysBinned] = {"true", "true", "true", "true"};
+  //TString whichFit[nPhysBinned] = {"ten", "ten", "ten", "ten"};
+  //TString whichFit[nPhysBinned] = {"MC", "MC", "MC", "MC"};
 
-  Bool_t falseAsym =false;
+  Bool_t falseAsym =true;
+  Bool_t periodCompatiblity =false;
 
   Bool_t toWrite =false;
   //Setup_______________  
@@ -67,7 +67,8 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
       cout << whichFit[i] << " ";
     }
     cout << "\n\nSytemtaics considered:" << endl;
-    cout << "    False asymmetries   " << falseAsym << endl;
+    cout << "    False asymmetries      " << falseAsym << endl;
+    cout << "    Period compatibility   " << periodCompatiblity << endl;
     cout << "\n\nOutput is to be written:     " << toWrite << endl;
     cout << " " << endl;
     exit(EXIT_FAILURE);
@@ -75,15 +76,15 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
   
   //Aesthetics setup
   TCanvas* cAsym = new TCanvas(); cAsym->Divide(4, 1, 0, 0.01);
-  Double_t yMax =0.075;
-  Double_t ysys =-0.05;
+  Double_t yMax =0.25;
+  Double_t ysys =-0.15;
   
   //Get Data file/Get graphs and plot
   TString physBinnedNames ="", fitNames="";
   TGraphAsymmErrors *g_sys[nPhysBinned];
   TGraphErrors *g_AN[nPhysBinned];
   for (Int_t phys=0; phys<nPhysBinned; phys++) {
-    TString AsymName, FAname;
+    TString AsymName, FAname, sysPeriodName;
     if (whichFit[phys] == "true"){
       if (fitMrange != lrMrange){
 	cout << "fit Mass range != left/right mass range with true fit" << endl;
@@ -115,11 +116,17 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
 	     period_Mtype.Data(), process.Data(),lrMrange.Data(),
 	     physBinned[phys].Data(), nBins, hbins);
     }
+    sysPeriodName =
+      Form("%s/PeriodCompatibility/Data/sysError/sysErrorPeriod_%s_%s%s.root",
+	   pathSys.Data(), period_Mtype.Data(), process.Data(),lrMrange.Data());
     
     TFile *f_AN = TFile::Open(AsymName);
     TFile *f_sysFA = TFile::Open(FAname);
+    TFile *f_sysPeriod
+      = (periodCompatiblity) ? TFile::Open(sysPeriodName) : NULL;
+    //if ( !f_AN || !f_sysFA || !f_sysPeriod ){
     if ( !f_AN || !f_sysFA ){
-      cout << "Asymmetries file or systematic file does not exist"<<endl;
+      cout << "Asymmetry file or systematic file does not exist"<<endl;
       exit(EXIT_FAILURE);
     }
     physBinnedNames += physBinned[phys]+" ";
@@ -133,22 +140,33 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
 
     //Calculate and Draw systematic error bars
     TGraphErrors *g_FA =(TGraphErrors*)f_sysFA->Get("gSys");
+    TGraphErrors *g_Period =
+      (periodCompatiblity) ? (TGraphErrors*)f_sysPeriod->Get("gSys") : NULL;
     
     vector<TGraphErrors*> vec_sys;
     if (falseAsym) vec_sys.push_back(g_FA);
+    if (periodCompatiblity) vec_sys.push_back(g_Period);
 
     Double_t *xvals = g_FA->GetX();
     Double_t yvals[nBins], ex[nBins] = {0.0};
+    Double_t exR[nBins], exL[nBins];
     for (Int_t i=0; i<nBins; i++) {
       yvals[i] = ysys;
+      if (i==0) {exL[i] = 0.0; }
+      else{ exL[i] = (xvals[i] - xvals[i-1])/2.0; }
+      
+      if (i==nBins-1){exR[i] = 0.0;}
+      else{ exR[i] = (xvals[i+1] - xvals[i])/2.0; }
     }
 
     Double_t sysErr[nBins] = {0.0};
     CalTotalSysErrors(sysErr, g_AN[phys], vec_sys, nBins);
 
-    g_sys[phys] = new TGraphAsymmErrors(nBins, xvals, yvals, ex, ex, ex,sysErr);
+    g_sys[phys] = new TGraphAsymmErrors(nBins, xvals, yvals, exL, exR,
+					ex, sysErr);
     SetUp(g_sys[phys]);
-    g_sys[phys]->Draw("3Same");
+    //g_sys[phys]->Draw("3Same");
+    g_sys[phys]->Draw("2same");
     g_sys[phys]->SetFillColor(kRed);
     g_sys[phys]->SetFillStyle(3002);
   }//phys binned loop
@@ -164,9 +182,9 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
   }
   else {
     fOutput =
-      Form("%s/binned4TargGeoMean_%s_%s_%s%s_%ibins_%ihbin.root",
-	   thisDirPath.Data(), fitMrange.Data(), period_Mtype.Data(),
-	   process.Data(), lrMrange.Data(), nBins, hbins);
+      Form("%s/binned4TargGeoMean_%s%s_%s_%s%s_%ibins_%ihbin.root",
+	   thisDirPath.Data(), whichFit[0].Data(), fitMrange.Data(),
+	   period_Mtype.Data(), process.Data(), lrMrange.Data(), nBins, hbins);
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");

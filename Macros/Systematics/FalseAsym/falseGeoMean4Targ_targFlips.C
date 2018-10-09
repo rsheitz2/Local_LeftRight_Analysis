@@ -1,5 +1,41 @@
 #include "include/helperFunctions.h"
 
+Double_t AsymCal(Double_t L, Double_t R){
+  //L = TMath::Sqrt(L);
+  //R = TMath::Sqrt(R);
+  L = TMath::Power(L, 0.25);
+  R = TMath::Power(R, 0.25);
+  
+  return (L - R)/(L + R);
+}
+
+
+Double_t AsymErrorCal(Double_t L, Double_t R,
+		      Double_t LinvSum2, Double_t RinvSum2){
+  Double_t epsilon = AsymCal(L, R);
+  
+  LinvSum2 = TMath::Sqrt(LinvSum2);
+  RinvSum2 = TMath::Sqrt(RinvSum2);
+  
+  //L = TMath::Sqrt(L);
+  //R = TMath::Sqrt(R);
+  //Double_t dL = 0.5*L*LinvSum2;
+  //Double_t dR = 0.5*R*RinvSum2;
+  
+  L = TMath::Power(L, 0.25);
+  R = TMath::Power(R, 0.25);
+  Double_t dL = 0.25*L*LinvSum2;
+  Double_t dR = 0.25*R*RinvSum2;
+  
+  Double_t error =
+    (1 - epsilon)*(1-epsilon)*dL*dL + (1 + epsilon)*(1 + epsilon)*dR*dR;
+  error = TMath::Sqrt(error);
+  error *= 1.0/(L + R);
+  
+  return error;
+}
+
+
 Double_t FalseAmp_pol(Double_t NL[][4], Double_t NR[][4],
 		      Double_t Pol, Int_t bi){
   //False asymmetry flipping polarized down L/R counts
@@ -14,14 +50,9 @@ Double_t FalseAmp_pol(Double_t NL[][4], Double_t NR[][4],
   Rdown = NR[bi][downS_up]*NL[bi][downS_down];
 
   Double_t L=Lup*Ldown, R=Rup*Rdown;
-  L = TMath::Power(L, 0.5);
-  R = TMath::Power(R, 0.5);
+  Double_t A = AsymCal(L, R);
 
-  Double_t A = L - R;
-  A /= ( L + R );
-  A /= Pol;
-
-  return A;
+  return A/Pol;
 }
 
 
@@ -39,14 +70,9 @@ Double_t FalseAmp_subper(Double_t NL[][4], Double_t NR[][4],
   Rdown = NR[bi][downS_up]*NL[bi][downS_down];
 
   Double_t L=Lup*Ldown, R=Rup*Rdown;
-  L = TMath::Power(L, 0.5);
-  R = TMath::Power(R, 0.5);
+  Double_t A = AsymCal(L, R);
 
-  Double_t A = L - R;
-  A /= ( L + R );
-  A /= Pol;
-
-  return A;
+  return A/Pol;
 }
 
 
@@ -71,13 +97,9 @@ Double_t e_Amp_pol(Double_t NL[][4], Double_t NR[][4],
   Rdown = NR[bi][downS_up]*NL[bi][downS_down];
 
   Double_t L=Lup*Ldown, R=Rup*Rdown;
-  L = TMath::Power(L, 0.5);
-  R = TMath::Power(R, 0.5);
-    
-  Double_t e = L*R/( (L + R)*(L + R) );
-  Double_t error = e*TMath::Sqrt(LinvSum2 + RinvSum2)/Pol;
+  Double_t error = AsymErrorCal(L, R, LinvSum2, RinvSum2);
 
-  return error;
+  return error/Pol;
 }
 
 
@@ -102,13 +124,9 @@ Double_t e_Amp_subper(Double_t NL[][4], Double_t NR[][4],
   Rdown = NR[bi][downS_up]*NL[bi][downS_down];
   
   Double_t L=Lup*Ldown, R=Rup*Rdown;
-  L = TMath::Power(L, 0.5);
-  R = TMath::Power(R, 0.5);
-
-  Double_t e = L*R/( (L + R)*(L + R) );
-  Double_t error = e*TMath::Sqrt(LinvSum2 + RinvSum2)/Pol;
-
-  return error;
+  Double_t error = AsymErrorCal(L, R, LinvSum2, RinvSum2);
+    
+  return error/Pol;
 }
 
 
@@ -133,14 +151,14 @@ void CalAmp_AmpErr(Double_t *Fasym, Double_t *e_Fasym,
 
 void falseGeoMean4Targ_targFlips(TString start =""){
   //Setup_______________
-  const Int_t nBins =5;
-  TString period_Mtype ="WAll_LowM_AMDY";
+  const Int_t nBins =3;
+  TString period_Mtype ="WAll_HMDY";
   Int_t hbins =150;
-  TString physBinned ="pT";//xN, xPi, xF, pT, M
-  TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="2.90_3.30";
-  TString fitMrange ="1.00_8.50";
-  TString whichFit ="eight";
+  TString physBinned ="xF";//xN, xPi, xF, pT, M
+  TString process ="DY";//JPsi, psi, DY
+  TString lrMrange ="4.30_8.50";
+  TString fitMrange ="4.30_8.50";
+  TString whichFit ="true";
 
   Bool_t toWrite =false;
   //Setup_______________

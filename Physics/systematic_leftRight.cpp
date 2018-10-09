@@ -25,7 +25,9 @@ int main(int argc, char **argv){
     cout << "Option:  -S Left/right asymmetry choice" << endl;
     cout << "	 (True=no spin influence, Spin=spin influence, default=Spin)";
     cout << "\n    (Default=Spin) (don't use this with -C option)" << endl;
-    cout << "\n\nOption:  -T trig       (Only specific trigger)" << endl;
+    cout << "Option:  -E       (Equal number of runs per sub period)" << endl;
+    cout << "Option:  -R       (Even runs sb 1, odd runs sb 2)" << endl;
+    cout << "Option:  -T trig       (Only specific trigger)" << endl;
     cout << "                  (\"LL\"=last-last, \"LO\"=last-outer, " <<
       "\"LL_LO\"=last-last && last-outer)" << endl;
     cout << "Option:  -i min       (Minimum mass to consider)" << endl;
@@ -45,7 +47,7 @@ int main(int argc, char **argv){
   }
 
   //Read input arguments
-  Int_t wflag=0, Qflag=0, fflag=0, Sflag=0, Tflag=0;
+  Int_t wflag=0, Qflag=0, fflag=0, Sflag=0, Tflag=0, Eflag=0, Rflag=0;
   Int_t iflag=0, aflag=0, binFlag=0, Dflag=0, Hflag=0, Zflag=0;
   Int_t c;
   TString fname = "", outFile = "", leftrightChoice="", trig="";
@@ -53,7 +55,7 @@ int main(int argc, char **argv){
   Double_t M_min=0.0, M_max=12.0;
   Int_t nHbins=150;
   
-  while ((c = getopt (argc, argv, "wf:Q:S:T:i:a:b:M:DHZ:")) != -1) {
+  while ((c = getopt (argc, argv, "wf:Q:S:ERT:i:a:b:M:DHZ:")) != -1) {
     switch (c) {
     case 'w':
       wflag = 1;
@@ -69,6 +71,12 @@ int main(int argc, char **argv){
     case 'S':
       Sflag = 1;
       leftrightChoice += optarg;
+      break;
+    case 'E':
+      Eflag = 1;
+      break;
+    case 'R':
+      Rflag = 1;
       break;
     case 'T':
       Tflag = 1;
@@ -156,7 +164,8 @@ int main(int argc, char **argv){
     cout << "\nOption -T" << trig << " is not a valid choice" << endl;
     exit(EXIT_FAILURE);
   }
-  
+  if (Eflag) cout << "Runs per sub period evened out" << endl;
+  if (Rflag) cout << "Even runs sb 1, Odd runs sb 2" << endl;
   if(Dflag) cout << "\nDebug mode only 1000 events considered\n" << endl;
   cout << "\nUsing REAL data!\n" << endl;
 
@@ -206,9 +215,9 @@ int main(int argc, char **argv){
   //Event
   Errors+=tree->SetBranchAddress("trigMask", &trigMask);
   Errors+=tree->SetBranchAddress("MasterTrigMask", &MasterTrigMask);
-  //Errors+=tree->SetBranchAddress("RunNum", &RunNum);
-  //Errors+=tree->SetBranchAddress("SpillNum", &SpillNum);
-  //Errors+=tree->SetBranchAddress("event", &event);
+  Errors+=tree->SetBranchAddress("RunNum", &RunNum);
+  Errors+=tree->SetBranchAddress("SpillNum", &SpillNum);
+  Errors+=tree->SetBranchAddress("event", &event);
   //Target values
   Errors+=tree->SetBranchAddress("Spin_0", &Spin_0);
   Errors+=tree->SetBranchAddress("Spin_1", &Spin_1);
@@ -293,6 +302,39 @@ int main(int argc, char **argv){
     if (Tflag && (trigMask != trigChoice)) continue;
     if (Mmumu < M_min || Mmumu > M_max) continue;
 
+    if (Eflag){//Equal out runs per period
+      Int_t per=0;
+      if ( (RunNum >= 259363) && (RunNum <= 259677) ){ per = 1; }//W07_sb1
+      else if ( (RunNum >= 259744) && (RunNum <= 260016) ){ per = 2; }//W07_sb2
+      else if ( (RunNum >= 260074) && (RunNum <= 260264) ){ per = 3; }//W08_sb1
+      else if ( (RunNum >= 260317) && (RunNum <= 260565) ){ per = 4; }//W08_sb2
+      else if ( (RunNum >= 260627) && (RunNum <= 260852) ){ per = 5; }//W09_sb1
+      else if ( (RunNum >= 260895) && (RunNum <= 261496) ){ per = 6; }//W09_sb2
+      else if ( (RunNum >= 261515) && (RunNum <= 261761) ){ per = 7; }//W10_sb1
+      else if ( (RunNum >= 261970) && (RunNum <= 262221) ){ per = 8; }//W10_sb2
+      else if ( (RunNum >= 262370) && (RunNum <= 262772) ){ per = 9; }//W11_sb1
+      else if ( (RunNum >= 262831) && (RunNum <= 263090) ){ per = 10; }//W11_sb2
+      else if ( (RunNum >= 263143) && (RunNum <= 263347) ){ per = 11; }//W12_sb1
+      else if ( (RunNum >= 263386) && (RunNum <= 263603) ){ per = 12; }//W12_sb2
+      else if ( (RunNum >= 263655) && (RunNum <= 263853) ){ per = 13; }//W13_sb1
+      else if ( (RunNum >= 263926) && (RunNum <= 264134) ){ per = 14; }//W13_sb2
+      else if ( (RunNum >= 264170) && (RunNum <= 264330) ){ per = 15; }//W14_sb1
+      else if ( (RunNum >= 264429) && (RunNum <= 264562) ){ per = 16; }//W14_sb2
+      else if ( (RunNum >= 264619) && (RunNum <= 264672) ){ per = 17; }//W15_sb1
+      else if ( (RunNum >= 264736) && (RunNum <= 264857) ){ per = 18; }//W15_sb2
+      else { cout << "Run period not specified " << RunNum << endl; }
+
+      if ( (per==1||per==2) && (RunNum>259944) ) continue; //W07
+      else if ( (per==3||per==4) && (RunNum>260246) ) continue; //W08
+      else if ( (per==5||per==6) && (RunNum>260848) ) continue; //W09
+      else if ( (per==7||per==8) && (RunNum>261757) ) continue; //W10
+      else if ( (per==9||per==10) && (RunNum>263030) ) continue; //W11
+      else if ( (per==11||per==12) && (RunNum>263600) ) continue; //W12
+      else if ( (per==13||per==14) && (RunNum>264053) ) continue; //W13
+      else if ( (per==15||per==16) && (RunNum>264307) ) continue; //W14
+      else if ( (per==17||per==18) && (RunNum>264840) ) continue; //W15
+    }
+    
     //General useful quantities
     //Double_t radius = TMath::Sqrt(vx_x*vx_x + vx_y*vx_y);
     Double_t dil = TMath::Abs(dilutionFactor), correct_dil;
@@ -322,8 +364,18 @@ int main(int argc, char **argv){
 
     //Choose Left/Right
     Double_t phi_photon_lab = ShiftPhiSimple(PhiS_simple);
+    if (Rflag){//Even runs upS pol up/downS pol down, opposite for odd runs
+      if (RunNum%2){//Odd runs
+	if (targetPosition<2) Spin_0 =-1.0;//Upstream
+	else Spin_0 = 1.0;//Downstream
+      }
+      else{//Even runs
+	if (targetPosition<2) Spin_0 =1.0;//Upstream
+	else Spin_0 = -1.0;//Downstream
+      }
+    }
     Bool_t Left = ChooseLeftRight(leftrightChoice, phi_photon_lab, Spin_0);
-
+    
     for (Int_t i=0; i<nBasics; i++) {
       Basics[i]->BinDataCounts(targetPosition, Left, Spin_0, *basicValues[i]);
       Basics[i]->SetCorr(*basicValues[i], pol, correct_dil,

@@ -3,23 +3,25 @@
 void simpleBinned(TString start=""){
   TString pathAN = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
-  //const Int_t nPhysBinned =4;
-  //TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
-  const Int_t nPhysBinned =2;
-  TString physBinned[nPhysBinned] ={"xF", "pT"};
+  const Int_t nPhysBinned =4;
+  TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
+  //const Int_t nPhysBinned =2;
+  //TString physBinned[nPhysBinned] ={"xF", "pT"};
   
   //Setup_______________
-  const Int_t nBins =5;
-  TString period_Mtype ="WAll_LowM_AMDY";
+  const Int_t nBins =3;
+  TString period_Mtype ="WAll_HMDY";
   Int_t hbins =150;
-  TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="2.80_3.60";
-  TString fitMrange ="2.50_8.50";
-  //TString whichFit[nPhysBinned] = {"true", "true", "true", "true"};
+  TString process ="DY";//JPsi, psi, DY
+  TString lrMrange ="4.30_8.50";
+  TString fitMrange ="4.30_8.50";
+  TString whichFit[nPhysBinned] = {"true", "true", "true", "true"};
   //TString whichFit[nPhysBinned] = {"six", "six", "seven", "seven"};
   //TString whichFit[nPhysBinned] = {"MC", "MC", "MC", "MC"};
+  //TString whichFit[nPhysBinned] = {"ten", "ten", "ten", "ten"};
   //TString whichFit[nPhysBinned] = {"eight", "eight"};
-  TString whichFit[nPhysBinned] = {"six", "six"};
+  //TString whichFit[nPhysBinned] = {"six", "six"};
+  //TString whichFit[nPhysBinned] = {"MC", "MC"};
 
   Bool_t toWrite =false;
   //Setup_______________  
@@ -73,7 +75,7 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
 	     period_Mtype.Data(), process.Data(),lrMrange.Data(),
 	     physBinned[phys].Data(), nBins, hbins);
     }
-    
+    cout << AsymName << endl;//cleanup
     TFile *f_AN = TFile::Open(AsymName);
     if ( !f_AN ){
       cout << "Asymmetries file does not exist"<<endl;

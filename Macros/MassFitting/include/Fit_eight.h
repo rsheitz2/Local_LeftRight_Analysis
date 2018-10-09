@@ -1,6 +1,6 @@
 #ifndef FIT_EIGHT_H
 #define FIT_EIGHT_H
-//2 Gaussians for JPsi and psi'
+//2 Crystal Balls for JPsi and psi'
 //      psi' M/W = Get_eight_Ratio(targ)*JPsi M/W
 //2 Exponentials for background and DY
 
@@ -112,7 +112,73 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
   Double_t A_DY =  h->GetBinContent(h->FindBin(5.0) );
   Double_t DY_slope = -1.0, DY_Mmin = 5.0;
   A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
+  A_Bg = A_Bg - A_DY;
 
+  if (A_JPsi == 0) A_JPsi = 200.;
+  if (A_psi == 0) A_psi = 200.;
+  if (A_Bg <= 0) A_Bg = 100.;
+  if (A_DY == 0) A_DY = 200.;
+  
+  fitFunc->SetParameter(ipar, A_JPsi); ipar++;//JPsi
+  fitFunc->SetParameter(ipar, 3.12); ipar++;
+  fitFunc->SetParameter(ipar, 0.16); ipar++;
+  fitFunc->SetParameter(ipar, 1.4); ipar++;
+  fitFunc->SetParameter(ipar, 3.2); ipar++;
+  fitFunc->SetParameter(ipar, A_psi); ipar++;//psi
+  fitFunc->SetParameter(ipar, A_Bg); ipar++;//CombBg
+  fitFunc->SetParameter(ipar, -3.5); ipar++;
+  fitFunc->SetParameter(ipar, A_DY); ipar++;//DY
+  fitFunc->SetParameter(ipar, DY_slope); ipar++;
+  fitFunc->SetParameter(ipar, Mmin); ipar++;//Mmin
+  if (ipar != nPar){
+    cout << "ipar problem" << endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  ipar=0;
+  Double_t factor =10.0;
+  //Double_t factor =5.0;
+  fitFunc->SetParLimits(ipar, A_JPsi/factor, A_JPsi*factor); ipar++;//JPsi
+  fitFunc->SetParLimits(ipar, 3.0, 3.6); ipar++;
+  fitFunc->SetParLimits(ipar, 0, 0.2); ipar++;
+  fitFunc->SetParLimits(ipar, 1.0, 8.0); ipar++;
+  fitFunc->SetParLimits(ipar, 2.5, 8.0); ipar++;
+  fitFunc->SetParLimits(ipar, A_psi/factor, A_psi*factor); ipar++;//psi
+  fitFunc->SetParLimits(ipar, 0.0, A_Bg*factor); ipar++;//CombBg
+  //fitFunc->SetParLimits(ipar, A_Bg/factor, A_Bg*factor); ipar++;//CombBg
+  fitFunc->SetParLimits(ipar, -7.0, -2.0); ipar++;
+  fitFunc->SetParLimits(ipar, 0.0, A_DY*factor); ipar++;//DY
+  //fitFunc->SetParLimits(ipar, A_DY/factor, A_DY*factor); ipar++;//DY
+  fitFunc->SetParLimits(ipar, -2.0, 0.0); ipar++;
+  fitFunc->SetParLimits(ipar, Mmin, Mmin); ipar++;//Mmin
+  
+  if (ipar != nPar){
+    cout << "ipar problem" << endl;
+    exit(EXIT_FAILURE);
+  }
+  }
+
+
+/*
+void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
+		 Double_t Mmin, Double_t Mmax){
+  Int_t ipar =0;
+  Double_t ratioPsi = Get_eight_Ratio("UpS");
+  ratioPsi += Get_eight_Ratio("DownS");
+  ratioPsi /= 2.0;
+
+  Double_t A_JPsi = h->GetBinContent(h->FindBin(3.12) );
+  Double_t A_psi = h->GetBinContent(h->FindBin(3.12*ratioPsi) );
+  Double_t A_Bg =  h->GetBinContent(h->FindBin(Mmin) );
+  Double_t A_DY =  h->GetBinContent(h->FindBin(5.0) );
+  Double_t DY_slope = -1.0, DY_Mmin = 5.0;
+  A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
+
+  if (A_JPsi == 0) A_JPsi = 200.;
+  if (A_psi == 0) A_psi = 200.;
+  if (A_Bg == 0) A_Bg = 200.;
+  if (A_DY == 0) A_DY = 200.;
+  
   fitFunc->SetParameter(ipar, A_JPsi); ipar++;//JPsi
   fitFunc->SetParameter(ipar, 3.12); ipar++;
   fitFunc->SetParameter(ipar, 0.16); ipar++;
@@ -147,7 +213,7 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
     cout << "ipar problem" << endl;
     exit(EXIT_FAILURE);
   }
-}
+  }*/
 
 
 void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,

@@ -33,14 +33,14 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 period="WAll"
 fitMrangeType="LowM_AMDY"
 nBins=5
-binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/WAll_JPsi25_43_${nBins}bins.txt
+binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/Wall_JPsi25_43_5bins.txt
 hbins=150
 fitMmin=2.00  #true fit mass range
 fitMmax=7.50  #true fit mass range
 binRange="25_43"
 ##Step TWO settings
-physBinned="xN"
-process="JPsi" 
+physBinned="pT"
+process="JPsi"
 LR_Mmin=2.90
 LR_Mmax=3.30
 whichFit="ten"
@@ -148,7 +148,7 @@ else
     rm ${aNPath}/Scripts/pipeline.sh.bak
     rm ${aNPath}/Scripts/log_pipeline.txt
 fi
-
+exit 1 #cleanup
 #Step THREE
 #############
 #falseAsymmetry_targFlips setup/checks    
@@ -163,118 +163,61 @@ else
     stepThreeFile+=${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${lrMrange}_${physBinned}${nBins}.root
 fi
 
-#falseGeoMean4Targ_targFlips.C changes
-cp ${sysFApath}/falseGeoMean4Targ_targFlips.C ${sysFApath}/tmp_falseGeoMean4Targ_targFlips.C
-${sysFApath}/Scripts/changeFalseTargFlips.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit}
+if [ ! -f ${stepThreeFile} ]; then
+    #falseGeoMean4Targ_targFlips.C changes
+    cp ${sysFApath}/falseGeoMean4Targ_targFlips.C ${sysFApath}/tmp_falseGeoMean4Targ_targFlips.C
+    ${sysFApath}/Scripts/changeFalseTargFlips.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit}
 
-#Execute falseGeoMean4Targ_targFlips.C
-root -l -b -q "${sysFApath}/falseGeoMean4Targ_targFlips.C(1)" >> ${sysFApath}/log_falseGeoMean4Targ_targFlips.txt
-if [ $? != 0 ]; then
-    echo "falseGeoMean4Targ_targFlips.C did not execute well"
-    mv ${sysFApath}/falseGeoMean4Targ_targFlips.C ${sysFApath}/falseGeoMean4Targ_targFlips.C.bak
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_targFlips.C ${sysFApath}/falseGeoMean4Targ_targFlips.C
-    exit 1
-else
-    #cleanup falseGeoMean4Targ_targFlips.C
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_targFlips.C ${sysFApath}/falseGeoMean4Targ_targFlips.C
-    rm ${sysFApath}/falseGeoMean4Targ_targFlips.C.bak
-    rm ${sysFApath}/log_falseGeoMean4Targ_targFlips.txt
-fi
-
-#Step THREE falseAsymmetry_splitTarg macros setup/checks
-#############
-echo " "
-echo "sysFunctMFit.C"
-echo " "
-if [ $whichFit == "true" ]; then
-    echo "True fit used instead of sysFunctMFit.C"
-else
-    #sysFunctMFit.C changes
-    cp ${sysFApath}/sysFunctMFit.C ${sysFApath}/tmp_sysFunctMFit.C
-    ${sysFApath}/Scripts/changeSysFunctMFit.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax ${whichFit} $binRange
-
-    #Execute sysFunctMFit.C
-    root -l -b -q "${sysFApath}/sysFunctMFit.C(1)"  >> ${sysFApath}/log_sysFunctMFit.txt
+    #Execute falseGeoMean4Targ_targFlips.C
+    root -l -b -q "${sysFApath}/falseGeoMean4Targ_targFlips.C(1)" >> ${sysFApath}/log_falseGeoMean4Targ_targFlips.txt
     if [ $? != 0 ]; then
-	echo "sysFunctMFit.C did not execute well"
-	mv ${sysFApath}/sysFunctMFit.C ${sysFApath}/sysFunctMFit.C.bak
-	mv ${sysFApath}/tmp_sysFunctMFit.C ${sysFApath}/sysFunctMFit.C
+	echo "falseGeoMean4Targ_targFlips.C did not execute well"
+	mv ${sysFApath}/falseGeoMean4Targ_targFlips.C ${sysFApath}/falseGeoMean4Targ_targFlips.C.bak
+	mv ${sysFApath}/tmp_falseGeoMean4Targ_targFlips.C ${sysFApath}/falseGeoMean4Targ_targFlips.C
 	exit 1
     else
-	#clean up sysFunctMFit
-	mv ${sysFApath}/tmp_sysFunctMFit.C ${sysFApath}/sysFunctMFit.C
-	rm ${sysFApath}/sysFunctMFit.C.bak
-	rm ${sysFApath}/log_sysFunctMFit.txt
+	#cleanup falseGeoMean4Targ_targFlips.C
+	mv ${sysFApath}/tmp_falseGeoMean4Targ_targFlips.C ${sysFApath}/falseGeoMean4Targ_targFlips.C
+	rm ${sysFApath}/falseGeoMean4Targ_targFlips.C.bak
+	rm ${sysFApath}/log_falseGeoMean4Targ_targFlips.txt
     fi
+else
+    echo "File  $stepThreeFile  file already exist"
 fi
-
+echo "Script stops early!!!"
+exit 1 #cleanup
+#Step THREE falseAsymmetry_splitTarg setup/checks
+#To do sysFunctMFit
 echo " "
 echo "falseGeoMean4Targ_splitTarg.C"
 echo " "
-#falseGeoMean4Targ_splitTarg.C changes
-cp ${sysFApath}/falseGeoMean4Targ_splitTarg.C ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C
-${sysFApath}/Scripts/changeFalseSplitTarg.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit} $binRange
-
-#Execute falseGeoMean4Targ_splitTarg.C
-root -l -b -q "${sysFApath}/falseGeoMean4Targ_splitTarg.C(1)"  >> ${sysFApath}/log_falseGeoMean4Targ_splitTarg.txt
-if [ $? != 0 ]; then
-    echo "falseGeoMean4Targ_splitTarg.C did not execute well"
-    mv ${sysFApath}/falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C.bak
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C
-    exit 1
+FA_splitTarg_out=${sysFApath}/Data/SplitTarg_
+if [ ${whichFit} == "true" ]; then
+    FA_splitTarg_out+=true_${period}_${fitMrangeType}_${process}${lrMrange}_${physBinned}${nBins}.root
 else
-    #clean up falseGeoMean4Targ_splitTarg
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C
-    rm ${sysFApath}/falseGeoMean4Targ_splitTarg.C.bak
-    rm ${sysFApath}/log_falseGeoMean4Targ_splitTarg.txt
+    FA_splitTarg_out+=${whichFit}${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${lrMrange}_${physBinned}${nBins}.root
 fi
 
-#Step THREE falseAsymmetry_runNums macros setup/checks
-#############
-echo " "
-echo "fullTargSysFunctMFit.C"
-echo " "
-if [ $whichFit == "true" ]; then
-    echo "True fit used instead of fullTargSysFunctMFit.C"
-else
-    #fullTargSysFunctMFit.C changes
-    cp ${sysFApath}/fullTargSysFunctMFit.C ${sysFApath}/tmp_fullTargSysFunctMFit.C
-    ${sysFApath}/Scripts/changeFullTargSysFunctMFit.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax ${whichFit} $binRange
+if [ ! -f ${FA_splitTarg_out} ]; then
+    #falseGeoMean4Targ_splitTarg.C changes
+    cp ${sysFApath}/falseGeoMean4Targ_splitTarg.C ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C
+    ${sysFApath}/Scripts/changeFalseSplitTarg.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit} $binRange
 
-    #Execute fullTargSysFunctMFit.C
-    root -l -b -q "${sysFApath}/fullTargSysFunctMFit.C(1)"  >> ${sysFApath}/log_fullTargSysFunctMFit.txt
+    #Execute falseGeoMean4Targ_splitTarg.C
+    root -l -b -q "${sysFApath}/falseGeoMean4Targ_splitTarg.C(1)"  >> ${sysFApath}/log_falseGeoMean4Targ_splitTarg.txt
     if [ $? != 0 ]; then
-	echo "fullTargSysFunctMFit.C did not execute well"
-	mv ${sysFApath}/fullTargSysFunctMFit.C ${sysFApath}/fullTargSysFunctMFit.C.bak
-	mv ${sysFApath}/tmp_fullTargSysFunctMFit.C ${sysFApath}/fullTargSysFunctMFit.C
+	echo "falseGeoMean4Targ_splitTarg.C did not execute well"
+	mv ${sysFApath}/falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C.bak
+	mv ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C
 	exit 1
     else
-	#clean up fullTargSysFunctMFit
-	mv ${sysFApath}/tmp_fullTargSysFunctMFit.C ${sysFApath}/fullTargSysFunctMFit.C
-	rm ${sysFApath}/fullTargSysFunctMFit.C.bak
-	rm ${sysFApath}/log_fullTargSysFunctMFit.txt
+	#clean up falseGeoMean4Targ_splitTarg
+	mv ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C
+	rm ${sysFApath}/falseGeoMean4Targ_splitTarg.C.bak
+	rm ${sysFApath}/log_falseGeoMean4Targ_splitTarg.txt
     fi
-fi
-
-echo " "
-echo "falseGeoMean4Targ_runNums.C"
-echo " "
-#falseGeoMean4Targ_runNums.C changes
-cp ${sysFApath}/falseGeoMean4Targ_runNums.C ${sysFApath}/tmp_falseGeoMean4Targ_runNums.C
-${sysFApath}/Scripts/changeFalseRunNums.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit} $binRange
-
-#Execute falseGeoMean4Targ_runNums.C
-root -l -b -q "${sysFApath}/falseGeoMean4Targ_runNums.C(1)"  >> ${sysFApath}/log_falseGeoMean4Targ_runNums.txt
-if [ $? != 0 ]; then
-    echo "falseGeoMean4Targ_runNums.C did not execute well"
-    mv ${sysFApath}/falseGeoMean4Targ_runNums.C ${sysFApath}/falseGeoMean4Targ_runNums.C.bak
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_runNums.C ${sysFApath}/falseGeoMean4Targ_runNums.C
-    exit 1
 else
-    #clean up falseGeoMean4Targ_runNums
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_runNums.C ${sysFApath}/falseGeoMean4Targ_runNums.C
-    rm ${sysFApath}/falseGeoMean4Targ_runNums.C.bak
-    rm ${sysFApath}/log_falseGeoMean4Targ_runNums.txt
+    echo "File  $FA_splitTarg_out  file already exist"
 fi
 
 ##Step FOUR
@@ -291,20 +234,24 @@ else
     stepFourFile+=${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${lrMrange}_${physBinned}${nBins}.root
 fi
 
-#sysErrorFA.C changes
-cp ${sysFApath}/sysErrorFA.C ${sysFApath}/tmp_sysErrorFA.C
-${sysFApath}/Scripts/changeSysError.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit}
+if [ ! -f ${stepFourFile} ]; then
+    #sysErrorFA.C changes
+    cp ${sysFApath}/sysErrorFA.C ${sysFApath}/tmp_sysErrorFA.C
+    ${sysFApath}/Scripts/changeSysError.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit}
 
-#Execute sysErrorFA.C
-root -l -b -q "${sysFApath}/sysErrorFA.C(1)" >> ${sysFApath}/log_sysErrorFA.txt
-if [ $? != 0 ]; then
-    echo "sysErrorFA.C did not execute well"
-    mv ${sysFApath}/sysErrorFA.C ${sysFApath}/sysErrorFA.C.bak
-    mv ${sysFApath}/tmp_sysErrorFA.C ${sysFApath}/sysErrorFA.C
-    exit 1
+    #Execute sysErrorFA.C
+    root -l -b -q "${sysFApath}/sysErrorFA.C(1)" >> ${sysFApath}/log_sysErrorFA.txt
+    if [ $? != 0 ]; then
+	echo "sysErrorFA.C did not execute well"
+	mv ${sysFApath}/sysErrorFA.C ${sysFApath}/sysErrorFA.C.bak
+	mv ${sysFApath}/tmp_sysErrorFA.C ${sysFApath}/sysErrorFA.C
+	exit 1
+    else
+	#clean up sysErrorFA
+	mv ${sysFApath}/tmp_sysErrorFA.C ${sysFApath}/sysErrorFA.C
+	rm ${sysFApath}/sysErrorFA.C.bak
+	rm ${sysFApath}/log_sysErrorFA.txt
+    fi
 else
-    #clean up sysErrorFA
-    mv ${sysFApath}/tmp_sysErrorFA.C ${sysFApath}/sysErrorFA.C
-    rm ${sysFApath}/sysErrorFA.C.bak
-    rm ${sysFApath}/log_sysErrorFA.txt
+    echo "File  $stepFourFile  file already exist"
 fi

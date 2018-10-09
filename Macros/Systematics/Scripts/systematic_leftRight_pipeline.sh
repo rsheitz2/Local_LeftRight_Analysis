@@ -21,14 +21,14 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 ##########
 ##Step ONE settings
 period="WAll"
-fitMrangeType="HMDY"
-nBins=3
-binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/Wall_JPsi25_43_5bins.txt
+fitMrangeType="LowM_AMDY"
+nBins=5
+binFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/JPsi/BinValues/Wall_JPsi25_43_5bins.txt
 hbins=150
-fitMmin=4.30 #true fit mass range
-fitMmax=8.50 #true fit mass range
+fitMmin=2.00
+fitMmax=7.50
 binRange="25_43"
-
+whichFit="ten"
 
 
 
@@ -80,13 +80,31 @@ if [ ! -f ${binFile} ] || [ ! -f ${InputData} ]; then
 fi
 
 #Execute Step ONE if files don't already exist
+if [ $whichFit != "true" ]; then
+    fitMmin=1.00
+    fitMmax=8.50
+    echo "Mass ranged updated to  $fitMmin - $fitMmax "
+fi
+
 stepOne_Out=${pathOne}"/Data/systematic_leftRight_"${period}"_"${fitMrangeType}${fitMmin}_${fitMmax}"_"${nBins}"bins"${binRange}"_"${hbins}"hbin.root"
 if [ ! -f ${stepOne_Out} ]; then
-    echo "Making systematic_leftRight data:"
+    echo "Making systematic_leftRight one data:"
     echo ""
     echo ""
     echo ""
     ${pathOne}/systematic_leftRight -i${fitMmin} -a${fitMmax} -Q${stepOne_Out} -b${binFile} -Z${hbins} -f${InputData} 
 else
-    echo "systematic_leftRight file already exist"
+    echo "systematic_leftRight one file already exist"
+fi
+
+
+stepTwo_Out=${pathOne}"/Data/systematic_leftRight_"${period}"_"${fitMrangeType}${fitMmin}_${fitMmax}"_"${nBins}"bins"${binRange}"_"${hbins}"hbin_optionER.root"
+if [ ! -f ${stepTwo_Out} ]; then
+    echo "Making systematic_leftRight two data:"
+    echo ""
+    echo ""
+    echo ""
+    ${pathOne}/systematic_leftRight -i${fitMmin} -a${fitMmax} -Q${stepTwo_Out} -b${binFile} -E -R -Z${hbins} -f${InputData} 
+else
+    echo "systematic_leftRight file two already exist"
 fi
