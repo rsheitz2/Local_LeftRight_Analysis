@@ -82,7 +82,7 @@ void functMFit(Bool_t PolCorr =true, TString start=""){
   Int_t hbins =150;//# of histogram bins using in mass fitting
   const Int_t nBins =5;
   TString binRange ="25_43";
-  TString physBinned ="pT";//"xN", "xPi", "xF", "pT"
+  TString physBinned ="xN";//"xN", "xPi", "xF", "pT"
   TString process ="JPsi";//JPsi, psi, DY
   Double_t LR_Mmin =2.90;
   Double_t LR_Mmax =3.30;//L/R counts mass range

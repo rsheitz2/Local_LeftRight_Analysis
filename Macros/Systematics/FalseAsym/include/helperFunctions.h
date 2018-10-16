@@ -272,6 +272,13 @@ void DrawLine(TH1D *h, Double_t yval){
   li->Draw("same");
 }
 
+
+void OffSet(TGraphErrors *g, Double_t offset){
+  Double_t *xval = g->GetX();
+  for (Int_t i=0; i<g->GetN(); i++) xval[i] += offset;
+}
+
+
 //Usefunctions
 void GetPolarization(Double_t *vals_noPcorr, Double_t *vals, Double_t *Pol,
 		     Int_t nBins){

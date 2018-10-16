@@ -239,6 +239,20 @@ void FourTargets::Print_PolDil(TString target){
 
 
 void FourTargets::WriteAll(){
+  std::vector<Double_t> left_upS
+    (this->left_upstream.begin(), this->left_upstream.end());
+  TGraph *g_left_upstream
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_upS[0]));
+
+  std::vector<Double_t> left_upS_up
+    (this->left_upstream_up.begin(), this->left_upstream_up.end());
+  TGraph *g_left_upstream_up
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_upS_up[0]));
+  std::vector<Double_t> left_upS_down
+    (this->left_upstream_down.begin(), this->left_upstream_down.end());
+  TGraph *g_left_upstream_down
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_upS_down[0]));
+  
   TGraph *g_left_upSup_upP
     = new TGraph(this->nBins, &(this->xval[0]), &(this->left_upSup_upP[0]));
   TGraph *g_left_upSup_downP
@@ -247,6 +261,20 @@ void FourTargets::WriteAll(){
     = new TGraph(this->nBins, &(this->xval[0]), &(this->left_upSdown_upP[0]));
   TGraph *g_left_upSdown_downP
     = new TGraph(this->nBins, &(this->xval[0]), &(this->left_upSdown_downP[0]));
+
+  std::vector<Double_t> right_upS
+    (this->right_upstream.begin(), this->right_upstream.end());
+  TGraph *g_right_upstream
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_upS[0]));
+
+  std::vector<Double_t> right_upS_up
+    (this->right_upstream_up.begin(), this->right_upstream_up.end());
+  TGraph *g_right_upstream_up
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_upS_up[0]));
+  std::vector<Double_t> right_upS_down
+    (this->right_upstream_down.begin(), this->right_upstream_down.end());
+  TGraph *g_right_upstream_down
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_upS_down[0]));
 
   TGraph *g_right_upSup_upP
     = new TGraph(this->nBins, &(this->xval[0]), &(this->right_upSup_upP[0]));
@@ -257,6 +285,20 @@ void FourTargets::WriteAll(){
   TGraph *g_right_upSdown_downP
     = new TGraph(this->nBins, &(this->xval[0]), &(this->right_upSdown_downP[0]));
 
+  std::vector<Double_t> left_downS
+    (this->left_downstream.begin(), this->left_downstream.end());
+  TGraph *g_left_downstream
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_downS[0]));
+
+  std::vector<Double_t> left_downS_up
+    (this->left_downstream_up.begin(), this->left_downstream_up.end());
+  TGraph *g_left_downstream_up
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_downS_up[0]));
+  std::vector<Double_t> left_downS_down
+    (this->left_downstream_down.begin(), this->left_downstream_down.end());
+  TGraph *g_left_downstream_down
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_downS_down[0]));
+  
   TGraph *g_left_downSup_upP
     = new TGraph(this->nBins, &(this->xval[0]), &(this->left_downSup_upP[0]));
   TGraph *g_left_downSup_downP
@@ -265,6 +307,20 @@ void FourTargets::WriteAll(){
     = new TGraph(this->nBins, &(this->xval[0]), &(this->left_downSdown_upP[0]));
   TGraph *g_left_downSdown_downP
     = new TGraph(this->nBins, &(this->xval[0]), &(this->left_downSdown_downP[0]));
+
+  std::vector<Double_t> right_downS
+    (this->right_downstream.begin(), this->right_downstream.end());
+  TGraph *g_right_downstream
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_downS[0]));
+
+  std::vector<Double_t> right_downS_up
+    (this->right_downstream_up.begin(), this->right_downstream_up.end());
+  TGraph *g_right_downstream_up
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_downS_up[0]));
+  std::vector<Double_t> right_downS_down
+    (this->right_downstream_down.begin(), this->right_downstream_down.end());
+  TGraph *g_right_downstream_down
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_downS_down[0]));
 
   TGraph *g_right_downSup_upP
     = new TGraph(this->nBins, &(this->xval[0]), &(this->right_downSup_upP[0]));
@@ -275,43 +331,91 @@ void FourTargets::WriteAll(){
   TGraph *g_right_downSdown_downP
     = new TGraph(this->nBins, &(this->xval[0]), &(this->right_downSdown_downP[0]));
 
+  setup(g_left_upstream);
+  setup(g_left_upstream_up); setup(g_left_upstream_down);
+  
   setup(g_left_upSup_upP);
   setup(g_left_upSup_downP);
   setup(g_left_upSdown_upP);
   setup(g_left_upSdown_downP);
 
+  setup(g_right_upstream);
+  setup(g_right_upstream_up); setup(g_right_upstream_down);
+  
   setup(g_right_upSup_upP);
   setup(g_right_upSup_downP);
   setup(g_right_upSdown_upP);
   setup(g_right_upSdown_downP);
+
+  setup(g_left_downstream);
+  setup(g_left_downstream_up); setup(g_left_downstream_down);
 
   setup(g_left_downSup_upP);
   setup(g_left_downSup_downP);
   setup(g_left_downSdown_upP);
   setup(g_left_downSdown_downP);
 
+  setup(g_right_downstream);
+  setup(g_right_downstream_up); setup(g_right_downstream_down);
+
   setup(g_right_downSup_upP);
   setup(g_right_downSup_downP);
   setup(g_right_downSdown_upP);
   setup(g_right_downSdown_downP);
-  
+
+  g_left_upstream->Write(Form("%s_left_upstream", this->thisName.Data()) );
+  g_left_upstream_up->Write(Form("%s_left_upstream_up", this->thisName.Data()));
+  g_left_upstream_down->Write(Form("%s_left_upstream_down",
+				   this->thisName.Data()));
+    
   g_left_upSup_upP->Write(Form("%s_left_upSup_upP", this->thisName.Data()) );
   g_left_upSup_downP->Write(Form("%s_left_upSup_downP", this->thisName.Data()));
-  g_left_upSdown_upP->Write(Form("%s_left_upSdown_upP", this->thisName.Data()) );
-  g_left_upSdown_downP->Write(Form("%s_left_upSdown_downP", this->thisName.Data()));
-  g_right_upSup_upP->Write(Form("%s_right_upSup_upP", this->thisName.Data()) );
-  g_right_upSup_downP->Write(Form("%s_right_upSup_downP", this->thisName.Data()));
-  g_right_upSdown_upP->Write(Form("%s_right_upSdown_upP", this->thisName.Data()) );
-  g_right_upSdown_downP->Write(Form("%s_right_upSdown_downP", this->thisName.Data()));
+  g_left_upSdown_upP->Write(Form("%s_left_upSdown_upP", this->thisName.Data()));
+  g_left_upSdown_downP->Write(Form("%s_left_upSdown_downP",
+				   this->thisName.Data()));
 
-  g_left_downSup_upP->Write(Form("%s_left_downSup_upP", this->thisName.Data()) );
-  g_left_downSup_downP->Write(Form("%s_left_downSup_downP", this->thisName.Data()));
-  g_left_downSdown_upP->Write(Form("%s_left_downSdown_upP", this->thisName.Data()) );
-  g_left_downSdown_downP->Write(Form("%s_left_downSdown_downP", this->thisName.Data()));
-  g_right_downSup_upP->Write(Form("%s_right_downSup_upP", this->thisName.Data()) );
-  g_right_downSup_downP->Write(Form("%s_right_downSup_downP", this->thisName.Data()));
-  g_right_downSdown_upP->Write(Form("%s_right_downSdown_upP", this->thisName.Data()) );
-  g_right_downSdown_downP->Write(Form("%s_right_downSdown_downP", this->thisName.Data()));
+  g_right_upstream->Write(Form("%s_right_upstream", this->thisName.Data()) );
+  g_right_upstream_up->Write(Form("%s_right_upstream_up",
+				  this->thisName.Data()));
+  g_right_upstream_down->Write(Form("%s_right_upstream_down",
+				   this->thisName.Data()));
+    
+  g_right_upSup_upP->Write(Form("%s_right_upSup_upP", this->thisName.Data()) );
+  g_right_upSup_downP->Write(Form("%s_right_upSup_downP",
+				  this->thisName.Data()));
+  g_right_upSdown_upP->Write(Form("%s_right_upSdown_upP",
+				  this->thisName.Data()) );
+  g_right_upSdown_downP->Write(Form("%s_right_upSdown_downP",
+				    this->thisName.Data()));
+
+  g_left_downstream->Write(Form("%s_left_downstream", this->thisName.Data()) );
+  g_left_downstream_up->Write(Form("%s_left_downstream_up",
+				   this->thisName.Data()));
+  g_left_downstream_down->Write(Form("%s_left_downstream_down",
+				   this->thisName.Data()));
+
+  g_left_downSup_upP->Write(Form("%s_left_downSup_upP", this->thisName.Data()));
+  g_left_downSup_downP->Write(Form("%s_left_downSup_downP",
+				   this->thisName.Data()));
+  g_left_downSdown_upP->Write(Form("%s_left_downSdown_upP",
+				   this->thisName.Data()) );
+  g_left_downSdown_downP->Write(Form("%s_left_downSdown_downP",
+				     this->thisName.Data()));
+
+  g_right_downstream->Write(Form("%s_right_downstream", this->thisName.Data()));
+  g_right_downstream_up->Write(Form("%s_right_downstream_up",
+				   this->thisName.Data()));
+  g_right_downstream_down->Write(Form("%s_right_downstream_down",
+				   this->thisName.Data()));
+  
+  g_right_downSup_upP->Write(Form("%s_right_downSup_upP",
+				  this->thisName.Data()) );
+  g_right_downSup_downP->Write(Form("%s_right_downSup_downP",
+				    this->thisName.Data()));
+  g_right_downSdown_upP->Write(Form("%s_right_downSdown_upP",
+				    this->thisName.Data()) );
+  g_right_downSdown_downP->Write(Form("%s_right_downSdown_downP",
+				      this->thisName.Data()));
 
   
   TGraph *g_avgPolDil_upSup

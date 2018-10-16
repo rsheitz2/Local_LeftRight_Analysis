@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -ne 11 ]; then
+if [ $# -ne 12 ]; then
     echo "" 
     echo "Script updates fullTargSysFunctMFit.C with input paramters"
     echo ""
@@ -18,6 +18,7 @@ Mmin=$8
 Mmax=$9
 whichFit=${10}
 binRange=${11}
+optionER=${12}
 
 changeFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/fullTargSysFunctMFit.C
 sed -i.bak "s/const Int_t nBins =.*;/const Int_t nBins =${nBins};/" ${changeFile}
@@ -32,3 +33,4 @@ sed -i.bak "s/Double_t Mmax =.*;/Double_t Mmax =${Mmax};/" ${changeFile}
 sed -i.bak "s/TString whichFit =.*;/TString whichFit =\"${whichFit}\";/" ${changeFile}
 sed -i.bak "s/Bool_t toWrite =.*;/Bool_t toWrite =true;/" ${changeFile}
 sed -i.bak "s/TString binRange =.*;/TString binRange =\"${binRange}\";/" ${changeFile}
+sed -i.bak "s/Bool_t optionER =.*;/Bool_t optionER =${optionER};/" ${changeFile}

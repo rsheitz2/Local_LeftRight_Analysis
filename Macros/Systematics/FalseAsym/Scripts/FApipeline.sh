@@ -35,15 +35,15 @@ fitMrangeType="LowM_AMDY"
 nBins=5
 binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/WAll_JPsi25_43_${nBins}bins.txt
 hbins=150
-fitMmin=2.00  #true fit mass range
-fitMmax=7.50  #true fit mass range
+fitMmin=2.90  #true fit mass range
+fitMmax=3.30  #true fit mass range
 binRange="25_43"
 ##Step TWO settings
 physBinned="xN"
 process="JPsi" 
 LR_Mmin=2.90
 LR_Mmax=3.30
-whichFit="ten"
+whichFit="true"
 ##Step THREE settings
 
 
@@ -110,7 +110,7 @@ sysLeftRight_Out+=${nBins}"bins"${binRange}"_"${hbins}"hbin.root"
 
 #systematic_leftRight Pipeline changes
 cp ${sysPath}/Scripts/systematic_leftRight_pipeline.sh ${sysPath}/Scripts/tmp_systematic_leftRight_pipeline.sh
-${sysPath}/Scripts/changeSystematic_LeftRight_Pipeline.sh ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax $binFile $binRange
+${sysPath}/Scripts/changeSystematic_LeftRight_Pipeline.sh ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax $binFile $binRange $whichFit
 
 #Execute
 ${sysPath}/Scripts/systematic_leftRight_pipeline.sh 1 >> ${sysPath}/Scripts/log_systematic_leftRight_pipeline.txt
@@ -239,7 +239,8 @@ if [ $whichFit == "true" ]; then
 else
     #fullTargSysFunctMFit.C changes
     cp ${sysFApath}/fullTargSysFunctMFit.C ${sysFApath}/tmp_fullTargSysFunctMFit.C
-    ${sysFApath}/Scripts/changeFullTargSysFunctMFit.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax ${whichFit} $binRange
+    ${sysFApath}/Scripts/changeFullTargSysFunctMFit.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax ${whichFit} \
+		$binRange true
 
     #Execute fullTargSysFunctMFit.C
     root -l -b -q "${sysFApath}/fullTargSysFunctMFit.C(1)"  >> ${sysFApath}/log_fullTargSysFunctMFit.txt

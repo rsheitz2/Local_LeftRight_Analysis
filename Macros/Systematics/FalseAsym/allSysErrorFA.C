@@ -1,12 +1,6 @@
 #include "include/helperFunctions.h"
 
 
-void OffSet(TGraphErrors *g, Double_t offset){
-  Double_t *xval = g->GetX();
-  for (Int_t i=0; i<g->GetN(); i++) xval[i] += offset;
-}
-
-
 void FillValues(TH1D *h, TGraphErrors *g){
   Double_t *yVals = g->GetY();
   
@@ -47,21 +41,16 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/\
 Data";
   const Int_t nPhysBinned =4;
   TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
-  //const Int_t nPhysBinned =2;
-  //TString physBinned[nPhysBinned] ={"xF", "pT"};
   
   //Setup_______________
-  const Int_t nBins =3;
+  const Int_t nBins =5;
   TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
   TString process ="JPsi";//JPsi, psi, DY
   TString lrMrange ="2.90_3.30";
   TString fitMrange ="2.00_7.50";
   //TString whichFit[] ={"true", "true", "true", "true"};
-  //TString whichFit[] ={"seven", "seven", "six", "six"};
   TString whichFit[] ={"ten", "ten", "ten", "ten"};
-  //TString whichFit[] ={"eight", "eight", "eight", "eight"};
-  //TString whichFit[] ={"eight", "eight"};
 
   Bool_t toWrite =false;
   //Setup_______________  

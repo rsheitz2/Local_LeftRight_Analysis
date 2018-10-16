@@ -29,8 +29,7 @@ void CalAbsSys(TGraphErrors *gFA_1, TGraphErrors *gFA_2, Double_t *systematics){
 
 
 void CalAbsSys(vector<TGraphErrors*> &v_FA, Double_t *systematics){
-  Int_t nBins=0;
-  Int_t nFA=0;
+  Int_t nBins=0, nFA=0;
   for(vector<TGraphErrors*>::iterator it=v_FA.begin(); it!=v_FA.end(); it++){
     Double_t *yFA = (*it)->GetY();
     Double_t *e_yFA = (*it)->GetEY();
@@ -117,14 +116,24 @@ void DrawFA(vector<TGraphErrors*> &v_FA){
 
 void sysErrorFA(TString start =""){
   //Setup_______________
+  /*const Int_t nBins =3;
+  TString period_Mtype ="WAll_HMDY";
+  Int_t hbins =150;
+  TString physBinned ="xN";//xN, xPi, xF, pT, M
+  TString process ="DY";//JPsi, psi, DY
+  TString lrMrange ="4.30_8.50";
+  TString fitMrange ="4.30_8.50";
+  TString whichFit ="true";//*/
+
   const Int_t nBins =5;
+  TString binRange ="25_43";
   TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="JPsi";//JPsi, psi, DY
   TString lrMrange ="2.90_3.30";
   TString fitMrange ="2.00_7.50";
-  TString whichFit ="ten";
+  TString whichFit ="ten";//*/
 
   Bool_t toWrite =false;
   //Setup_______________

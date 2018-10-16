@@ -55,7 +55,7 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   const Int_t nBins =5;
   TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
-  TString physBinned ="pT";//xN, xPi, xF, pT, M
+  TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="JPsi";//JPsi, psi, DY
   TString lrMrange ="2.90_3.30";
   TString fitMrange ="2.00_7.50";
@@ -203,8 +203,9 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   TGraphErrors *g_AN = new TGraphErrors(nBins, xvals, AN_4targ, ex, e_AN_4targ);
   SetUpTGraph(g_AN);
 
+  Double_t yMax =0.15;
   TCanvas* c1 = new TCanvas();
-  g_AN->Draw("AP");
+  g_AN->Draw("AP"); g_AN->GetYaxis()->SetRangeUser(-yMax, yMax);
   DrawLine(g_AN, 0.0);
   
   //Write output/final settings

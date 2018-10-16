@@ -15,7 +15,7 @@ Double_t e_Amp(Double_t L, Double_t R, Double_t LinvSum, Double_t RinvSum){
   Double_t dL = 0.25*L*LinvSum;
   Double_t dR = 0.25*R*RinvSum;
   Double_t error =
-    (1 - epsilon)*(1-epsilon)*dL*dL + (1 + epsilon)*(1 + epsilon)*dR*dR;
+    (1 - epsilon)*(1 - epsilon)*dL*dL + (1 + epsilon)*(1 + epsilon)*dR*dR;
   error = TMath::Sqrt(error);
   error *= 1.0/(L + R);
   
@@ -29,7 +29,6 @@ Double_t AvgPol(Double_t *Pol, Int_t NupSup, Int_t NupSdown,
     NdownSup*Pol[2] + NdownSdown*Pol[3];
 
   avgPol /= (NupSup + NupSdown + NdownSup +NdownSdown);
-
   return avgPol;
 }
 
@@ -38,7 +37,7 @@ Double_t AvgPol(Double_t *Pol, Int_t NupS, Int_t NdownS){
   Double_t avgPol = NupS*(Pol[0]+Pol[1]) + NdownS*(Pol[2]+Pol[3]);
   avgPol *= 0.5;
   avgPol /= (NupS + NdownS);
-
+  
   return avgPol;
 }
 
@@ -105,7 +104,7 @@ void CalAmp_AmpErr4(Double_t *Fasym, Double_t *e_Fasym,
   for (Int_t bi=0; bi<nBins; bi++) {
     Double_t L = CalLR(NL[bi][0], NL[bi][2], NL[bi][3], NL[bi][1] );
     Double_t R = CalLR(NR[bi][0], NR[bi][2], NR[bi][3], NR[bi][1] );
-
+    
     Double_t LinvSum =
       CalInvSum(NL[bi][0], NL[bi][2], NL[bi][3], NL[bi][1] );
     Double_t RinvSum =
@@ -123,7 +122,17 @@ void CalAmp_AmpErr4(Double_t *Fasym, Double_t *e_Fasym,
 
 void falseGeoMean4Targ_runNums(TString start =""){
   //Setup_______________
-  const Int_t nBins =5;
+  const Int_t nBins =3;
+  TString binRange ="43_85";
+  TString period_Mtype ="WAll_HMDY";
+  Int_t hbins =150;
+  TString physBinned ="xN";//xN, xPi, xF, pT, M
+  TString process ="DY";//JPsi, psi, DY
+  TString lrMrange ="4.30_8.50";
+  TString fitMrange ="4.30_8.50";
+  TString whichFit ="true";//*/
+  
+  /*const Int_t nBins =5;
   TString binRange ="25_43";
   TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
@@ -131,7 +140,7 @@ void falseGeoMean4Targ_runNums(TString start =""){
   TString process ="JPsi";//JPsi, psi, DY
   TString lrMrange ="2.90_3.30";
   TString fitMrange ="2.00_7.50";
-  TString whichFit ="ten";
+  TString whichFit ="ten";//*/
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -193,12 +202,12 @@ fullTargSysFunctMFit/";
       Form("Data/systematic_leftRight_%s1.00_8.50_%ibins%s_%ihbin_optionER.root",
 	   period_Mtype.Data(), nBins, binRange.Data(), hbins);
     
-    inputLR = Form("fullTargSysFunctMFit_%s%s_%s_%s%s_%s%i_%ihbin.root",
+    inputLR = Form("fullTargSysFunctMFit_%s%s_%s_%s%s_%s%i_%ihbin_optionER.root",
 		   whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
 		   process.Data(), lrMrange.Data(), physBinned.Data(),
 		   nBins, hbins);
   }
-  
+
   TFile *f_sys =TFile::Open(path+inputFile), *f_LR =NULL;; 
   if (whichFit != "true") {
     f_LR = TFile::Open(pathLR+inputLR);

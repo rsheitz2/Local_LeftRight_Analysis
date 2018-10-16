@@ -28,17 +28,17 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 period="WAll"
 fitMrangeType="LowM_AMDY"
 nBins=5
-binFile=${analysisPath}/Presents/DATA/RealData/${fitMrangeType}/BinValues/WAll_${fitMrangeType}_${nBins}bins.txt
+binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/WAll_JPsi25_43_${nBins}bins.txt
 hbins=150
 fitMmin=2.00 #true fit mass range
 fitMmax=7.50 #true fit mass range
 binRange="25_43"
 ##Step TWO settings
-physBinned="pT"
+physBinned="xF"
 process="JPsi"
 LR_Mmin=2.90 #does nothing with whichFit==true
 LR_Mmax=3.30 #does nothing with whichFit==true
-whichFit="ten"
+whichFit="eight"
 ##Step THREE settings
 
 
@@ -131,7 +131,7 @@ if [ ! -f ${stepOne_OutData} ]; then
 	exit 1
     else
 	#clean up leftRight_byTarget
-	rm ${PathOne}/log_leftRight_byTarget.txt
+	rm ${pathOne}/log_leftRight_byTarget.txt
     fi
 else
     echo "StepOneData polarization correct already exist"
@@ -154,7 +154,6 @@ else
     echo "StepOneData pol unCorr already exist"
 fi
 echo " "
-
 
 if [ ${Steps} -lt 2 ]; then 
     exit 0
@@ -182,7 +181,7 @@ echo ""
 if [ ${whichFit} == "true" ]; then
     #Prepare trueCount.C macro settings
     cp ${pathTwo}/trueCount.C ${pathTwo}/tmpTrueTwo.C
-    ${pathTwo}/Scripts/changeTrueCount.sh $nBins $period $fitMrangeType $fitMmin $fitMmax $physBinned $process 
+    ${pathTwo}/Scripts/changeTrueCount.sh $nBins $period $fitMrangeType $fitMmin $fitMmax $physBinned $process $binRange
     
     #Execute pol corrected and pol unCorr
     root -l -b -q "${pathTwo}/trueCount.C(true, 1)" >> ${pathTwo}/log_trueCount.txt

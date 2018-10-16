@@ -1,8 +1,6 @@
 #include "include/helperFunctions.h"
 
 Double_t AsymCal(Double_t L, Double_t R){
-  //L = TMath::Sqrt(L);
-  //R = TMath::Sqrt(R);
   L = TMath::Power(L, 0.25);
   R = TMath::Power(R, 0.25);
   
@@ -16,11 +14,6 @@ Double_t AsymErrorCal(Double_t L, Double_t R,
   
   LinvSum2 = TMath::Sqrt(LinvSum2);
   RinvSum2 = TMath::Sqrt(RinvSum2);
-  
-  //L = TMath::Sqrt(L);
-  //R = TMath::Sqrt(R);
-  //Double_t dL = 0.5*L*LinvSum2;
-  //Double_t dR = 0.5*R*RinvSum2;
   
   L = TMath::Power(L, 0.25);
   R = TMath::Power(R, 0.25);
@@ -154,11 +147,20 @@ void falseGeoMean4Targ_targFlips(TString start =""){
   const Int_t nBins =3;
   TString period_Mtype ="WAll_HMDY";
   Int_t hbins =150;
-  TString physBinned ="xF";//xN, xPi, xF, pT, M
+  TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";
-  TString whichFit ="true";
+  TString whichFit ="true";//*/
+  
+  /*const Int_t nBins =5;
+  TString period_Mtype ="WAll_LowM_AMDY";
+  Int_t hbins =150;
+  TString physBinned ="xN";//xN, xPi, xF, pT, M
+  TString process ="JPsi";//JPsi, psi, DY
+  TString lrMrange ="2.90_3.30";
+  TString fitMrange ="2.00_7.50";
+  TString whichFit ="ten";//*/
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -231,6 +233,9 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
 
   if (!fAN || !fAN_noCorr ){
     cout << "RD or RD_noCorr file does not exist " << endl;
+    cout << inputFiles[0] << "\n";
+    cout << inputFiles[1] << "\n";
+    cout << "Previous files do not exist" << endl;
     exit(EXIT_FAILURE);
   }
   
@@ -275,18 +280,19 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
       e_RightCounts[bi][tr] = ey_Right[bi];
     }
   }
+  
+  //Make 4Targ False Asymmetries
+  Double_t fAN_pol[nBins], e_fAN_pol[nBins];
+  Double_t fAN_subper[nBins], e_fAN_subper[nBins];
+  Double_t ex[nBins] = {0.0};
+  Double_t *xvals = g_corr[0]->GetX();
 
   //Get polarization values
   Double_t Pol[nBins];
   Double_t *y_corr = g_corr[0]->GetY();
   Double_t *y_noCorr = g_noCorr[0]->GetY();
   GetPolarization(y_noCorr, y_corr, Pol, nBins);
-
-  //Make 4Targ False Asymmetries
-  Double_t fAN_pol[nBins], e_fAN_pol[nBins];
-  Double_t fAN_subper[nBins], e_fAN_subper[nBins];
-  Double_t ex[nBins] = {0.0};
-  Double_t *xvals = g_corr[0]->GetX();
+  TGraph *g_Pol = new TGraph(nBins, xvals, Pol); SetUp(g_Pol);
 
   CalAmp_AmpErr(fAN_pol, e_fAN_pol, LeftCounts, RightCounts,
 		e_LeftCounts, e_RightCounts, Pol, nBins,
@@ -304,7 +310,7 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   SetUp(g_fAN_subper);
 
   TCanvas* c1 = new TCanvas();
-  Double_t yMax = 0.4;
+  Double_t yMax = 0.15;
   g_fAN_pol->Draw("AP"); g_fAN_pol->SetMarkerColor(kBlue);
   g_fAN_subper->Draw("Psame"); g_fAN_subper->SetMarkerColor(kRed);
   g_fAN_pol->GetYaxis()->SetRangeUser(-yMax, yMax);
@@ -330,6 +336,7 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
     TFile *fResults = new TFile(fOutput, "RECREATE");
     g_fAN_pol->Write("falseAN_pol");
     g_fAN_subper->Write("falseAN_subper");
+    g_Pol->Write("Polarization");
   }
 
   cout << " " << endl;

@@ -302,7 +302,7 @@ int main(int argc, char **argv){
     if (Tflag && (trigMask != trigChoice)) continue;
     if (Mmumu < M_min || Mmumu > M_max) continue;
 
-    if (Eflag){//Equal out runs per period
+    if (Eflag){//Equal out runs per period (determined for HMDY)
       Int_t per=0;
       if ( (RunNum >= 259363) && (RunNum <= 259677) ){ per = 1; }//W07_sb1
       else if ( (RunNum >= 259744) && (RunNum <= 260016) ){ per = 2; }//W07_sb2

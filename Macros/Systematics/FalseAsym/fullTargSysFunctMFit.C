@@ -43,16 +43,20 @@ void fullTargSysFunctMFit(TString start=""){
   Double_t Mmin =2.00;//Fit Mass minimum
   Double_t Mmax =7.50;//Fit Mass maximum
   TString whichFit ="ten";
+  Bool_t optionER =false;
   
-  Bool_t toWrite =false;
+  Bool_t toWrite =true;
   //Setup_______________
 
   Double_t nominal_Mmin =Mmin, nominal_Mmax =Mmax;
   TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_leftRight_Analysis/Data/";
-  TString RDfile =Form("systematic_leftRight_%s1.00_8.50_%ibins%s_%ihbin.root",
-		       period_Mtype.Data(), nBins, binRange.Data(), hbins);
-  
+  TString RDfile = (optionER) ?
+    Form("systematic_leftRight_%s1.00_8.50_%ibins%s_%ihbin_optionER.root",
+	 period_Mtype.Data(), nBins, binRange.Data(), hbins) :
+    Form("systematic_leftRight_%s1.00_8.50_%ibins%s_%ihbin.root",
+	 period_Mtype.Data(), nBins, binRange.Data(), hbins);
+
   if (start==""){
     cout<<"Script outputs AN and left/right counts per target and polarization";
     cout << " using functional mass fitting for a given fit" << endl;
@@ -227,7 +231,11 @@ TGeant/Local_leftRight_Analysis/Data/";
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
 /TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/\
 fullTargSysFunctMFit";
-  TString fOutput =
+  TString fOutput = (optionER) ?
+    Form("%s/fullTargSysFunctMFit_%s%.2f_%.2f_%s_%s%.2f_%.2f_%s%i_%ihbin_optionER.root",
+	 thisDirPath.Data(), whichFit.Data(), nominal_Mmin, nominal_Mmax,
+	 period_Mtype.Data(), process.Data(), LR_Mmin, LR_Mmax,
+	 physBinned.Data(), nBins, hbins) :
     Form("%s/fullTargSysFunctMFit_%s%.2f_%.2f_%s_%s%.2f_%.2f_%s%i_%ihbin.root",
 	 thisDirPath.Data(), whichFit.Data(), nominal_Mmin, nominal_Mmax,
 	 period_Mtype.Data(), process.Data(), LR_Mmin, LR_Mmax,
