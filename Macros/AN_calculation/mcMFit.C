@@ -5,6 +5,11 @@
 #include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
 Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_MC.h"
 
+//Fit using reconstructed Monte Carlo with:  JPsi, Psi', OC, LMDY, HMDY
+//    Global variable hist_5[5] defined
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
+Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_MC_5.h"
+
 void DoFit(TH1D *h, Double_t Mmin, Double_t Mmax){
   h->Sumw2(); h->Draw();
   //Fit using Likelihood
@@ -53,6 +58,19 @@ TF1* FitGetLR(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
     
     hRatio[bin]->Divide(h_result);
   }
+  else if (whichFit =="MC_5"){
+    fitFunc = SetupFunc_MC_5(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar, hMC);
+    DoFit(h[bin], Mmin, Mmax);
+
+    Double_t *pars = fitFunc->GetParameters();
+    TH1D *h_result = ComponentFuncts_MC_5(pars, Mmin, Mmax, process, hIsUpS);
+    if (process =="DY"){
+      IntegrateLR_MC_5(LR_Mmin, LR_Mmax, LR, e_LR, process, bin); }
+    else {
+      IntegrateLR_MC_5( (LR_Mmax - LR_Mmin)/2.0, LR, e_LR, process, bin); }
+    
+    hRatio[bin]->Divide(h_result);
+  }
   else{
     cout << "Int valid fit type:   " << whichFit << endl;
     exit(EXIT_FAILURE);
@@ -84,6 +102,18 @@ TF1* FitGetLR(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
   hChi2->Fill(redChi2);
 
   return fitFunc;
+}
+
+
+void FitOne(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
+	    Double_t LR_Mmin, Double_t LR_Mmax, TString process,
+	    TString whichFit, Double_t Mmin, Double_t Mmax, TH1D **hMC,
+	    TCanvas *c1){
+  //Used to draw just one histogram fit (for better visibility)
+  c1->cd(1);
+  gPad->SetLogy();
+  TF1 *fitFunc = FitGetLR(h, hRatio, bin, LR, e_LR,LR_Mmin, LR_Mmax, process,
+			  whichFit, Mmin, Mmax, hMC);
 }
 
 
@@ -159,10 +189,47 @@ void GetMCHist(TFile *fJPsi, TFile *fpsi, TFile *fOC, TFile *fAMDY,
 }
 
 
+void GetMCHist(TFile *fJPsi, TFile *fpsi, TFile *fOC, TFile *fLMDY,TFile *fHMDY,
+	       TString target, TString physBinned, Int_t bin, TH1D **hMC){
+  TH1D *hJPsi =
+    (TH1D*)fJPsi->Get(Form("MuMu_%s_%s%i",target.Data(),physBinned.Data(),bin));
+  TH1D *hpsi =
+    (TH1D*)fpsi->Get(Form("MuMu_%s_%s%i", target.Data(),physBinned.Data(),bin));
+  TH1D *hOC =
+    (TH1D*)fOC->Get(Form("MuMu_%s_%s%i", target.Data(), physBinned.Data(),bin));
+  TH1D *hLMDY =
+    (TH1D*)fLMDY->Get(Form("MuMu_%s_%s%i",target.Data(),physBinned.Data(),bin));
+  TH1D *hHMDY =
+    (TH1D*)fHMDY->Get(Form("MuMu_%s_%s%i",target.Data(),physBinned.Data(),bin));
+
+  hJPsi->Scale(1.0/(hJPsi->Integral() ) );
+  hpsi->Scale(1.0/(hpsi->Integral() ) );
+  hOC->Scale(1.0/(hOC->Integral() ) );
+  hLMDY->Scale(1.0/(hLMDY->Integral() ) );
+  hHMDY->Scale(1.0/(hHMDY->Integral() ) );
+
+  hMC[0] = hJPsi;
+  hMC[1] = hpsi;
+  hMC[2] = hOC;
+  hMC[3] = hLMDY;
+  hMC[4] = hHMDY;
+}
+
+
+void GetMCHist(TFile *fJPsi, TFile *fpsi, TFile *fOC, TFile *fAMDY,
+	       TFile *fLMDY, TFile *fHMDY, TString target, TString physBinned,
+	       Int_t bin, TH1D **hMC, TString whichFit){
+  if (whichFit=="MC"){
+    GetMCHist(fJPsi, fpsi, fOC, fAMDY, target, physBinned, bin, hMC); }
+  else if (whichFit=="MC_5"){
+    GetMCHist(fJPsi, fpsi, fOC, fLMDY, fHMDY, target, physBinned, bin, hMC); }
+}
+
+
 void mcMFit(Bool_t PolCorr =true, TString start=""){
   
   //Setup_______________
-  TString period_Mtype ="WAll_LowM_AMDY";
+  TString period_Mtype ="WAll_LowM_AMDY"; 
   Int_t hbins =150;//# of histogram bins using in mass fitting
   const Int_t nBins =5;
   TString binRange ="25_43";
@@ -184,19 +251,33 @@ TGeant/Local_leftRight_Analysis/Data/";
   TString RDfile_noCorr
     =Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_noCorr.root",
 	  period_Mtype.Data(), nBins, binRange.Data() );
-  TString JPsiFile =
-    Form("leftRight_byTarget_JPsi1.00_8.50_%ibins%s_%ihbin.root", nBins,
-	 binRange.Data(), hbins);
-  TString psiFile =
-    Form("leftRight_byTarget_psi1.00_8.50_%ibins%s_%ihbin.root", nBins,
-	 binRange.Data(), hbins);
-  TString OCFile =
-    Form("leftRight_byTarget_OC1.00_8.50_%ibins%s_%ihbin.root", nBins,
-	 binRange.Data(), hbins);
-  TString AMDYFile =
-    Form("leftRight_byTarget_AMDY1.00_8.50_%ibins%s_%ihbin.root", nBins,
-	 binRange.Data(), hbins);
-  
+  TString JPsiFile, psiFile, OCFile, AMDYFile, LMDYFile, HMDYFile;
+  //Yu MC used
+  JPsiFile = Form("leftRight_byTarget_Yu_JPsi1.00_8.50_%ibins%s_%ihbin.root",
+		  nBins, binRange.Data(), hbins);
+  psiFile = Form("leftRight_byTarget_Yu_psi1.00_8.50_%ibins%s_%ihbin.root",
+		 nBins, binRange.Data(), hbins);
+  OCFile = Form("leftRight_byTarget_Yu_OC1.00_8.50_%ibins%s_%ihbin.root",
+		nBins, binRange.Data(), hbins);
+  AMDYFile = Form("leftRight_byTarget_Yu_AMDY1.00_8.50_%ibins%s_%ihbin.root",
+		  nBins, binRange.Data(), hbins);
+  cout << "\n\nYu-Shiang MC used\n\n";//*/
+
+  //Charles MC used
+  /*JPsiFile =
+    Form("leftRight_byTarget_Charles_JPsi1.00_8.50_%ibins%s_%ihbin.root",
+    nBins, binRange.Data(), hbins);
+    psiFile =
+    Form("leftRight_byTarget_Charles_psi1.00_8.50_%ibins%s_%ihbin.root",
+    nBins, binRange.Data(), hbins);
+    OCFile =
+    Form("leftRight_byTarget_Charles_OC1.00_8.50_%ibins%s_%ihbin.root",
+    nBins, binRange.Data(), hbins);
+    AMDYFile =
+    Form("leftRight_byTarget_Charles_AMDY1.00_8.50_%ibins%s_%ihbin.root",
+    nBins, binRange.Data(), hbins);
+    cout << "\n\nCharles MC used\n\n";//*/
+    
   if (start==""){
     cout<<"Script outputs AN and left/right counts per target and polarization";
     cout << " using functional mass fitting for a given fit" << endl;
@@ -223,16 +304,14 @@ TGeant/Local_leftRight_Analysis/Data/";
   }
 
   //Get Input Files from Local_leftRight
-  TFile *fRD  = TFile::Open(pathData + RDfile);
-  TFile *fRD_noCorr = TFile::Open(pathData + RDfile_noCorr);
-  TFile *fJPsi = TFile::Open(pathData + JPsiFile);
-  TFile *fpsi = TFile::Open(pathData + psiFile);
-  TFile *fOC = TFile::Open(pathData + OCFile);
-  TFile *fAMDY = TFile::Open(pathData + AMDYFile);
-  if (!fRD || !fRD_noCorr || !fJPsi || !fpsi || !fOC || !fAMDY){
-    cout << "RD or RD_noCorr or a MC file does not exist " << endl;
-    exit(EXIT_FAILURE);
-  }
+  TFile *fRD  = OpenFile(pathData + RDfile);
+  TFile *fRD_noCorr = OpenFile(pathData + RDfile_noCorr);
+  TFile *fJPsi = OpenFile(pathData + JPsiFile);
+  TFile *fpsi = OpenFile(pathData + psiFile);
+  TFile *fOC = OpenFile(pathData + OCFile);
+  TFile *fAMDY = (whichFit=="MC") ? OpenFile(pathData + AMDYFile) : NULL;
+  TFile *fLMDY = (whichFit=="MC_5") ? OpenFile(pathData + LMDYFile) : NULL;
+  TFile *fHMDY = (whichFit=="MC_5") ? OpenFile(pathData + HMDYFile) : NULL;
   
   //Determine polarization factor
   Double_t ex[nBins] = {0.0};
@@ -287,7 +366,11 @@ TGeant/Local_leftRight_Analysis/Data/";
   TString targNames[nTargPol] = {"upS_up", "upS_down", "downS_up","downS_down"};
   for (Int_t c=0; c<nTargPol; c++) {
     cFit[c] = new TCanvas(targNames[c]); cFit[c]->Divide(2, nBins); }
-  TH1D* hChi2 = new TH1D("hChi2", "hChi2", 30, 0, 100); SetUpHist(hChi2);
+  
+  //To draw just one fit/ratio for better visibility
+  //TCanvas* cOne = new TCanvas(); cOne->Divide(1, 2);
+  
+  TH1D* hChi2 = new TH1D("hChi2", "hChi2", 50, 0, 50); SetUpHist(hChi2);
   
   //Perform Fits and integrate to get L/R
   for (Int_t bi=0, iPar_upS=0, iPar_dS=0; bi<nBins; bi++) {
@@ -314,27 +397,27 @@ TGeant/Local_leftRight_Analysis/Data/";
     SetUpHist(hRD_downS_down_L[bi]); SetUpHist(hRD_downS_down_R[bi]);
 
     //Get MC histograms
-    TH1D *hMC_upS_up_L[4], *hMC_upS_up_R[4];
-    TH1D *hMC_upS_down_L[4], *hMC_upS_down_R[4];
-    TH1D *hMC_downS_up_L[4], *hMC_downS_up_R[4];
-    TH1D *hMC_downS_down_L[4], *hMC_downS_down_R[4];
+    TH1D *hMC_upS_up_L[5], *hMC_upS_up_R[5];
+    TH1D *hMC_upS_down_L[5], *hMC_upS_down_R[5];
+    TH1D *hMC_downS_up_L[5], *hMC_downS_up_R[5];
+    TH1D *hMC_downS_down_L[5], *hMC_downS_down_R[5];
     
-    GetMCHist(fJPsi, fpsi, fOC, fAMDY, "left_upstream_up",
-	      physBinned, bi, hMC_upS_up_L);
-    GetMCHist(fJPsi, fpsi, fOC, fAMDY, "right_upstream_up",
-	      physBinned, bi, hMC_upS_up_R);
-    GetMCHist(fJPsi, fpsi, fOC, fAMDY, "left_upstream_down",
-	      physBinned, bi, hMC_upS_down_L);
-    GetMCHist(fJPsi, fpsi, fOC, fAMDY, "right_upstream_down",
-	      physBinned, bi, hMC_upS_down_R);
-    GetMCHist(fJPsi, fpsi, fOC, fAMDY, "left_downstream_up",
-	      physBinned, bi, hMC_downS_up_L);
-    GetMCHist(fJPsi, fpsi, fOC, fAMDY, "right_downstream_up",
-	      physBinned, bi, hMC_downS_up_R);
-    GetMCHist(fJPsi, fpsi, fOC, fAMDY, "left_downstream_down",
-	      physBinned, bi, hMC_downS_down_L);
-    GetMCHist(fJPsi, fpsi, fOC, fAMDY, "right_downstream_down",
-	      physBinned, bi, hMC_downS_down_R);
+    GetMCHist(fJPsi, fpsi, fOC, fAMDY, fLMDY, fHMDY, "left_upstream_up",
+	      physBinned, bi, hMC_upS_up_L, whichFit);
+    GetMCHist(fJPsi, fpsi, fOC, fAMDY, fLMDY, fHMDY, "right_upstream_up",
+	      physBinned, bi, hMC_upS_up_R, whichFit);
+    GetMCHist(fJPsi, fpsi, fOC, fAMDY, fLMDY, fHMDY, "left_upstream_down",
+	      physBinned, bi, hMC_upS_down_L, whichFit);
+    GetMCHist(fJPsi, fpsi, fOC, fAMDY, fLMDY, fHMDY, "right_upstream_down",
+	      physBinned, bi, hMC_upS_down_R, whichFit);
+    GetMCHist(fJPsi, fpsi, fOC, fAMDY, fLMDY, fHMDY, "left_downstream_up",
+	      physBinned, bi, hMC_downS_up_L, whichFit);
+    GetMCHist(fJPsi, fpsi, fOC, fAMDY, fLMDY, fHMDY, "right_downstream_up",
+	      physBinned, bi, hMC_downS_up_R, whichFit);
+    GetMCHist(fJPsi, fpsi, fOC, fAMDY, fLMDY, fHMDY, "left_downstream_down",
+	      physBinned, bi, hMC_downS_down_L, whichFit);
+    GetMCHist(fJPsi, fpsi, fOC, fAMDY, fLMDY, fHMDY, "right_downstream_down",
+	      physBinned, bi, hMC_downS_down_R, whichFit);
     
     hRatio_upS_up_L[bi] = (TH1D*)hRD_upS_up_L[bi]->Clone();
     hRatio_upS_up_R[bi] = (TH1D*)hRD_upS_up_R[bi]->Clone();
@@ -363,7 +446,18 @@ TGeant/Local_leftRight_Analysis/Data/";
 		      Mmin, Mmax, hMC_upS_down_L, cFit[1], hChi2);
     fitFunc =FitGetLR(hRD_upS_down_R, hRatio_upS_down_R, bi, LR_upS_down_R,
 		      e_LR_upS_down_R, LR_Mmin, LR_Mmax, process, whichFit,
-		      Mmin, Mmax, hMC_upS_down_R, cFit[1], hChi2);
+		      Mmin, Mmax, hMC_upS_down_R, cFit[1], hChi2);//*/
+    /*if (bi != 0){ //To draw just one fit/ratio for better visibility
+      fitFunc =FitGetLR(hRD_upS_down_R, hRatio_upS_down_R, bi, LR_upS_down_R,
+      e_LR_upS_down_R, LR_Mmin, LR_Mmax, process, whichFit,
+      Mmin, Mmax, hMC_upS_down_R, cFit[1], hChi2);
+      }
+      else {
+      FitOne(hRD_upS_down_R, hRatio_upS_down_R, bi, LR_upS_down_R,
+      e_LR_upS_down_R, LR_Mmin, LR_Mmax, process, whichFit,
+      Mmin, Mmax, hMC_upS_down_R, cOne);
+      cout << "\n\nDraw option currently in use\n\n";
+      }//*/
 
     hIsUpS =false; 
     fitFunc =FitGetLR(hRD_downS_up_L, hRatio_downS_up_L, bi, LR_downS_up_L,
@@ -384,7 +478,7 @@ TGeant/Local_leftRight_Analysis/Data/";
   TCanvas* cRatio[nTargPol];
   for (Int_t c=0; c<nTargPol; c++) {
     cRatio[c] = new TCanvas("Ratio_"+targNames[c]);cRatio[c]->Divide(2, nBins);}
-  Double_t RatioPercent =0.2;
+  Double_t RatioPercent =0.4;
   for (Int_t bi=0; bi<nBins; bi++) {
     cRatio[0]->cd(2*bi + 1); hRatio_upS_up_L[bi]->Draw();
     SetupRatio(hRatio_upS_up_L[bi], RatioPercent, Mmin, Mmax);
@@ -410,7 +504,7 @@ TGeant/Local_leftRight_Analysis/Data/";
   hChi2->Draw();
 
   //Make LR Integration region Chi2
-  TH1D* hLRchi2 = new TH1D("hLRchi2", "hLRchi2", 20, 0, 1);
+  TH1D* hLRchi2 = new TH1D("hLRchi2", "hLRchi2", 20, 0, 1.5);
   Double_t lrChi2[nBins] = {0.0};
   for (Int_t bi=0; bi<nBins; bi++) {
     Double_t Chi2 =LocalChi2(hRatio_upS_up_L[bi], LR_Mmin, LR_Mmax);
@@ -430,10 +524,10 @@ TGeant/Local_leftRight_Analysis/Data/";
     hLRchi2->Fill(Chi2); lrChi2[bi] += Chi2;
     Chi2 =LocalChi2(hRatio_downS_down_R[bi], LR_Mmin, LR_Mmax);
     hLRchi2->Fill(Chi2); lrChi2[bi] += Chi2;
-    lrChi2[bi] /= 8.0;
+    lrChi2[bi] /= 8.0;//Average out local Chi2
   }
   TCanvas* cLRChi2 = new TCanvas(); cLRChi2->Divide(2);
-  cLRChi2->cd(1); hLRchi2->Draw();
+  cLRChi2->cd(1); SetUpHist(hLRchi2); hLRchi2->Draw();
   TGraph *gLRChi2 = new TGraph(nBins, xvals, lrChi2);
   SetUpTGraph(gLRChi2); gLRChi2->SetTitle("LRChi2");
   cLRChi2->cd(2); gLRChi2->Draw("AP");
@@ -551,6 +645,12 @@ TGeant/Local_leftRight_Analysis/Data/";
   g_AN_downS_down->Draw("AP"); g_AN_upS_up->SetTitle("AN_downS_down");
   g_AN_downS_down->GetYaxis()->SetRangeUser(-yMax, yMax);
   DrawLine(g_AN_downS_down, 0.0);
+
+  //Draw One fit/Ratio //To draw just one fit/ratio for better visibility
+  /*cOne->cd(2);
+    hRatio_upS_down_R[0]->Draw();
+    hRatio_upS_down_R[0]->GetXaxis()->SetRangeUser(1.0, 8.5);
+    DrawLine(hRatio_upS_down_R[0], 1.0);//*/
 
   //Write Output/Final Settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\

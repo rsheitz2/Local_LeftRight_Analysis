@@ -11,9 +11,7 @@ using namespace std;
 
 int main(int argc, char **argv){
   if(argc < 2){//Starting Help information
-    cout << "" << endl;
-    cout << "" << endl;
-    cout << "Usage:" << endl;
+    cout << "\n\nUsage:" << endl;
     cout << "./main [options] [-ffilename]" << endl;
     cout << "filename should be the full path name" << endl;
     cout << "" << endl;
@@ -64,7 +62,6 @@ int main(int argc, char **argv){
 	
     exit(EXIT_FAILURE);
   }
-  //TApplication theApp("tapp", &argc, argv);
 
   //Read input arguments
   Int_t wflag=0, Qflag=0, fflag=0, Sflag=0, Pflag=0, Tflag=0, Vflag=0, Nflag=0;
@@ -260,6 +257,8 @@ int main(int argc, char **argv){
     cout << "Please enter and integer with -N option" << endl;
     exit(EXIT_FAILURE);
   }
+
+  if(Zflag){ cout << "Number of histogram bins changed to  " << nHbins << endl;}
   
   //Opening data files/getting trees
   TFile *fdata = TFile::Open(fname);
@@ -722,10 +721,8 @@ int main(int argc, char **argv){
       for (Int_t i=0; i<nBasics; i++) Basics[i]->AvgCorr();
     }
 
-    cout << " " << endl;
-    cout << "!!!!!!!!!!!!!!!" << endl;
-    cout << "Dilution factor and polarization corrections are made" << endl;
-    cout << " " << endl;
+    cout << "\n!!!!!!!!!!!!!!!" << endl;
+    cout << "Dilution factor and polarization corrections are made\n" << endl;
 
     for (Int_t i=0; i<nBasics; i++) Basics[i]->CorrectDilPol();
     if (Vflag) genericPhys->CorrectDilPol();
@@ -765,5 +762,4 @@ int main(int argc, char **argv){
   cout << "Do not used    PhiS   (it's not defined well)" << endl;
   cout << " " << endl;
   
-  //theApp.Run();//Needed to make root graphics work on C++
 }

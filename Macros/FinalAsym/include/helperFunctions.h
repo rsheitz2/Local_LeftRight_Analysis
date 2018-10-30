@@ -278,3 +278,14 @@ void GetPolarization(Double_t *vals_noPcorr, Double_t *vals, Double_t *Pol,
   }
 }
 
+
+TFile* OpenFile(TString fname){
+
+  TFile *f = TFile::Open(fname);
+  if( !f ){
+    cout << fname << " does not exist" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  return f;
+}

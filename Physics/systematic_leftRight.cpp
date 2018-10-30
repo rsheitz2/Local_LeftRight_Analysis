@@ -167,6 +167,8 @@ int main(int argc, char **argv){
   if (Eflag) cout << "Runs per sub period evened out" << endl;
   if (Rflag) cout << "Even runs sb 1, Odd runs sb 2" << endl;
   if(Dflag) cout << "\nDebug mode only 1000 events considered\n" << endl;
+  if (Sflag) cout <<"Left/right choice set to:   " << leftrightChoice << endl;
+  if(Zflag){ cout << "Number of histogram bins changed to  " << nHbins << endl;}
   cout << "\nUsing REAL data!\n" << endl;
 
   //Opening data files/getting trees

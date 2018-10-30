@@ -2,9 +2,9 @@
 #include "include/fitFunctions.h"
 
 TF1* FitGetLR(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
-		Double_t LR_Mmin, Double_t LR_Mmax, TString process,
-		TString whichFit, Double_t Mmin, Double_t Mmax,
-		TCanvas *c1, TH1D *hChi2){
+	      Double_t LR_Mmin, Double_t LR_Mmax, TString process,
+	      TString whichFit, Double_t Mmin, Double_t Mmax,
+	      TCanvas *c1, TH1D *hChi2){
 
   if (strncmp(Form("%s", h[bin]->GetTitle() ), "MuMu_left_upstream", 11) == 0)
     c1->cd(2*bin+1);
@@ -15,7 +15,7 @@ TF1* FitGetLR(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
 
   gPad->SetLogy();
   TF1 *fitFunc = FitGetLR(h, hRatio, bin, LR, e_LR,LR_Mmin, LR_Mmax, process,
-			     whichFit, Mmin, Mmax);
+			  whichFit, Mmin, Mmax);
 
   //Get reduced Chi2
   Double_t Chi2 =fitFunc->GetChisquare();
@@ -24,6 +24,17 @@ TF1* FitGetLR(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
   hChi2->Fill(redChi2);
 
   return fitFunc;
+}
+
+
+void FitOne(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
+	    Double_t LR_Mmin, Double_t LR_Mmax, TString process,
+	    TString whichFit, Double_t Mmin, Double_t Mmax, TCanvas *c1){
+  //Used to draw just one histogram fit (for better visibility)
+  c1->cd(1);
+  gPad->SetLogy();
+  TF1 *fitFunc = FitGetLR(h, hRatio, bin, LR, e_LR, LR_Mmin, LR_Mmax, process,
+			  whichFit, Mmin, Mmax);
 }
 
 
@@ -75,20 +86,32 @@ void SetupRatio(TH1D* h, Double_t RatioPercent){
 }
 
 
-void functMFit(Bool_t PolCorr =true, TString start=""){
+void functMFit(TString start=""){
   
   //Setup_______________
+  /*TString period_Mtype ="W07_HMDY";
+    Int_t hbins =150;//# of histogram bins using in mass fitting
+    const Int_t nBins =3;
+    TString binRange ="43_85";
+    TString physBinned ="pT";//"xN", "xPi", "xF", "pT"
+    TString process ="DY";//JPsi, psi, DY
+    Double_t LR_Mmin =4.30;
+    Double_t LR_Mmax =8.50;//L/R counts mass range
+    Double_t Mmin =4.30;//Fit Mass minimum
+    Double_t Mmax =8.50;//Fit Mass maximum
+    TString whichFit ="eight";//*/
+  
   TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;//# of histogram bins using in mass fitting
   const Int_t nBins =5;
   TString binRange ="25_43";
-  TString physBinned ="xN";//"xN", "xPi", "xF", "pT"
+  TString physBinned ="pT";//"xN", "xPi", "xF", "pT"
   TString process ="JPsi";//JPsi, psi, DY
   Double_t LR_Mmin =2.90;
   Double_t LR_Mmax =3.30;//L/R counts mass range
   Double_t Mmin =2.00;//Fit Mass minimum
   Double_t Mmax =7.50;//Fit Mass maximum
-  TString whichFit ="ten";
+  TString whichFit ="eight";//*/
   
   Bool_t toWrite =false;
   //Setup_______________
@@ -98,9 +121,6 @@ void functMFit(Bool_t PolCorr =true, TString start=""){
 TGeant/Local_leftRight_Analysis/Data/";
   TString RDfile =Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_%ihbin.root",
 		       period_Mtype.Data(), nBins, binRange.Data(), hbins);
-  TString RDfile_noCorr
-    =Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_noCorr.root",
-	  period_Mtype.Data(), nBins, binRange.Data() );
   
   if (start==""){
     cout<<"Script outputs AN and left/right counts per target and polarization";
@@ -127,30 +147,18 @@ TGeant/Local_leftRight_Analysis/Data/";
 
   //Get Input Files from Local_leftRight
   TFile *fRD  = TFile::Open(pathRD + RDfile);
-  TFile *fRD_noCorr = TFile::Open(pathRD + RDfile_noCorr);
-  if (!fRD || !fRD_noCorr ){
-    cout << "RD or RD_noCorr file does not exist " << endl;
+  if (!fRD ){
+    cout << "RD file does not exist " << endl;
     exit(EXIT_FAILURE);
   }
 
   //Determine polarization factor
   Double_t ex[nBins] = {0.0};
-  TGraphErrors* g_asym
-    =(TGraphErrors*)fRD->Get(Form("%s_asym",physBinned.Data()));
-  TGraphErrors* g_asym_noCorr
-    =(TGraphErrors*)fRD_noCorr->Get(Form("%s_asym",physBinned.Data()));
-  if (g_asym->GetN() != nBins){
-    cout << "nBins not defined well!!!" << endl;
-    exit(EXIT_FAILURE);
-  }
-  Double_t *xvals = g_asym->GetX();
-  Double_t *yvals =g_asym->GetY();
-  Double_t *yvals_noCorr =g_asym_noCorr->GetY();
+  TGraph* g_Pol =(TGraph*)fRD->Get(Form("%s_Pol", physBinned.Data()));
+  TGraph* g_Dil =(TGraph*)fRD->Get(Form("%s_Dil", physBinned.Data()));
+  Double_t *xvals = g_Pol->GetX();
   Double_t Pol[nBins];
-  if (PolCorr) GetPolarization(yvals_noCorr, yvals, Pol, nBins);
-  else {
-    for (Int_t bi=0; bi<nBins; bi++) Pol[bi] = 1.0;
-  }
+  GetPolarization(g_Pol, g_Dil, Pol);
 
   //Get Input Hist/fit ratio/Determine LR counts for specified process
   TH1D *hRD_upS_up_L[nBins], *hRD_upS_up_R[nBins]; //Invariant M dist to be Fit
@@ -164,7 +172,7 @@ TGeant/Local_leftRight_Analysis/Data/";
   TH1D *hRatio_downS_down_L[nBins], *hRatio_downS_down_R[nBins];
 
   //Fit parameters to check
-  const Int_t nTargPol =4, nSelectPars =2;
+  const Int_t nTargPol =4, nSelectPars =5;
   Double_t pars_upS[nBins*nTargPol*nSelectPars];
   Double_t pars_downS[nBins*nTargPol*nSelectPars];
   Double_t e_pars_upS[nBins*nTargPol*nSelectPars];
@@ -186,7 +194,11 @@ TGeant/Local_leftRight_Analysis/Data/";
   TString targNames[nTargPol] = {"upS_up", "upS_down", "downS_up","downS_down"};
   for (Int_t c=0; c<nTargPol; c++) {
     cFit[c] = new TCanvas(targNames[c]); cFit[c]->Divide(2, nBins); }
-  TH1D* hChi2 = new TH1D("hChi2", "hChi2", 30, 0, 3); SetUpHist(hChi2);
+
+  //To draw just one fit/ratio for better visibility
+  //TCanvas* cOne = new TCanvas(); cOne->Divide(1, 2);
+  
+  TH1D* hChi2 = new TH1D("hChi2", "hChi2", 30, 0, 2); SetUpHist(hChi2);
   
   //Perform Fits and integrate to get L/R
   for (Int_t bi=0, iPar_upS=0, iPar_dS=0; bi<nBins; bi++) {
@@ -230,51 +242,62 @@ TGeant/Local_leftRight_Analysis/Data/";
     TF1 *fitFunc = FitGetLR(hRD_upS_up_L, hRatio_upS_up_L, bi, LR_upS_up_L,
 			    e_LR_upS_up_L, LR_Mmin, LR_Mmax, process, whichFit,
 			    Mmin, Mmax, cFit[0], hChi2);
-    SelectFitPars(fitFunc, &pars_upS[iPar_upS], &e_pars_upS[iPar_upS], process,
-		  whichFit, hIsUpS); iPar_upS +=nSelectPars;
+    SelectFitPhysicsPars(fitFunc, &pars_upS[iPar_upS], &e_pars_upS[iPar_upS],
+			 process, whichFit, hIsUpS); iPar_upS +=nSelectPars;
     
     fitFunc = FitGetLR(hRD_upS_up_R, hRatio_upS_up_R, bi, LR_upS_up_R,
 		       e_LR_upS_up_R, LR_Mmin, LR_Mmax, process, whichFit, Mmin,
 		       Mmax, cFit[0], hChi2);
-    SelectFitPars(fitFunc, &pars_upS[iPar_upS], &e_pars_upS[iPar_upS], process,
-		  whichFit, hIsUpS); iPar_upS +=nSelectPars;
+    SelectFitPhysicsPars(fitFunc, &pars_upS[iPar_upS], &e_pars_upS[iPar_upS],
+			 process, whichFit, hIsUpS); iPar_upS +=nSelectPars;
     
     fitFunc = FitGetLR(hRD_upS_down_L, hRatio_upS_down_L, bi, LR_upS_down_L,
 		       e_LR_upS_down_L, LR_Mmin, LR_Mmax, process,whichFit,Mmin,
 		       Mmax, cFit[1], hChi2);
-    SelectFitPars(fitFunc, &pars_upS[iPar_upS], &e_pars_upS[iPar_upS], process,
-		  whichFit, hIsUpS); iPar_upS +=nSelectPars;
+    SelectFitPhysicsPars(fitFunc, &pars_upS[iPar_upS], &e_pars_upS[iPar_upS],
+			 process, whichFit, hIsUpS); iPar_upS +=nSelectPars;
     
     fitFunc =FitGetLR(hRD_upS_down_R, hRatio_upS_down_R, bi, LR_upS_down_R,
 		      e_LR_upS_down_R, LR_Mmin, LR_Mmax, process, whichFit,Mmin,
 		      Mmax, cFit[1], hChi2);
-    SelectFitPars(fitFunc, &pars_upS[iPar_upS], &e_pars_upS[iPar_upS], process,
-    whichFit, hIsUpS); iPar_upS +=nSelectPars;
+    SelectFitPhysicsPars(fitFunc, &pars_upS[iPar_upS], &e_pars_upS[iPar_upS],
+			 process, whichFit, hIsUpS); iPar_upS +=nSelectPars;//*/
+    /*if (bi != 0){ //To draw just one fit/ratio for better visibility
+      fitFunc =FitGetLR(hRD_upS_down_R, hRatio_upS_down_R, bi, LR_upS_down_R,
+      e_LR_upS_down_R, LR_Mmin, LR_Mmax, process, whichFit,
+      Mmin, Mmax, cFit[1], hChi2);
+      }
+      else {
+      FitOne(hRD_upS_down_R, hRatio_upS_down_R, bi, LR_upS_down_R,
+      e_LR_upS_down_R, LR_Mmin, LR_Mmax, process, whichFit,
+      Mmin, Mmax, cOne);
+      cout << "\n\nDraw option currently in use\n\n";
+      }//*/
 
     hIsUpS =false;
     fitFunc =FitGetLR(hRD_downS_up_L, hRatio_downS_up_L, bi, LR_downS_up_L,
-		      e_LR_downS_up_L, LR_Mmin, LR_Mmax, process, whichFit,Mmin,
-		      Mmax, cFit[2], hChi2);
-    SelectFitPars(fitFunc, &pars_downS[iPar_dS], &e_pars_downS[iPar_dS],process,
-		  whichFit, hIsUpS); iPar_dS +=nSelectPars;
+		      e_LR_downS_up_L, LR_Mmin, LR_Mmax, process, whichFit,
+		      Mmin, Mmax, cFit[2], hChi2);
+    SelectFitPhysicsPars(fitFunc, &pars_downS[iPar_dS], &e_pars_downS[iPar_dS],
+			 process, whichFit, hIsUpS); iPar_dS +=nSelectPars;
     
     fitFunc =FitGetLR(hRD_downS_up_R, hRatio_downS_up_R, bi, LR_downS_up_R,
-		      e_LR_downS_up_R, LR_Mmin, LR_Mmax, process, whichFit,Mmin,
-		      Mmax, cFit[2], hChi2);
-    SelectFitPars(fitFunc, &pars_downS[iPar_dS], &e_pars_downS[iPar_dS],process,
-		  whichFit, hIsUpS); iPar_dS +=nSelectPars;
+		      e_LR_downS_up_R, LR_Mmin, LR_Mmax, process, whichFit,
+		      Mmin, Mmax, cFit[2], hChi2);
+    SelectFitPhysicsPars(fitFunc, &pars_downS[iPar_dS], &e_pars_downS[iPar_dS],
+			 process, whichFit, hIsUpS); iPar_dS +=nSelectPars;
     
     fitFunc =FitGetLR(hRD_downS_down_L, hRatio_downS_down_L, bi,LR_downS_down_L,
 		      e_LR_downS_down_L, LR_Mmin, LR_Mmax, process, whichFit,
 		      Mmin, Mmax, cFit[3], hChi2);
-    SelectFitPars(fitFunc, &pars_downS[iPar_dS], &e_pars_downS[iPar_dS],process,
-		  whichFit, hIsUpS); iPar_dS +=nSelectPars;
+    SelectFitPhysicsPars(fitFunc, &pars_downS[iPar_dS], &e_pars_downS[iPar_dS],
+			 process, whichFit, hIsUpS); iPar_dS +=nSelectPars;
     
     fitFunc =FitGetLR(hRD_downS_down_R, hRatio_downS_down_R, bi,LR_downS_down_R,
 		      e_LR_downS_down_R, LR_Mmin, LR_Mmax, process, whichFit,
 		      Mmin, Mmax, cFit[3], hChi2);
-    SelectFitPars(fitFunc, &pars_downS[iPar_dS], &e_pars_downS[iPar_dS],process,
-    whichFit, hIsUpS); iPar_dS +=nSelectPars;
+    SelectFitPhysicsPars(fitFunc, &pars_downS[iPar_dS], &e_pars_downS[iPar_dS],
+			 process, whichFit, hIsUpS); iPar_dS +=nSelectPars;
   }//Loop over nBins physics binning
 
   //Draw RD/fit ratios
@@ -330,11 +353,11 @@ TGeant/Local_leftRight_Analysis/Data/";
     lrChi2[bi] /= 8.0;
   }
   TCanvas* cLRChi2 = new TCanvas(); cLRChi2->Divide(2);
-  cLRChi2->cd(1); hLRchi2->Draw();
+  cLRChi2->cd(1); SetUpHist(hLRchi2); hLRchi2->Draw();
   TGraph *gLRChi2 = new TGraph(nBins, xvals, lrChi2);
   SetUpTGraph(gLRChi2); gLRChi2->SetTitle("LRChi2");
   cLRChi2->cd(2); gLRChi2->Draw("AP");
-  
+
   //L/R count graphs/Drawing
   TGraphErrors* g_Left_upS_up =
     new TGraphErrors(nBins, xvals, LR_upS_up_L, ex, e_LR_upS_up_L);
@@ -363,25 +386,25 @@ TGeant/Local_leftRight_Analysis/Data/";
   cLR->cd(1); g_Left_upS_up->Draw("AP");//Upstream
   g_Left_upS_up->SetTitle("L/R upS_up");
   g_Right_upS_up->Draw("Psames"); g_Right_upS_up->SetMarkerColor(kRed);
-  g_Left_upS_up->Fit("pol0", "Q"); g_Right_upS_up->Fit("pol0", "Q"); 
+  //g_Left_upS_up->Fit("pol0", "Q"); g_Right_upS_up->Fit("pol0", "Q"); 
   
   cLR->cd(2); g_Left_upS_down->Draw("AP");
   g_Left_upS_down->SetTitle("L/R upS_down");
   g_Right_upS_down->Draw("Psames");
   g_Right_upS_down->SetMarkerColor(kRed);
-  g_Left_upS_down->Fit("pol0", "Q"); g_Right_upS_down->Fit("pol0", "Q"); 
+  //g_Left_upS_down->Fit("pol0", "Q"); g_Right_upS_down->Fit("pol0", "Q"); 
   
   cLR->cd(3); g_Left_downS_up->Draw("AP");//Downstream
   g_Left_downS_up->SetTitle("L/R downS_up");
   g_Right_downS_up->Draw("Psames");
   g_Right_downS_up->SetMarkerColor(kRed);
-  g_Left_downS_up->Fit("pol0", "Q"); g_Right_downS_up->Fit("pol0", "Q"); 
+  //g_Left_downS_up->Fit("pol0", "Q"); g_Right_downS_up->Fit("pol0", "Q"); 
   
   cLR->cd(4); g_Left_downS_down->Draw("AP");
   g_Left_downS_down->SetTitle("L/R downS_down");
   g_Right_downS_down->Draw("Psames");
   g_Right_downS_down->SetMarkerColor(kRed);
-  g_Left_downS_down->Fit("pol0", "Q"); g_Right_downS_down->Fit("pol0", "Q"); 
+  //g_Left_downS_down->Fit("pol0", "Q"); g_Right_downS_down->Fit("pol0", "Q"); 
 
   //Setup/Draw select fit parameters
   Double_t ex_pars[nBins*nTargPol*nSelectPars] = {0.0};
@@ -398,15 +421,29 @@ TGeant/Local_leftRight_Analysis/Data/";
 		 e_pars_downS); SetUpTGraph(g_pars_downS);
   g_pars_downS->SetMarkerColor(kRed);
   TCanvas* cPars = new TCanvas(); cPars->Divide(2);
+  
+  //Change the following ranges to look at different parameters
+  Double_t min_parMrange =3.1, max_parMrange =3.15;//JPsi 
+  Double_t min_parWrange =0.15, max_parWrange =0.175;//JPsi
+  
+  //Double_t min_parMrange =3.5, max_parMrange =3.65;//psi' eight
+  //Double_t min_parWrange =0.18, max_parWrange =0.21;//psi' eight
+  //Double_t min_parMrange =3.3, max_parMrange =3.5;//psi' ten
+  //Double_t min_parWrange =0.22, max_parWrange =0.35;//psi' 
+  
+  //Double_t min_parMrange =-1.5, max_parMrange =-0.5;//DY slope
+  
   cPars->cd(1);
-  g_pars_upS->Draw("AP"); g_pars_upS->GetYaxis()->SetRangeUser(3.1, 3.15);
+  g_pars_upS->Draw("AP");
+  g_pars_upS->GetYaxis()->SetRangeUser(min_parMrange, max_parMrange); 
   g_pars_upS->SetTitle("Fit Mass");
   g_pars_downS->Draw("Psame");
   cPars->cd(2);
-  g_pars_downS->Draw("AP"); g_pars_downS->GetYaxis()->SetRangeUser(0.15, 0.2);
-  g_pars_downS->SetTitle("Fit Width"); g_pars_downS->Fit("pol0");
-  g_pars_upS->Draw("Psame"); g_pars_upS->Fit("pol0");
-  
+  g_pars_downS->Draw("AP");
+  g_pars_downS->GetYaxis()->SetRangeUser(min_parWrange, max_parWrange);
+  g_pars_downS->SetTitle("Fit Width"); 
+  g_pars_upS->Draw("Psame"); 
+    
   //Make AN asymmetery per targ && pol
   Double_t AN_upS_up[nBins], e_AN_upS_up[nBins];
   Double_t AN_upS_down[nBins], e_AN_upS_down[nBins];
@@ -450,9 +487,9 @@ TGeant/Local_leftRight_Analysis/Data/";
   
   TCanvas* cAN = new TCanvas("AN by tar && pol"); cAN->Divide(2, 2);
   Double_t yMax;
-  if (process =="JPsi")  (PolCorr) ? yMax =0.5 : yMax =0.5;
-  else if (process =="psi")  (PolCorr) ? yMax =1.0 : yMax =0.5;
-  else if (process =="DY")  (PolCorr) ? yMax =3.0 : yMax =0.5;
+  if (process =="JPsi")  yMax =0.45;
+  else if (process =="psi")  yMax =1.0;
+  else if (process =="DY")  yMax =3.0;
   cAN->cd(1);
   g_AN_upS_up->Draw("AP"); g_AN_upS_up->SetTitle("AN_upS_up");
   g_AN_upS_up->GetYaxis()->SetRangeUser(-yMax, yMax);
@@ -473,6 +510,12 @@ TGeant/Local_leftRight_Analysis/Data/";
   g_AN_downS_down->GetYaxis()->SetRangeUser(-yMax, yMax);
   DrawLine(g_AN_downS_down, 0.0);
 
+  //Draw One fit/Ratio //To draw just one fit/ratio for better visibility
+  /*cOne->cd(2);
+  hRatio_upS_down_R[0]->Draw();
+  hRatio_upS_down_R[0]->GetXaxis()->SetRangeUser(1.0, 8.5);
+  DrawLine(hRatio_upS_down_R[0], 1.0);//*/
+
   //Write Output/Final Settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
 /TGeant/Local_LeftRight_Analysis/Macros/AN_calculation";
@@ -481,11 +524,11 @@ TGeant/Local_leftRight_Analysis/Data/";
 	   thisDirPath.Data(), whichFit.Data(), nominal_Mmin, nominal_Mmax,
 	   period_Mtype.Data(), process.Data(), LR_Mmin, LR_Mmax,
 	   physBinned.Data(), nBins, hbins);
-  fOutput += (PolCorr) ? "_corr.root" : "_noCorr.root";
+  fOutput += "_corr.root";
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
     TList *doc = new TList();
-    doc->Add((TObject*)(new TObjString(pathRD+"\n"+RDfile+"\n"+RDfile_noCorr)));
+    doc->Add((TObject*)(new TObjString(pathRD+"\n"+RDfile)));
     doc->Write("InputData");
     
     g_AN_upS_up->Write("AN_upS_up");
@@ -512,7 +555,6 @@ TGeant/Local_leftRight_Analysis/Data/";
   cout << "Mass Range for fitting is:              " << Mmin
        << " - " << Mmax << endl;
   cout << "physBinned nBins times:                 " << nBins << endl;
-  cout << "Polarization was performed:             " << PolCorr << endl;
   cout << "\n";
   cout << "AN for physical process:                " << process << endl;
   cout << "Physics binning is:                     " << physBinned << endl;

@@ -75,9 +75,9 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics";
   }
   
   //Aesthetics setup
-  TCanvas* cAsym = new TCanvas(); cAsym->Divide(4, 1, 0, 0.01);
-  Double_t yMax =0.25;
-  Double_t ysys =-0.15;
+  TCanvas* cAsym = new TCanvas(); cAsym->Divide(nPhysBinned, 1, 0, 0.01);
+  Double_t yMax =(process=="DY") ? 0.25 : 0.1;
+  Double_t ysys =(process=="DY") ? -0.15 : -0.075;
   
   //Get Data file/Get graphs and plot
   TString physBinnedNames ="", fitNames="";

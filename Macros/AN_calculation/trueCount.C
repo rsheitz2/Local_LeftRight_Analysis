@@ -24,25 +24,6 @@ Double_t MakeAsymError(Double_t L, Double_t R, Double_t e_L, Double_t e_R,
 }
 
 
-void GetLRcounts(TGraphErrors *g, Double_t *leftCounts, Double_t *rightCounts){
-  
-  Double_t *yvals = g->GetY();
-  Double_t *e_yvals = g->GetEY();
-
-  for (Int_t i=0; i<g->GetN(); i++) {
-    Double_t Ap1 = 1+yvals[i];
-    Double_t Am1 = 1-yvals[i];
-    Double_t d2A = e_yvals[i]*e_yvals[i];
-    
-    Double_t Left = Ap1*Ap1*Am1/(2.0*d2A);
-    Double_t Right = Am1*Am1*Ap1/(2.0*d2A);
-
-    leftCounts[i] = Left;
-    rightCounts[i] = Right;
-  }
-}
-
-
 void GetLRerror(Double_t *leftCounts, Double_t *rightCounts,
 		Double_t *e_leftCounts, Double_t *e_rightCounts, Int_t nBins){
 
@@ -50,27 +31,16 @@ void GetLRerror(Double_t *leftCounts, Double_t *rightCounts,
     e_leftCounts[i] = TMath::Sqrt(leftCounts[i]);
     e_rightCounts[i] = TMath::Sqrt(rightCounts[i]);
   }
-
 }
 
 
-void GetLR_CountsErrors(TGraphErrors *g,
-			Double_t *leftCounts, Double_t *rightCounts,
-			Double_t *e_leftCounts, Double_t *e_rightCounts){
-  GetLRcounts(g, leftCounts, rightCounts);
-
-  Int_t nBins = g->GetN();
-  GetLRerror(leftCounts, rightCounts, e_leftCounts, e_rightCounts, nBins);
-}
-
-
-void trueCount(Bool_t PolCorr =true, TString start=""){
+void trueCount(TString start=""){
   //Setup_______________
-  const Int_t nBins =4;//# of physBinned bins
-  TString period_Mtype ="W07_AMDY";
-  TString binRange ="25_43";
-  Double_t Mmin =4.20;//LR Mass minimum
-  Double_t Mmax =5.00;//LR Mass maximum
+  const Int_t nBins =3;//# of physBinned bins
+  TString period_Mtype ="WAll_HMDY";
+  TString binRange ="43_85";
+  Double_t Mmin =4.30;//LR Mass minimum
+  Double_t Mmax =8.50;//LR Mass maximum
   TString physBinned ="xN";//"xF", "pT"
   TString process ="DY";//JPsi, psi, DY
     
@@ -81,9 +51,6 @@ void trueCount(Bool_t PolCorr =true, TString start=""){
 TGeant/Local_leftRight_Analysis/Data/";
   TString RDfile =Form("leftRight_byTarget_%s%.2f_%.2f_%ibins%s_150hbin.root",
 		       period_Mtype.Data(), Mmin, Mmax, nBins, binRange.Data() );
-  TString RDfile_noCorr
-    =Form("leftRight_byTarget_%s%.2f_%.2f_%ibins%s_noCorr.root",
-	  period_Mtype.Data(), Mmin, Mmax, nBins, binRange.Data() );
   
   if (start==""){
     cout<<"Script outputs AN and left/right counts per target and polarization";
@@ -93,7 +60,7 @@ TGeant/Local_leftRight_Analysis/Data/";
     cout << "\n\nTotal local pipeline needed for this script" << endl;
     cout << "leftRight_byTarget  ->  trueCount.C" << endl;
     cout << "\nUsage:" << endl;
-    cout << "root \'trueCount.C(Bool_t PolCorr =true, 1)\'" << endl;
+    cout << "root \'trueCount.C(1)\'" << endl;
     cout << "\nCurrent settings:" << endl;
     cout << "Real data path:             " << pathRD << endl;
     cout << "Real data file considered:  " << RDfile << endl;
@@ -107,63 +74,63 @@ TGeant/Local_leftRight_Analysis/Data/";
 
   //Get Input Files from Local_leftRight
   TFile *fRD  = TFile::Open(pathRD + RDfile);
-  TFile *fRD_noCorr = TFile::Open(pathRD + RDfile_noCorr);
-  if (!fRD || !fRD_noCorr ){
-    cout << "RD or RD_noCorr file does not exist " << endl;
+  if (!fRD ){
+    cout << "RD file does not exist " << endl;
     exit(EXIT_FAILURE);
   }
 
   //Determine polarization factor
   Double_t ex[nBins] = {0.0};
-  TGraphErrors* g_asym
-    =(TGraphErrors*)fRD->Get(Form("%s_asym",physBinned.Data()));
-  TGraphErrors* g_asym_noCorr
-    =(TGraphErrors*)fRD_noCorr->Get(Form("%s_asym",physBinned.Data()));
-  if (g_asym->GetN() != nBins){
-    cout << "nBins not defined well!!!" << endl;
-    exit(EXIT_FAILURE);
-  }
-  Double_t *xvals = g_asym->GetX();
-  Double_t *yvals =g_asym->GetY();
-  Double_t *yvals_noCorr =g_asym_noCorr->GetY();
+  TGraph* g_Pol =(TGraph*)fRD->Get(Form("%s_Pol", physBinned.Data()));
+  TGraph* g_Dil =(TGraph*)fRD->Get(Form("%s_Dil", physBinned.Data()));
+  Double_t *xvals = g_Pol->GetX();
   Double_t Pol[nBins];
-  if (PolCorr) GetPolarization(yvals_noCorr, yvals, Pol, nBins);
-  else {
-    for (Int_t bi=0; bi<nBins; bi++) Pol[bi] = 1.0;
-  }
+  GetPolarization(g_Pol, g_Dil, Pol);
+  
+  //Get g_left/right by target and pol
+  TGraph *gRD_left_upS_up = (TGraph*)
+    fRD->Get(Form("%s_left_upstream_up", physBinned.Data()));
+  TGraph *gRD_left_upS_down = (TGraph*)
+    fRD->Get(Form("%s_left_upstream_down", physBinned.Data()));
+  TGraph *gRD_left_downS_up = (TGraph*)
+    fRD->Get(Form("%s_left_downstream_up", physBinned.Data()));
+  TGraph *gRD_left_downS_down = (TGraph*)
+    fRD->Get(Form("%s_left_downstream_down", physBinned.Data()));
 
-  //Get g_asym by target and pol
-  TGraphErrors *g_asym_upS_up = (TGraphErrors*)
-    fRD_noCorr->Get(Form("%s_asym_upstream_up", physBinned.Data()));
-  TGraphErrors *g_asym_upS_down = (TGraphErrors*)
-    fRD_noCorr->Get(Form("%s_asym_upstream_down", physBinned.Data()));
-  TGraphErrors *g_asym_downS_up = (TGraphErrors*)
-    fRD_noCorr->Get(Form("%s_asym_downstream_up", physBinned.Data()));
-  TGraphErrors *g_asym_downS_down = (TGraphErrors*)
-    fRD_noCorr->Get(Form("%s_asym_downstream_down", physBinned.Data()));
+  TGraph *gRD_right_upS_up = (TGraph*)
+    fRD->Get(Form("%s_right_upstream_up", physBinned.Data()));
+  TGraph *gRD_right_upS_down = (TGraph*)
+    fRD->Get(Form("%s_right_upstream_down", physBinned.Data()));
+  TGraph *gRD_right_downS_up = (TGraph*)
+    fRD->Get(Form("%s_right_downstream_up", physBinned.Data()));
+  TGraph *gRD_right_downS_down = (TGraph*)
+    fRD->Get(Form("%s_right_downstream_down", physBinned.Data()));
 
   //L/R counts
-  Double_t LR_upS_up_L[nBins], LR_upS_up_R[nBins]; 
-  Double_t LR_upS_down_L[nBins], LR_upS_down_R[nBins];
-  Double_t LR_downS_up_L[nBins], LR_downS_up_R[nBins];
-  Double_t LR_downS_down_L[nBins], LR_downS_down_R[nBins];
+  Double_t *LR_upS_up_L = gRD_left_upS_up->GetY();
+  Double_t *LR_upS_up_R = gRD_right_upS_up->GetY();
+  Double_t *LR_upS_down_L = gRD_left_upS_down->GetY();
+  Double_t *LR_upS_down_R = gRD_right_upS_down->GetY();
+
+  Double_t *LR_downS_up_L = gRD_left_downS_up->GetY();
+  Double_t *LR_downS_up_R = gRD_right_downS_up->GetY();
+  Double_t *LR_downS_down_L = gRD_left_downS_down->GetY();
+  Double_t *LR_downS_down_R = gRD_right_downS_down->GetY();
   
   Double_t e_LR_upS_up_L[nBins], e_LR_upS_up_R[nBins];
   Double_t e_LR_upS_down_L[nBins], e_LR_upS_down_R[nBins];
   Double_t e_LR_downS_up_L[nBins], e_LR_downS_up_R[nBins];
   Double_t e_LR_downS_down_L[nBins], e_LR_downS_down_R[nBins];
 
-  //Determine L/R counts and errors
-  GetLR_CountsErrors(g_asym_upS_up, LR_upS_up_L, LR_upS_up_R,
-		     e_LR_upS_up_L, e_LR_upS_up_R);
-  GetLR_CountsErrors(g_asym_upS_down, LR_upS_down_L, LR_upS_down_R,
-		     e_LR_upS_down_L, e_LR_upS_down_R);
-
-  GetLR_CountsErrors(g_asym_downS_up, LR_downS_up_L, LR_downS_up_R,
-		     e_LR_downS_up_L, e_LR_downS_up_R);
-  GetLR_CountsErrors(g_asym_downS_down, LR_downS_down_L, LR_downS_down_R,
-		     e_LR_downS_down_L, e_LR_downS_down_R);
-    
+  //Determine L/R errors
+  GetLRerror(LR_upS_up_L, LR_upS_up_R, e_LR_upS_up_L, e_LR_upS_up_R, nBins);
+  GetLRerror(LR_upS_down_L, LR_upS_down_R, e_LR_upS_down_L, e_LR_upS_down_R,
+	      nBins);
+  GetLRerror(LR_downS_up_L, LR_downS_up_R, e_LR_downS_up_L, e_LR_downS_up_R,
+	      nBins);
+  GetLRerror(LR_downS_down_L, LR_downS_down_R, e_LR_downS_down_L,
+	      e_LR_downS_down_R, nBins);
+  
   //L/R count graphs/Drawing
   TGraphErrors* g_Left_upS_up =
     new TGraphErrors(nBins, xvals, LR_upS_up_L, ex, e_LR_upS_up_L);
@@ -250,9 +217,9 @@ TGeant/Local_leftRight_Analysis/Data/";
   
   TCanvas* cAN = new TCanvas("AN by tar && pol"); cAN->Divide(2, 2);
   Double_t yMax;
-  if (process =="JPsi")  (PolCorr) ? yMax =0.5 : yMax =0.5;
-  else if (process =="psi")  (PolCorr) ? yMax =1.0 : yMax =0.5;
-  else if (process =="DY")  (PolCorr) ? yMax =3.0 : yMax =0.5;
+  if (process =="JPsi")  yMax =0.5;
+  else if (process =="psi")  yMax =0.5;
+  else if (process =="DY")  yMax =0.5;
   cAN->cd(1);
   g_AN_upS_up->Draw("AP"); g_AN_upS_up->SetTitle("AN_upS_up");
   g_AN_upS_up->GetYaxis()->SetRangeUser(-yMax, yMax);
@@ -280,11 +247,11 @@ TGeant/Local_leftRight_Analysis/Data/";
     = Form("%s/Data/trueCount/trueCount_%s_%s%.2f_%.2f_%s%i",
 	   thisDirPath.Data(), period_Mtype.Data(), process.Data(), Mmin, Mmax,
 	   physBinned.Data(), nBins);
-  fOutput += (PolCorr) ? "_corr.root" : "_noCorr.root";
+  fOutput += "_corr.root";
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
     TList *doc = new TList();
-    doc->Add((TObject*)(new TObjString(pathRD+"\n"+RDfile+"\n"+RDfile_noCorr)));
+    doc->Add((TObject*)(new TObjString(pathRD+"\n"+RDfile)));
     doc->Write("InputData");
     
     g_AN_upS_up->Write("AN_upS_up");
@@ -309,7 +276,6 @@ TGeant/Local_leftRight_Analysis/Data/";
   cout << "Mass Range for LR asymmetry is:         " << Mmin
        << " - " << Mmax << endl;
   cout << "physBinned nBins times:                 " << nBins << endl;
-  cout << "Polarization was performed:             " << PolCorr << endl;
   cout << "\n";
   cout << "AN for physical process:                " << process << endl;
   cout << "Physics binning is:                     " << physBinned << endl;

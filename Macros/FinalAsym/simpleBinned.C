@@ -5,8 +5,6 @@ void simpleBinned(TString start=""){
 TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
   const Int_t nPhysBinned =4;
   TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
-  //const Int_t nPhysBinned =2;
-  //TString physBinned[nPhysBinned] ={"xF", "pT"};
   
   //Setup_______________
   const Int_t nBins =3;
@@ -52,13 +50,8 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
   
   //Aesthetics setup
   TCanvas* cAsym = new TCanvas(); cAsym->Divide(nPhysBinned, 1, 0, 0.01);
-  Double_t yMax = (nBins==3) ? 0.25 : 0.1;
+  Double_t yMax = (process=="DY") ? 0.25 : 0.1;
 
-  //Systematic error setup
-  TGraphAsymmErrors *g_sys[nPhysBinned];
-  Double_t yvals[nBins], ey[nBins] = {0.0};
-  Double_t ysys = (nBins==3) ? -0.15 : -0.075;
-  
   //Get Data file/Get graphs and plot
   TString physBinnedNames ="", fitNames="";
   TGraphErrors *g_AN[nPhysBinned];
@@ -96,34 +89,6 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
     g_AN[phys]->Draw("AP"); g_AN[phys]->GetYaxis()->SetRangeUser(-yMax, yMax);
     g_AN[phys]->SetTitle("");
     DrawLine(g_AN[phys], 0.0);
-
-    //tmp
-    /*Double_t *e_yAN = g_AN[phys]->GetEY();
-    for (Int_t i=0; i<nBins; i++) {
-      Double_t divide = (nBins == 3) ? 0.01+0.01*3 : 0.001 + 0.001*3;
-      cout << divide/e_yAN[i] << "  ";
-    }
-    cout << "\n";//tmp*/
-
-    //Systematic error
-    Double_t *xvals = g_AN[phys]->GetX();
-    Double_t exR[nBins], exL[nBins];
-    Double_t sysErr[nBins];
-    for (Int_t i=0; i<nBins; i++) {
-      yvals[i] = ysys;
-      if (i==0) {exL[i] = 0.0; }
-      else{ exL[i] = (xvals[i] - xvals[i-1])/2.0; }
-      
-      if (i==nBins-1){exR[i] = 0.0;}
-      else{ exR[i] = (xvals[i+1] - xvals[i])/2.0; }
-
-      if (nBins ==3) {sysErr[i] = (0.01+0.01*3)/2.0; }
-      else {sysErr[i] = (0.001+0.001*3)/2.0; }
-    }
-    g_sys[phys] = new TGraphAsymmErrors(nBins, xvals, yvals, exL, exR,
-					ey, sysErr);
-    SetUp(g_sys[phys]); g_sys[phys]->Draw("2same");
-    g_sys[phys]->SetFillColor(kRed); g_sys[phys]->SetFillStyle(3002);
   }//phys binned loop
 
   //Write Output/Final Settings

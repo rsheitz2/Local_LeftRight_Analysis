@@ -34,7 +34,7 @@ fitMmin=2.00 #true fit mass range
 fitMmax=7.50 #true fit mass range
 binRange="25_43"
 ##Step TWO settings
-physBinned="xF"
+physBinned="xN"
 process="JPsi"
 LR_Mmin=2.90 #does nothing with whichFit==true
 LR_Mmax=3.30 #does nothing with whichFit==true
@@ -117,7 +117,6 @@ fi
 
 #Execute Step ONE if files don't already exist
 stepOne_OutData=${pathOne}"/Data/leftRight_byTarget_" 
-stepOne_OutnoCorr=${stepOne_OutData}${period}"_"${fitMrangeType}${Mmin}_${Mmax}"_"${nBins}"bins"${binRange}"_noCorr.root"
 stepOne_OutData+=${period}"_"${fitMrangeType}${Mmin}_${Mmax}"_"${nBins}"bins"${binRange}"_"${hbins}"hbin.root"
 if [ ! -f ${stepOne_OutData} ]; then
     echo "Making stepOneData polarization correct data:"
@@ -135,23 +134,6 @@ if [ ! -f ${stepOne_OutData} ]; then
     fi
 else
     echo "StepOneData polarization correct already exist"
-fi
-if [ ! -f ${stepOne_OutnoCorr} ]; then
-    echo "Making stepOneData polarization unCorr data:"
-    echo ""
-    echo ""
-    echo ""
-    ${pathOne}/leftRight_byTarget -i${fitMmin} -a${fitMmax} -Q${stepOne_OutnoCorr} -P -b${binFile} -N${nBins} -Z${hbins} -f${InputData} \
-	      >> ${pathOne}/log_leftRight_byTarget.txt
-    if [ $? != 0 ]; then
-	echo "leftRight_byTarget.sh did not execute well"
-	exit 1
-    else
-	#clean up leftRight_byTarget
-	rm ${pathOne}/log_leftRight_byTarget.txt
-    fi
-else
-    echo "StepOneData pol unCorr already exist"
 fi
 echo " "
 
@@ -172,7 +154,6 @@ else
     echo "functMFit.C"
     stepTwo_OutData+=/functMFit/functMFit_${whichFit}${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${LR_Mmin}_${LR_Mmax}_${physBinned}${nBins}_${hbins}hbin
 fi
-stepTwo_noCorrData=${stepTwo_OutData}"_noCorr.root"
 stepTwo_OutData+="_corr.root"
 
 echo "Making stepTwoData"
@@ -181,11 +162,10 @@ echo ""
 if [ ${whichFit} == "true" ]; then
     #Prepare trueCount.C macro settings
     cp ${pathTwo}/trueCount.C ${pathTwo}/tmpTrueTwo.C
-    ${pathTwo}/Scripts/changeTrueCount.sh $nBins $period $fitMrangeType $fitMmin $fitMmax $physBinned $process $binRange
+    ${pathTwo}/Scripts/ChangeScripts/changeTrueCount.sh $nBins $period $fitMrangeType $fitMmin $fitMmax $physBinned $process $binRange
     
     #Execute pol corrected and pol unCorr
-    root -l -b -q "${pathTwo}/trueCount.C(true, 1)" >> ${pathTwo}/log_trueCount.txt
-    root -l -b -q "${pathTwo}/trueCount.C(false, 1)" >> ${pathTwo}/log_trueCount.txt
+    root -l -b -q "${pathTwo}/trueCount.C(1)" >> ${pathTwo}/log_trueCount.txt
     if [ $? != 0 ]; then
 	echo "trueCount.C did not execute well"
 	mv ${pathTwo}/trueCount.C ${pathTwo}/trueCount.C.bak	    
@@ -200,11 +180,10 @@ if [ ${whichFit} == "true" ]; then
 elif [ ${whichFit} == "MC" ];then
     #Prepare mcMFit.C macro settings
     cp ${pathTwo}/mcMFit.C ${pathTwo}/tmpMcTwo.C
-    ${pathTwo}/Scripts/changeMcMFit.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange
+    ${pathTwo}/Scripts/ChangeScripts/changeMcMFit.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange
     
     #Execute pol corrected and pol unCorr
-    root -l -b -q "${pathTwo}/mcMFit.C(true, 1)" >> ${pathTwo}/log_mcMFit.txt
-    root -l -b -q "${pathTwo}/mcMFit.C(false, 1)" >> ${pathTwo}/log_mcMFit.txt
+    root -l -b -q "${pathTwo}/mcMFit.C(1)" >> ${pathTwo}/log_mcMFit.txt
     if [ $? != 0 ]; then
 	echo "mcMFit.C did not execute well"
 	mv ${pathTwo}/mcMFit.C ${pathTwo}/mcMFit.C.bak	    
@@ -219,11 +198,10 @@ elif [ ${whichFit} == "MC" ];then
 else
     #Prepare functMFit.C macro settings
     cp ${pathTwo}/functMFit.C ${pathTwo}/tmpFunctTwo.C
-    ${pathTwo}/Scripts/changeFunctMFit.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange
+    ${pathTwo}/Scripts/ChangeScripts/changeFunctMFit.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange
 
     #Execute pol corrected and pol unCorr
-    root -l -b -q "${pathTwo}/functMFit.C(true, 1)" >> ${pathTwo}/log_functMFit.txt
-    root -l -b -q "${pathTwo}/functMFit.C(false, 1)" >> ${pathTwo}/log_functMFit.txt
+    root -l -b -q "${pathTwo}/functMFit.C(1)" >> ${pathTwo}/log_functMFit.txt
     if [ $? != 0 ]; then
 	echo "functMFit.C did not execute well"
 	mv ${pathTwo}/functMFit.C ${pathTwo}/functMFit.C.bak	    
@@ -258,9 +236,9 @@ echo "Making stepThreeData"
 echo ""
 echo ""
 
-#Prepare functMFit.C macro settings
+#Prepare GeoMean4Targ.C macro settings
 cp ${pathTwo}/GeoMean4Targ.C ${pathTwo}/tmpThree.C
-${pathTwo}/Scripts/changeGeoMean4Targ.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit
+${pathTwo}/Scripts/ChangeScripts/changeGeoMean4Targ.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange
 
 #Execute 
 root -l -b -q "${pathTwo}/GeoMean4Targ.C(1)" >> ${pathTwo}/log_GeoMean4Targ.txt

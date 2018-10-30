@@ -286,6 +286,15 @@ void GetPolarization(Double_t *vals_noPcorr, Double_t *vals, Double_t *Pol,
 }
 
 
+void GetPolarization(TGraph *g_Pol, TGraph *g_Dil, Double_t *Pol){
+  Int_t nBins = g_Pol->GetN();
+  Double_t *y_Pol = g_Pol->GetY();
+  Double_t *y_Dil = g_Dil->GetY();
+
+  for (Int_t bi=0; bi<nBins; bi++) { Pol[bi] = y_Pol[bi]*y_Dil[bi]; }
+}
+
+
 Double_t f_CrystalBall(Double_t *x, Double_t *par){
   //Remember the number of parameters must be in constructor!!!
   //par[3] =alpha, par[4] =n
@@ -302,3 +311,15 @@ Double_t f_CrystalBall(Double_t *x, Double_t *par){
 }
 
 #endif
+
+
+TFile* OpenFile(TString fname){
+
+  TFile *f = TFile::Open(fname);
+  if( !f ){
+    cout << fname << " does not exist" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  return f;
+}

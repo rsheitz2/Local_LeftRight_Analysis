@@ -156,37 +156,51 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
     cout << "ipar problem" << endl;
     exit(EXIT_FAILURE);
   }
-  }
+}
 
 
-/*
 void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
-		 Double_t Mmin, Double_t Mmax){
+		 Double_t Mmin, Double_t Mmax, Bool_t hIsUpS){
   Int_t ipar =0;
-  Double_t ratioPsi = Get_eight_Ratio("UpS");
-  ratioPsi += Get_eight_Ratio("DownS");
-  ratioPsi /= 2.0;
+  Double_t ratioPsi = (hIsUpS) ?
+    Get_eight_Ratio("UpS") : Get_eight_Ratio("DownS");
 
-  Double_t A_JPsi = h->GetBinContent(h->FindBin(3.12) );
-  Double_t A_psi = h->GetBinContent(h->FindBin(3.12*ratioPsi) );
+  Double_t M_JPsi = (hIsUpS) ? 3.13 : 3.12;
+  Double_t A_JPsi = h->GetBinContent(h->FindBin(M_JPsi) );
+  Double_t A_psi = h->GetBinContent(h->FindBin(M_JPsi*ratioPsi) );
   Double_t A_Bg =  h->GetBinContent(h->FindBin(Mmin) );
-  Double_t A_DY =  h->GetBinContent(h->FindBin(5.0) );
-  Double_t DY_slope = -1.0, DY_Mmin = 5.0;
+  Double_t DY_slope = -0.95, DY_Mmin = 4.5;
+  Double_t A_DY =  h->GetBinContent(h->FindBin(DY_Mmin) );
   A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
+  A_Bg = A_Bg - A_DY;
 
   if (A_JPsi == 0) A_JPsi = 200.;
   if (A_psi == 0) A_psi = 200.;
-  if (A_Bg == 0) A_Bg = 200.;
+  if (A_Bg <= 0) A_Bg = 100.;
   if (A_DY == 0) A_DY = 200.;
   
   fitFunc->SetParameter(ipar, A_JPsi); ipar++;//JPsi
-  fitFunc->SetParameter(ipar, 3.12); ipar++;
+  fitFunc->SetParameter(ipar, M_JPsi); ipar++;
   fitFunc->SetParameter(ipar, 0.16); ipar++;
-  fitFunc->SetParameter(ipar, 1.4); ipar++;
-  fitFunc->SetParameter(ipar, 3.2); ipar++;
+
+  if (hIsUpS){
+    //fitFunc->SetParameter(ipar, 1.7); ipar++;//W12
+    //fitFunc->SetParameter(ipar, 3.5); ipar++;
+
+    fitFunc->SetParameter(ipar, 1.7); ipar++;//W15
+    fitFunc->SetParameter(ipar, 3.2); ipar++;
+  }
+  else{
+    //fitFunc->SetParameter(ipar, 1.4); ipar++;//W12
+    //fitFunc->SetParameter(ipar, 3.2); ipar++;
+
+    fitFunc->SetParameter(ipar, 1.7); ipar++;//W15
+    fitFunc->SetParameter(ipar, 3.2); ipar++;
+  }
+  
   fitFunc->SetParameter(ipar, A_psi); ipar++;//psi
   fitFunc->SetParameter(ipar, A_Bg); ipar++;//CombBg
-  fitFunc->SetParameter(ipar, -3.5); ipar++;
+  fitFunc->SetParameter(ipar, -3.0); ipar++;
   fitFunc->SetParameter(ipar, A_DY); ipar++;//DY
   fitFunc->SetParameter(ipar, DY_slope); ipar++;
   fitFunc->SetParameter(ipar, Mmin); ipar++;//Mmin
@@ -194,18 +208,21 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
     cout << "ipar problem" << endl;
     exit(EXIT_FAILURE);
   }
-  
+
   ipar=0;
-  Double_t factor =5.0;
+  Double_t factor =10.0;
+  //Double_t factor =5.0;
   fitFunc->SetParLimits(ipar, A_JPsi/factor, A_JPsi*factor); ipar++;//JPsi
-  fitFunc->SetParLimits(ipar, 3.0, 3.6); ipar++;
-  fitFunc->SetParLimits(ipar, 0, 0.2); ipar++;
-  fitFunc->SetParLimits(ipar, 1.0, 8.0); ipar++;
-  fitFunc->SetParLimits(ipar, 2.5, 8.0); ipar++;
+  fitFunc->SetParLimits(ipar, 2.8, 3.5); ipar++;
+  fitFunc->SetParLimits(ipar, 0, 0.25); ipar++;
+  fitFunc->SetParLimits(ipar, 1.0, 2.0); ipar++;
+  fitFunc->SetParLimits(ipar, 2.5, 4.5); ipar++;
   fitFunc->SetParLimits(ipar, A_psi/factor, A_psi*factor); ipar++;//psi
-  fitFunc->SetParLimits(ipar, A_Bg/factor, A_Bg*factor); ipar++;//CombBg
-  fitFunc->SetParLimits(ipar, -7.0, -2.0); ipar++;
-  fitFunc->SetParLimits(ipar, A_DY/factor, A_DY*factor); ipar++;//DY
+  fitFunc->SetParLimits(ipar, 0.0, A_Bg*factor); ipar++;//CombBg
+  //fitFunc->SetParLimits(ipar, A_Bg/factor, A_Bg*factor); ipar++;//CombBg
+  fitFunc->SetParLimits(ipar, -4.0, -2.0); ipar++;
+  fitFunc->SetParLimits(ipar, 0.0, A_DY*factor); ipar++;//DY
+  //fitFunc->SetParLimits(ipar, A_DY/factor, A_DY*factor); ipar++;//DY
   fitFunc->SetParLimits(ipar, -2.0, 0.0); ipar++;
   fitFunc->SetParLimits(ipar, Mmin, Mmin); ipar++;//Mmin
   
@@ -213,11 +230,12 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
     cout << "ipar problem" << endl;
     exit(EXIT_FAILURE);
   }
-  }*/
+}
 
 
 void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
 		 Double_t Mmin, Double_t Mmax, Double_t psiMW){
+  //Nominally used for setting up to scan psiMW value
   Int_t ipar =0;
   Double_t ratioPsi =psiMW;
 
@@ -275,7 +293,8 @@ TF1* SetupFunc_eight(TH1D *h, Bool_t hIsUpS, TF1 *fitFunc,
   else fitFunc = new TF1("fitFunc", Fit_eight_DownS, Mmin, Mmax, *nPar);
 
   //Setup intial parameters of fit and parameter constraints
-  Paras_eight(h, fitFunc, *nPar, Mmin, Mmax);
+  //Paras_eight(h, fitFunc, *nPar, Mmin, Mmax); //Old parameter setup
+  Paras_eight(h, fitFunc, *nPar, Mmin, Mmax, hIsUpS); //Newer more accurate pars
 
   return fitFunc;
 }
@@ -298,6 +317,7 @@ TF1* SetupFunc_eight(TH1D *h, TF1 *fitFunc, Double_t Mmin, Double_t Mmax,
 void ProcessPars_eight(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
 		       TMatrixDSym &cov, TString process, Int_t nPars,
 		       Bool_t hIsUpS){
+  //Gets some physical parameters, sets up cov matrix
   Double_t *pars = fitFunc->GetParameters();
   Double_t psiMW = (hIsUpS) ? Get_eight_Ratio("UpS") : Get_eight_Ratio("DownS");
   
@@ -363,21 +383,12 @@ void ProcessPars_eight(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
 void ProcessPars_eight(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
 		       TMatrixDSym &cov, TString process, Int_t nPars,
 		       Bool_t hIsUpS, Double_t *e_processPars){
-  Double_t *pars = fitFunc->GetParameters();
+  //Gets some physical parameters, sets up cov matrix
+  //    and gets errors of physical parameters
+  ProcessPars_eight(fitFunc, processPars, LR_cov, cov, process,nPars,hIsUpS);
   const Double_t *e_pars = fitFunc->GetParErrors();
   
   Double_t psiMW = (hIsUpS) ? Get_eight_Ratio("UpS") : Get_eight_Ratio("DownS");
-
-  processPars[0] = pars[0];//JPsi
-  processPars[1] = pars[1];
-  processPars[2] = pars[2];
-
-  processPars[3] = pars[5];//psi
-  processPars[4] = pars[1]*psiMW;
-  processPars[5] = pars[2]*psiMW;
-  
-  processPars[6] = pars[8];//DY
-  processPars[7] = pars[9];
 
   e_processPars[0] = e_pars[0];//JPsi
   e_processPars[1] = e_pars[1];
@@ -389,58 +400,12 @@ void ProcessPars_eight(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
 
   e_processPars[6] = e_pars[8];//DY
   e_processPars[7] = e_pars[9];
-  
-  if (process=="JPsi"){
-    for (Int_t i=0; i<5; i++) {
-      LR_cov[i] = cov(0, i);
-      LR_cov[i+5] = cov(1, i);
-      LR_cov[i+10] = cov(2, i);
-      LR_cov[i+15] = cov(3, i);
-      LR_cov[i+20] = cov(4, i);
-    }
-  }
-  else if (process=="psi"){
-    LR_cov[0] = cov(5, 5);
-    LR_cov[5] = cov(1, 5)*psiMW;
-    LR_cov[10] = cov(2, 5)*psiMW;
-    LR_cov[15] = cov(3, 5);
-    LR_cov[20] = cov(4, 5);
-    
-    for (Int_t i=1; i<5; i++) {
-      Double_t multi = (i == 1) ? psiMW : 1.0;
-      
-      LR_cov[i] = cov(5, i)*multi;
-      LR_cov[i+5] = cov(1, i)*psiMW*multi;
-      LR_cov[i+10] = cov(2, i)*psiMW*multi;
-      LR_cov[i+15] = cov(3, i)*multi;
-      LR_cov[i+20] = cov(4, i)*multi;
-    }
-  }
-  else if (process=="DY"){
-    cout << "covariance matrix doesn't work yet" << endl;
-    exit(EXIT_FAILURE);
-    
-    /*LR_cov[0] = cov(3, 3);
-      LR_cov[1] = cov(3, 1)*psiMW;
-      LR_cov[2] = cov(3, 2)*psiMW;
-    
-      LR_cov[3] = cov(1, 3)*psiMW;
-      LR_cov[4] = cov(1, 1)*psiMW*psiMW;
-      LR_cov[5] = cov(1, 2)*psiMW*psiMW;
-    
-      LR_cov[6] = cov(2, 3)*psiMW;
-      LR_cov[7] = cov(2, 1)*psiMW*psiMW;
-      LR_cov[8] = cov(2, 2)*psiMW*psiMW;*/
-  }
-  else{
-    cout << "Process not defined well in Fit_eight" << endl;
-    exit(EXIT_FAILURE);
-  }
 }
 
 
 void ProcessPars_eight(TF1 *fitFunc, Double_t *processPars,
-		     Double_t *e_processPars, TString process, Bool_t hIsUpS){
+		       Double_t *e_processPars, TString process, Bool_t hIsUpS){
+  //Used to monitor some physical parameters
   Double_t *pars = fitFunc->GetParameters();
   const Double_t *e_pars = fitFunc->GetParErrors();
   
@@ -473,6 +438,44 @@ void ProcessPars_eight(TF1 *fitFunc, Double_t *processPars,
     cout << "Process not defined well in Fit_eight" << endl;
     exit(EXIT_FAILURE);
   }
+}
+
+
+void ProcessPars_eight(TF1 *fitFunc, vector<vector<Double_t> > &processPars,
+		       vector<vector<Double_t> > &e_processPars, Bool_t hIsUpS){
+  //Used to monitor all output paramters
+  //For macro functParas.C
+  Double_t *pars = fitFunc->GetParameters();
+  const Double_t *e_pars = fitFunc->GetParErrors();
+
+  for (Int_t i=0; i<10; i++) {
+    processPars[i].push_back(pars[i]);
+    e_processPars[i].push_back(e_pars[i]);
+  }
+}
+
+
+void ProcessPhysicsPars_eight(TF1 *fitFunc, Double_t *processPars,
+			      Double_t *e_processPars, TString process,
+			      Bool_t hIsUpS){
+  Double_t *pars = fitFunc->GetParameters();
+  const Double_t *e_pars = fitFunc->GetParErrors();
+
+  Double_t psiMW;
+  if (hIsUpS) psiMW = Get_eight_Ratio("UpS");
+  else psiMW = Get_eight_Ratio("DownS");
+
+  processPars[0] = pars[1]; //JPsi Mass
+  processPars[1] = pars[2]; //JPsi Width
+  processPars[2] = psiMW*pars[1]; //psi' Mass
+  processPars[3] = psiMW*pars[2]; //psi' Width
+  processPars[4] = pars[9]; //DY Slope
+    
+  e_processPars[0] = e_pars[1]; //JPsi Mass
+  e_processPars[1] = e_pars[2]; //JPsi Width
+  e_processPars[2] = psiMW*e_pars[1]; //psi' Mass
+  e_processPars[3] = psiMW*e_pars[2]; //psi' Width
+  e_processPars[4] = e_pars[9]; //DY Slope
 }
 
 
@@ -521,10 +524,20 @@ TF1* ComponentFuncts_eight(Double_t *pars, Double_t Mmin, Double_t Mmax,
 }
 
 
+void IntegrateLR_eight(TF1 *f, Double_t binWidth,
+		       Double_t LR_Mmin, Double_t LR_Mmax,
+		       Double_t *LR, Double_t *e_LR){
+  //Integration without covariance matrix taken into account
+  (*LR) = f->Integral(LR_Mmin, LR_Mmax)/binWidth;
+  (*e_LR) = TMath::Sqrt(*LR);
+}
+
+
 void IntegrateLR_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
 		       Double_t binWidth, Double_t LR_Mmin, Double_t LR_Mmax,
 		       Double_t *LR, Double_t *e_LR, Double_t Mmin,
 		       Double_t Mmax, TString process){
+  //Integration considering correlation errors
   (*LR) = f->Integral(LR_Mmin, LR_Mmax)/binWidth;
   
   if (process =="JPsi"){
@@ -564,6 +577,51 @@ void IntegrateLR_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
   else {
     cout << "Process not defined for this IntegrateLR_eight" << endl;
   }
+}
+
+
+void IntegrateLRpercent_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
+			      Double_t binWidth, Double_t widthFraction,
+			      Double_t *LR, Double_t *e_LR, Bool_t hIsUpS,
+			      Double_t Mmin,Double_t Mmax, TString process){
+  //Integrate around mass value with an interval as a percentage of the width
+  if (process != "JPsi"  && process != "psi") {
+    cout << "Process not defined for this IntegrateLR_ten" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  //Integrate around mass value
+  Double_t psiMW = (hIsUpS) ? Get_eight_Ratio("UpS") : Get_eight_Ratio("DownS");
+  Double_t Mass = (process=="JPsi") ? pars[1] : psiMW*pars[1];
+  Double_t Width = (process=="JPsi") ? pars[2] : psiMW*pars[2];
+  
+  Double_t LR_Mmin = Mass - Width*widthFraction;
+  Double_t LR_Mmax = Mass + Width*widthFraction;
+  
+  IntegrateLR_eight(f, pars, LR_cov, binWidth, LR_Mmin, LR_Mmax, LR, e_LR,
+		    Mmin, Mmax, process);
+}
+
+
+void IntegrateLRpercent_eight(TF1 *f, Double_t *pars, Double_t binWidth,
+ 			      Double_t widthFraction, Double_t *LR,
+			      Double_t *e_LR, Bool_t hIsUpS, TString process){
+  //Integrate around mass value with an interval as a percentage of the width
+  //Correlation errors not taken into account
+  if (process != "JPsi"  && process != "psi") {
+    cout << "Process not defined for this IntegrateLR_ten" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  //Integrate around mass value
+  Double_t psiMW = (hIsUpS) ? Get_eight_Ratio("UpS") : Get_eight_Ratio("DownS");
+  Double_t Mass = (process=="JPsi") ? pars[1] : psiMW*pars[1];
+  Double_t Width = (process=="JPsi") ? pars[2] : psiMW*pars[2];
+  
+  Double_t LR_Mmin = Mass - Width*widthFraction;
+  Double_t LR_Mmax = Mass + Width*widthFraction;
+  
+  IntegrateLR_eight(f, binWidth, LR_Mmin, LR_Mmax, LR, e_LR);
 }
 
 

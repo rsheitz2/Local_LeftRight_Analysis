@@ -2,20 +2,17 @@
 
 if [ $# -ne 1 ]; then
     echo "" 
-    echo -n "This script gets all the data setup by period for physics binning AN from"
-    echo " a FALSE 4 target geometric mean calculation"
-    echo "Scrip works by calling AN_calculation/Scripts/pipeline.sh"
+    echo "This is the final script to run all macros in this folder "
     echo ""
-    echo "Steps in this script (from AN_calculation folder)"
-    echo "Step ONE:    leftRight_byTarget, systematic_leftRight"
-    echo "Step TWO:    functMFit.C or trueCount.C, "
-    echo "     Determine AN by target"
-    echo "Step THREE:   falseGeoMean4Targ_targFlip.C, falseGeoMean4Targ_splitTarg.C"
-    echo "     Make false asymmetries"
+    echo "Script gets all the data for all physics binning setup to get the systematics from acceptance changes"
+    echo "    this is done for input period only"
+    echo ""
+    echo "Final output is in Data/acceptanceFourTargRatio/SystematicError"
     echo ""
     echo "To run this script provide as an argument:"
     echo "     \"h\" or \"0\" to see the current settings"
     echo "     Or enter a number greater than 0 (i.e. 1)"
+    echo "     Or enter a number greater than 10 to skip steps outside of this directory (i.e. 11)"
     echo ""
     exit 1
 fi
@@ -25,28 +22,40 @@ Steps=$1
 analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 
 
-
-
-##Setup___  first line to seach setup
+##Setup___  first line (25) to seach setup
 ##########
 ##Step ONE settings
 period="WAll"
-fitMrangeType="LowM_AMDY"
-nBins=5
-binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/WAll_JPsi25_43_${nBins}bins.txt
+fitMrangeType="HMDY"
+nBins=3
+binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/WAll_HMDY_${nBins}bins.txt
 hbins=150
-fitMmin=2.90  #true fit mass range
-fitMmax=3.30  #true fit mass range
-binRange="25_43"
+fitMmin=4.30
+fitMmax=8.50
+binRange="43_85"
 ##Step TWO settings
-physBinned="xN"
-process="JPsi" 
-LR_Mmin=2.90
-LR_Mmax=3.30
+process="DY"
+LR_Mmin=4.30
+LR_Mmax=8.50
 whichFit="true"
 ##Step THREE settings
 
 
+###Step ONE settings  #LowM_AMDY
+#period="WAll"
+#fitMrangeType="LowM_AMDY"
+#nBins=5
+#binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/WAll_JPsi25_43_${nBins}bins.txt
+#hbins=150
+#fitMmin=2.90  #true fit mass range
+#fitMmax=3.30  #true fit mass range
+#binRange="25_43"
+###Step TWO settings
+#process="JPsi" 
+#LR_Mmin=2.90
+#LR_Mmax=3.30
+#whichFit="eight"
+###Step THREE settings
 
 
 
@@ -57,7 +66,8 @@ whichFit="true"
 
 
 
-##Setup___ last line (60) to search setup
+
+##Setup___ last line (70) to search setup
 lrMrange="${LR_Mmin}_${LR_Mmax}"
 fitMrange="${fitMmin}_${fitMmax}"
 
@@ -100,212 +110,55 @@ aNPath=${HOME}/AN_calculation
 sysPath=${HOME}/Systematics
 sysFApath=${sysPath}/FalseAsym
 
-#Step One systematic_leftRight setup/checks
-########
-echo " "
-echo "systematic_leftRight"
-echo " "
-sysLeftRight_Out=${analysisPath}"/Local_LeftRight_Analysis/Data/systematic_leftRight_"${period}"_"${fitMrangeType}${fitMmin}_${fitMmax}"_"
-sysLeftRight_Out+=${nBins}"bins"${binRange}"_"${hbins}"hbin.root"
 
-#systematic_leftRight Pipeline changes
-cp ${sysPath}/Scripts/systematic_leftRight_pipeline.sh ${sysPath}/Scripts/tmp_systematic_leftRight_pipeline.sh
-${sysPath}/Scripts/changeSystematic_LeftRight_Pipeline.sh ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax $binFile $binRange $whichFit
-
-#Execute
-${sysPath}/Scripts/systematic_leftRight_pipeline.sh 1 >> ${sysPath}/Scripts/log_systematic_leftRight_pipeline.txt
-if [ $? != 0 ]; then
-    echo "systematic_leftRight_pipeline.sh did not execute well"
-    mv ${sysPath}/Scripts/systematic_leftRight_pipeline.sh ${sysPath}/Scripts/systematic_leftRight_pipeline.sh.bak
-    mv ${sysPath}/Scripts/tmp_systematic_leftRight_pipeline.sh ${sysPath}/Scripts/systematic_leftRight_pipeline.sh
-    exit 1
-else
-    #clean up systematic_leftRight_pipeline
-    mv ${sysPath}/Scripts/tmp_systematic_leftRight_pipeline.sh ${sysPath}/Scripts/systematic_leftRight_pipeline.sh
-    rm ${sysPath}/Scripts/systematic_leftRight_pipeline.sh.bak
-    rm ${sysPath}/Scripts/log_systematic_leftRight_pipeline.txt
-fi
-
-#Step One/Two leftRight_byTarget/funcMFit.C or trueCount.C
-#############
-#Pipeline changes
-echo " "
-echo "Pipeline"
-echo " "
-cp ${aNPath}/Scripts/pipeline.sh ${aNPath}/Scripts/tmp_pipeline.sh
-${aNPath}/Scripts/changePipeline.sh ${period} $fitMrangeType $nBins $hbins ${physBinned} $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax ${whichFit} ${binRange} ${binFile}
-
-#Execute
-${aNPath}/Scripts/pipeline.sh 2 >> ${aNPath}/Scripts/log_pipeline.txt
-if [ $? != 0 ]; then
-    echo "pipeline.sh did not execute well"
-    mv ${aNPath}/Scripts/pipeline.sh ${aNPath}/Scripts/pipeline.sh.bak
-    mv ${aNPath}/Scripts/tmp_pipeline.sh ${aNPath}/Scripts/pipeline.sh
-    exit 1
-else
-    #clean up pipeline
-    mv ${aNPath}/Scripts/tmp_pipeline.sh ${aNPath}/Scripts/pipeline.sh
-    rm ${aNPath}/Scripts/pipeline.sh.bak
-    rm ${aNPath}/Scripts/log_pipeline.txt
-fi
-
-#Step THREE
 #############
 #falseAsymmetry_targFlips setup/checks    
 echo " "
-echo "falseGeoMean4Targ_targFlips.C"
+echo "falseGeoMean4Targ_targFlips_pipeline.sh"
 echo " "
-stepThreePath=${sysFApath}/Data/TargFlip
-stepThreeFile=${stepThreePath}/falseGeoMean4Targ_${whichFit}
-if [ ${whichFit} == "true" ]; then
-    stepThreeFile+=_${period}_${fitMrangeType}_${process}${lrMrange}_${physBinned}${nBins}.root
-else
-    stepThreeFile+=${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${lrMrange}_${physBinned}${nBins}.root
-fi
 
-#falseGeoMean4Targ_targFlips.C changes
-cp ${sysFApath}/falseGeoMean4Targ_targFlips.C ${sysFApath}/tmp_falseGeoMean4Targ_targFlips.C
-${sysFApath}/Scripts/changeFalseTargFlips.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit}
+#allPhysBinnedpipeline changes
+cp ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh ${sysFApath}/Scripts/LoopScripts/tmp_allPhysBinnedpipeline.sh
+${sysFApath}/Scripts/ChangeScripts/changePipeline.sh ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh ${period} $fitMrangeType $nBins $hbins \
+	    $fitMmin $fitMmax null_physBinned $process $LR_Mmin $LR_Mmax $whichFit $binRange $binFile
 
-#Execute falseGeoMean4Targ_targFlips.C
-root -l -b -q "${sysFApath}/falseGeoMean4Targ_targFlips.C(1)" >> ${sysFApath}/log_falseGeoMean4Targ_targFlips.txt
+#Execute 
+${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh ${sysFApath}/Scripts/RunMacros/false4Targ_targFlips_pipeline.sh $Steps \
+	    >> ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline_log.txt
 if [ $? != 0 ]; then
-    echo "falseGeoMean4Targ_targFlips.C did not execute well"
-    mv ${sysFApath}/falseGeoMean4Targ_targFlips.C ${sysFApath}/falseGeoMean4Targ_targFlips.C.bak
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_targFlips.C ${sysFApath}/falseGeoMean4Targ_targFlips.C
+    echo "false4Targ_targFlips_pipeline.sh did not execute well"
+    mv ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh.bak
+    mv ${sysFApath}/Scripts/LoopScripts/tmp_allPhysBinnedpipeline.sh ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh
     exit 1
 else
-    #cleanup falseGeoMean4Targ_targFlips.C
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_targFlips.C ${sysFApath}/falseGeoMean4Targ_targFlips.C
-    rm ${sysFApath}/falseGeoMean4Targ_targFlips.C.bak
-    rm ${sysFApath}/log_falseGeoMean4Targ_targFlips.txt
+    rm ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline_log.txt
 fi
 
-#Step THREE falseAsymmetry_splitTarg macros setup/checks
+
 #############
+#acceptanceFourTargRatio setup/checks    
 echo " "
-echo "sysFunctMFit.C"
+echo "acceptanceFourTargRatio_pipeline.sh"
 echo " "
-if [ $whichFit == "true" ]; then
-    echo "True fit used instead of sysFunctMFit.C"
-else
-    #sysFunctMFit.C changes
-    cp ${sysFApath}/sysFunctMFit.C ${sysFApath}/tmp_sysFunctMFit.C
-    ${sysFApath}/Scripts/changeSysFunctMFit.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax ${whichFit} $binRange
 
-    #Execute sysFunctMFit.C
-    root -l -b -q "${sysFApath}/sysFunctMFit.C(1)"  >> ${sysFApath}/log_sysFunctMFit.txt
-    if [ $? != 0 ]; then
-	echo "sysFunctMFit.C did not execute well"
-	mv ${sysFApath}/sysFunctMFit.C ${sysFApath}/sysFunctMFit.C.bak
-	mv ${sysFApath}/tmp_sysFunctMFit.C ${sysFApath}/sysFunctMFit.C
-	exit 1
-    else
-	#clean up sysFunctMFit
-	mv ${sysFApath}/tmp_sysFunctMFit.C ${sysFApath}/sysFunctMFit.C
-	rm ${sysFApath}/sysFunctMFit.C.bak
-	rm ${sysFApath}/log_sysFunctMFit.txt
-    fi
-fi
+#allPhysBinnedpipeline changes
+cp ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh ${sysFApath}/Scripts/LoopScripts/tmp_allPhysBinnedpipeline.sh
+${sysFApath}/Scripts/ChangeScripts/changePipeline.sh ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh ${period} $fitMrangeType $nBins $hbins \
+	    $fitMmin $fitMmax null_physBinned $process $LR_Mmin $LR_Mmax $whichFit $binRange $binFile
 
-echo " "
-echo "falseGeoMean4Targ_splitTarg.C"
-echo " "
-#falseGeoMean4Targ_splitTarg.C changes
-cp ${sysFApath}/falseGeoMean4Targ_splitTarg.C ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C
-${sysFApath}/Scripts/changeFalseSplitTarg.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit} $binRange
-
-#Execute falseGeoMean4Targ_splitTarg.C
-root -l -b -q "${sysFApath}/falseGeoMean4Targ_splitTarg.C(1)"  >> ${sysFApath}/log_falseGeoMean4Targ_splitTarg.txt
+#Execute 
+${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh ${sysFApath}/Scripts/RunMacros/acceptanceFourTargRatio_pipeline.sh 11 \
+	    >> ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline_log.txt
 if [ $? != 0 ]; then
-    echo "falseGeoMean4Targ_splitTarg.C did not execute well"
-    mv ${sysFApath}/falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C.bak
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C
+    echo "acceptanceFourTargRatio_pipeline.sh did not execute well"
+    mv ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh.bak
+    mv ${sysFApath}/Scripts/LoopScripts/tmp_allPhysBinnedpipeline.sh ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh
     exit 1
 else
-    #clean up falseGeoMean4Targ_splitTarg
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_splitTarg.C ${sysFApath}/falseGeoMean4Targ_splitTarg.C
-    rm ${sysFApath}/falseGeoMean4Targ_splitTarg.C.bak
-    rm ${sysFApath}/log_falseGeoMean4Targ_splitTarg.txt
+    rm ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline_log.txt
 fi
 
-#Step THREE falseAsymmetry_runNums macros setup/checks
-#############
-echo " "
-echo "fullTargSysFunctMFit.C"
-echo " "
-if [ $whichFit == "true" ]; then
-    echo "True fit used instead of fullTargSysFunctMFit.C"
-else
-    #fullTargSysFunctMFit.C changes
-    cp ${sysFApath}/fullTargSysFunctMFit.C ${sysFApath}/tmp_fullTargSysFunctMFit.C
-    ${sysFApath}/Scripts/changeFullTargSysFunctMFit.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax ${whichFit} \
-		$binRange true
 
-    #Execute fullTargSysFunctMFit.C
-    root -l -b -q "${sysFApath}/fullTargSysFunctMFit.C(1)"  >> ${sysFApath}/log_fullTargSysFunctMFit.txt
-    if [ $? != 0 ]; then
-	echo "fullTargSysFunctMFit.C did not execute well"
-	mv ${sysFApath}/fullTargSysFunctMFit.C ${sysFApath}/fullTargSysFunctMFit.C.bak
-	mv ${sysFApath}/tmp_fullTargSysFunctMFit.C ${sysFApath}/fullTargSysFunctMFit.C
-	exit 1
-    else
-	#clean up fullTargSysFunctMFit
-	mv ${sysFApath}/tmp_fullTargSysFunctMFit.C ${sysFApath}/fullTargSysFunctMFit.C
-	rm ${sysFApath}/fullTargSysFunctMFit.C.bak
-	rm ${sysFApath}/log_fullTargSysFunctMFit.txt
-    fi
-fi
-
-echo " "
-echo "falseGeoMean4Targ_runNums.C"
-echo " "
-#falseGeoMean4Targ_runNums.C changes
-cp ${sysFApath}/falseGeoMean4Targ_runNums.C ${sysFApath}/tmp_falseGeoMean4Targ_runNums.C
-${sysFApath}/Scripts/changeFalseRunNums.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit} $binRange
-
-#Execute falseGeoMean4Targ_runNums.C
-root -l -b -q "${sysFApath}/falseGeoMean4Targ_runNums.C(1)"  >> ${sysFApath}/log_falseGeoMean4Targ_runNums.txt
-if [ $? != 0 ]; then
-    echo "falseGeoMean4Targ_runNums.C did not execute well"
-    mv ${sysFApath}/falseGeoMean4Targ_runNums.C ${sysFApath}/falseGeoMean4Targ_runNums.C.bak
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_runNums.C ${sysFApath}/falseGeoMean4Targ_runNums.C
-    exit 1
-else
-    #clean up falseGeoMean4Targ_runNums
-    mv ${sysFApath}/tmp_falseGeoMean4Targ_runNums.C ${sysFApath}/falseGeoMean4Targ_runNums.C
-    rm ${sysFApath}/falseGeoMean4Targ_runNums.C.bak
-    rm ${sysFApath}/log_falseGeoMean4Targ_runNums.txt
-fi
-
-##Step FOUR
-#############
-#sysErrorFA.C setup/checks
-echo " "
-echo "sysErrorFA.C"
-echo " "
-stepFourPath=${sysFApath}/Data/sysError
-stepFourFile=${stepFourPath}/sysErrorFA_${whichFit}
-if [ ${whichFit} == "true" ]; then
-    stepFourFile+=_${period}_${fitMrangeType}_${process}${lrMrange}_${physBinned}${nBins}.root
-else
-    stepFourFile+=${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${lrMrange}_${physBinned}${nBins}.root
-fi
-
-#sysErrorFA.C changes
-cp ${sysFApath}/sysErrorFA.C ${sysFApath}/tmp_sysErrorFA.C
-${sysFApath}/Scripts/changeSysError.sh $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange ${whichFit}
-
-#Execute sysErrorFA.C
-root -l -b -q "${sysFApath}/sysErrorFA.C(1)" >> ${sysFApath}/log_sysErrorFA.txt
-if [ $? != 0 ]; then
-    echo "sysErrorFA.C did not execute well"
-    mv ${sysFApath}/sysErrorFA.C ${sysFApath}/sysErrorFA.C.bak
-    mv ${sysFApath}/tmp_sysErrorFA.C ${sysFApath}/sysErrorFA.C
-    exit 1
-else
-    #clean up sysErrorFA
-    mv ${sysFApath}/tmp_sysErrorFA.C ${sysFApath}/sysErrorFA.C
-    rm ${sysFApath}/sysErrorFA.C.bak
-    rm ${sysFApath}/log_sysErrorFA.txt
-fi
+#Final clean up pipeline
+mv ${sysFApath}/Scripts/LoopScripts/tmp_allPhysBinnedpipeline.sh ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh
+rm ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh.bak

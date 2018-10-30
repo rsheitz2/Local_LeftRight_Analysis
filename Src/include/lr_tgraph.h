@@ -23,11 +23,14 @@ private:
   TLine *li_asym_updown_left, *li_asym_updown_right;
   TLine *li_asym_downup_left, *li_asym_downup_right;
 
+  TGraph *gr_Pol, *gr_Dil;
+
   std::vector<double> ex;
 
   //Helper functions
   void setupTLine(TLine *l);
   void setupTGraph(TGraphErrors* gr);
+  void setupTGraph(TGraph* gr);
 
 private:
   void setZero();

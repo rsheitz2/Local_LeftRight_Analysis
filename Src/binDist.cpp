@@ -192,7 +192,7 @@ void binDist::GetBounds(TString binVar, TString binfile){
   TString averages = binVar; averages += " bin averages";
   
   std::string line;
-  bool first = false, found = false;
+  bool found = false;
   std::ifstream f_bins(binfile);
   if(!f_bins.is_open() ) {
     std::cout << " " << std::endl;
@@ -205,13 +205,9 @@ void binDist::GetBounds(TString binVar, TString binfile){
 
     if (tline == boundaries) {
       found = true;
-      first = true;
       continue;
     }
-    else if (tline == averages) {
-      first = false;
-      break;
-    }
+    else if (tline == averages) { break; }
     else if (!found) continue;
 
     this->bounds.push_back(atof(line.c_str() ) );

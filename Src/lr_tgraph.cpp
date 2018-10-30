@@ -139,6 +139,11 @@ void lr_tgraph::Fill(){
   xmin = this->gr_asym_downup_right->GetXaxis()->GetXmin();
   xmax = this->gr_asym_downup_right->GetXaxis()->GetXmax();
   this->li_asym_downup_right = new TLine(xmin, 0.0, xmax, 0.0);
+
+  this->gr_Pol =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol[0]) );
+  this->gr_Dil =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil[0]) );
   
   setupTGraph(this->gr_asym); setupTGraph(this->gr_asym_upstream);
   setupTGraph(this->gr_asym_downstream);
@@ -169,6 +174,9 @@ void lr_tgraph::Fill(){
   setupTLine(this->li_asym_updown_right);
   setupTLine(this->li_asym_downup_left);
   setupTLine(this->li_asym_downup_right);
+
+  setupTGraph(this->gr_Pol);
+  setupTGraph(this->gr_Dil);
 }
 
 
@@ -207,6 +215,11 @@ void lr_tgraph::Fill(TString toFill){
 						   &(this->asym_downstream_down[0]),
 						   &(this->ex[0]),
 						   &(this->e_asym_downstream_down[0]));
+
+  this->gr_Pol =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol[0]) );
+  this->gr_Dil =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil[0]) );
   
   double xmin = this->gr_asym->GetXaxis()->GetXmin();
   double xmax = this->gr_asym->GetXaxis()->GetXmax();
@@ -244,6 +257,9 @@ void lr_tgraph::Fill(TString toFill){
   setupTLine(this->li_asym_upstream_down);
   setupTLine(this->li_asym_downstream_up);
   setupTLine(this->li_asym_downstream_down);
+
+  setupTGraph(this->gr_Pol);
+  setupTGraph(this->gr_Dil);
 }
 
 
@@ -295,7 +311,101 @@ void lr_tgraph::Write(){
 					this->thisName.Data() ) );
   this->gr_asym_downup_right->Write(Form("%s_asym_downup_right",
 					 this->thisName.Data() ) );
+
+  this->gr_Pol->Write(Form("%s_Pol", this->thisName.Data()));
+  this->gr_Dil->Write(Form("%s_Dil", this->thisName.Data()));
+
+  //Counts
+  std::vector<Double_t> left_upS
+    (this->left_upstream.begin(), this->left_upstream.end());
+  TGraph *g_left_upstream
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_upS[0]));
+
+  std::vector<Double_t> left_upS_up
+    (this->left_upstream_up.begin(), this->left_upstream_up.end());
+  TGraph *g_left_upstream_up
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_upS_up[0]));
+  std::vector<Double_t> left_upS_down
+    (this->left_upstream_down.begin(), this->left_upstream_down.end());
+  TGraph *g_left_upstream_down
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_upS_down[0]));
+
+  std::vector<Double_t> right_upS
+    (this->right_upstream.begin(), this->right_upstream.end());
+  TGraph *g_right_upstream
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_upS[0]));
+
+  std::vector<Double_t> right_upS_up
+    (this->right_upstream_up.begin(), this->right_upstream_up.end());
+  TGraph *g_right_upstream_up
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_upS_up[0]));
+  std::vector<Double_t> right_upS_down
+    (this->right_upstream_down.begin(), this->right_upstream_down.end());
+  TGraph *g_right_upstream_down
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_upS_down[0]));
+
+  std::vector<Double_t> left_downS
+    (this->left_downstream.begin(), this->left_downstream.end());
+  TGraph *g_left_downstream
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_downS[0]));
+
+  std::vector<Double_t> left_downS_up
+    (this->left_downstream_up.begin(), this->left_downstream_up.end());
+  TGraph *g_left_downstream_up
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_downS_up[0]));
+  std::vector<Double_t> left_downS_down
+    (this->left_downstream_down.begin(), this->left_downstream_down.end());
+  TGraph *g_left_downstream_down
+    = new TGraph(this->nBins, &(this->xval[0]), &(left_downS_down[0]));
+
+  std::vector<Double_t> right_downS
+    (this->right_downstream.begin(), this->right_downstream.end());
+  TGraph *g_right_downstream
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_downS[0]));
+
+  std::vector<Double_t> right_downS_up
+    (this->right_downstream_up.begin(), this->right_downstream_up.end());
+  TGraph *g_right_downstream_up
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_downS_up[0]));
+  std::vector<Double_t> right_downS_down
+    (this->right_downstream_down.begin(), this->right_downstream_down.end());
+  TGraph *g_right_downstream_down
+    = new TGraph(this->nBins, &(this->xval[0]), &(right_downS_down[0]));
+
+  setupTGraph(g_left_upstream);
+  setupTGraph(g_left_upstream_up); setupTGraph(g_left_upstream_down);
   
+  setupTGraph(g_right_upstream);
+  setupTGraph(g_right_upstream_up); setupTGraph(g_right_upstream_down);
+  
+  setupTGraph(g_left_downstream);
+  setupTGraph(g_left_downstream_up); setupTGraph(g_left_downstream_down);
+
+  setupTGraph(g_right_downstream);
+  setupTGraph(g_right_downstream_up); setupTGraph(g_right_downstream_down);
+
+  g_left_upstream->Write(Form("%s_left_upstream", this->thisName.Data()) );
+  g_left_upstream_up->Write(Form("%s_left_upstream_up", this->thisName.Data()));
+  g_left_upstream_down->Write(Form("%s_left_upstream_down",
+				   this->thisName.Data()));
+
+  g_right_upstream->Write(Form("%s_right_upstream", this->thisName.Data()) );
+  g_right_upstream_up->Write(Form("%s_right_upstream_up",
+				  this->thisName.Data()));
+  g_right_upstream_down->Write(Form("%s_right_upstream_down",
+				    this->thisName.Data()));
+
+  g_left_downstream->Write(Form("%s_left_downstream", this->thisName.Data()) );
+  g_left_downstream_up->Write(Form("%s_left_downstream_up",
+				   this->thisName.Data()));
+  g_left_downstream_down->Write(Form("%s_left_downstream_down",
+				     this->thisName.Data()));
+
+  g_right_downstream->Write(Form("%s_right_downstream", this->thisName.Data()));
+  g_right_downstream_up->Write(Form("%s_right_downstream_up",
+				    this->thisName.Data()));
+  g_right_downstream_down->Write(Form("%s_right_downstream_down",
+				      this->thisName.Data()));
 }
 
 
@@ -307,6 +417,10 @@ void lr_tgraph::setupTLine(TLine *l){
 
 
 void lr_tgraph::setupTGraph(TGraphErrors* gr){
+  gr->SetMarkerStyle(21);
+}
+
+void lr_tgraph::setupTGraph(TGraph* gr){
   gr->SetMarkerStyle(21);
 }
 
@@ -344,6 +458,9 @@ void lr_tgraph::setZero(){
   this->li_asym_updown_right = NULL;
   this->li_asym_downup_left = NULL;
   this->li_asym_downup_right = NULL;
+
+  this->gr_Pol = NULL;
+  this->gr_Dil = NULL;
 }
 
 

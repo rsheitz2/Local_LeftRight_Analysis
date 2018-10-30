@@ -366,11 +366,11 @@ void ProcessPars_ten(TF1 *fitFunc, Double_t *processPars,
     e_processPars[1] = e_pars[2]; //Width
   }
   else if (process=="psi"){
-    processPars[0] = pars[5]; //Mass
-    processPars[1] = pars[6]; //Width
+    processPars[0] = pars[6]; //Mass
+    processPars[1] = pars[7]; //Width
 
-    e_processPars[0] = e_pars[5]; //Mass
-    e_processPars[1] = e_pars[6]; //Width
+    e_processPars[0] = e_pars[6]; //Mass
+    e_processPars[1] = e_pars[7]; //Width
   }
   else if (process=="DY"){
     processPars[0] = pars[10]; //Amplitude
@@ -383,6 +383,26 @@ void ProcessPars_ten(TF1 *fitFunc, Double_t *processPars,
     cout << "Process not defined well in Fit_ten" << endl;
     exit(EXIT_FAILURE);
   }
+}
+
+
+void ProcessPhysicsPars_ten(TF1 *fitFunc, Double_t *processPars,
+			    Double_t *e_processPars, TString process,
+			    Bool_t hIsUpS){
+  Double_t *pars = fitFunc->GetParameters();
+  const Double_t *e_pars = fitFunc->GetParErrors();
+
+  processPars[0] = pars[1]; //JPsi Mass
+  processPars[1] = pars[2]; //JPsi Width
+  processPars[2] = pars[6]; //psi' Mass
+  processPars[3] = pars[7]; //psi' Width
+  processPars[4] = pars[11]; //DY Slope
+
+  e_processPars[0] = e_pars[1]; //JPsi Mass
+  e_processPars[1] = e_pars[2]; //JPsi Width
+  e_processPars[2] = e_pars[6]; //psi' Mass
+  e_processPars[3] = e_pars[7]; //psi' Width
+  e_processPars[4] = e_pars[11]; //DY Slope
 }
 
 

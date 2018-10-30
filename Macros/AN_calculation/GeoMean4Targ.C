@@ -59,7 +59,8 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   TString process ="JPsi";//JPsi, psi, DY
   TString lrMrange ="2.90_3.30";
   TString fitMrange ="2.00_7.50";
-  TString whichFit ="ten";
+  TString binRange ="25_43";
+  TString whichFit ="eight";
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -93,49 +94,49 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   }
 
   //File name setups && get files
-  TString inputFiles[2];//{corrPath, noCorrPath}
+  TString inputFiles, RDfile;
   if (whichFit=="true"){
     if (fitMrange != lrMrange){
       cout << "fit mass range != left/right mass range for true fit" << endl;
       exit(EXIT_FAILURE);
     }
     
-    inputFiles[0] = Form("trueCount_%s_%s%s_%s%i_corr.root",
-			 period_Mtype.Data(), process.Data(), fitMrange.Data(),
-			 physBinned.Data(), nBins);
-    inputFiles[1] = Form("trueCount_%s_%s%s_%s%i_noCorr.root",
+    inputFiles = Form("trueCount_%s_%s%s_%s%i_corr.root",
 			 period_Mtype.Data(), process.Data(), fitMrange.Data(),
 			 physBinned.Data(), nBins);
     pathAN += "trueCount/";
+
+    RDfile =Form("leftRight_byTarget_%s%s_%ibins%s_%ihbin.root",
+		 period_Mtype.Data(), lrMrange.Data(), nBins, binRange.Data(),
+		 hbins);
   }
   else if (whichFit=="MC"){
-    inputFiles[0] = Form("mcMFit_%s%s_%s_%s%s_%s%i_%ihbin_corr.root",
-			 whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
-			 process.Data(), lrMrange.Data(), physBinned.Data(),
-			 nBins, hbins);
-    inputFiles[1] = Form("mcMFit_%s%s_%s_%s%s_%s%i_%ihbin_noCorr.root",
+    inputFiles = Form("mcMFit_%s%s_%s_%s%s_%s%i_%ihbin_corr.root",
 			 whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
 			 process.Data(), lrMrange.Data(), physBinned.Data(),
 			 nBins, hbins);
     pathAN += "mcMFit/";
+
+    RDfile =Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_%ihbin.root",
+		 period_Mtype.Data(), nBins, binRange.Data(), hbins);
   }
   else{
-    inputFiles[0] = Form("functMFit_%s%s_%s_%s%s_%s%i_%ihbin_corr.root",
-			 whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
-			 process.Data(), lrMrange.Data(), physBinned.Data(),
-			 nBins, hbins);
-    inputFiles[1] = Form("functMFit_%s%s_%s_%s%s_%s%i_%ihbin_noCorr.root",
-			 whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
-			 process.Data(), lrMrange.Data(), physBinned.Data(),
-			 nBins, hbins);
+    inputFiles = Form("functMFit_%s%s_%s_%s%s_%s%i_%ihbin_corr.root",
+		      whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
+		      process.Data(), lrMrange.Data(), physBinned.Data(),
+		      nBins, hbins);
     pathAN += "functMFit/";
-}
-  
-  TFile *fAN = TFile::Open(pathAN+inputFiles[0]);
-  TFile *fAN_noCorr = TFile::Open(pathAN+inputFiles[1]);
 
-  if (!fAN || !fAN_noCorr ){
-    cout << "RD or RD_noCorr file does not exist " << endl;
+    RDfile =Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_%ihbin.root",
+		 period_Mtype.Data(), nBins, binRange.Data(), hbins);
+}
+  TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Local_leftRight_Analysis/Data/";
+  
+  TFile *fAN = TFile::Open(pathAN+inputFiles);
+  TFile *fRD  = TFile::Open(pathRD + RDfile);
+  if (!fAN || !fRD ){
+    cout << "fAN or fRD file does not exist " << endl;
     exit(EXIT_FAILURE);
   }
   
@@ -151,19 +152,17 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
     inputRight[i] = Form("Right_%s", targName[i].Data() );
   }
 
+  TGraph* g_Pol =(TGraph*)fRD->Get(Form("%s_Pol", physBinned.Data()));
+  TGraph* g_Dil =(TGraph*)fRD->Get(Form("%s_Dil", physBinned.Data()));
+
   const Int_t nTargPol =4;
-  TGraphErrors *g_corr[nTargPol], *g_noCorr[nTargPol];
   TGraphErrors *g_Left[nTargPol], *g_Right[nTargPol];
-  
   for (Int_t tr=0; tr<nTargPol; tr++) {
-    g_corr[tr] = (TGraphErrors*)fAN->Get(inputAN[tr]);
-    g_noCorr[tr] = (TGraphErrors*)fAN_noCorr->Get(inputAN[tr]);
-    
     g_Left[tr] = (TGraphErrors*)fAN->Get(inputLeft[tr]);
     g_Right[tr] = (TGraphErrors*)fAN->Get(inputRight[tr]);
   }
   
-  //Get L/R counts and polarization
+  //Get L/R counts
   Double_t LeftCounts[nBins][nTargPol], RightCounts[nBins][nTargPol];
   Double_t e_LeftCounts[nBins][nTargPol], e_RightCounts[nBins][nTargPol];
   
@@ -179,16 +178,15 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
       e_RightCounts[bi][tr] = ey_Right[bi];
     }
   }
-  
+
+  //Get Polarization
   Double_t Pol[nBins];
-  Double_t *y_corr = g_corr[0]->GetY();
-  Double_t *y_noCorr = g_noCorr[0]->GetY();
-  GetPolarization(y_noCorr, y_corr, Pol, nBins);
+  GetPolarization(g_Pol, g_Dil, Pol);
   
   //Make 4Targ Asym
   Double_t AN_4targ[nBins], e_AN_4targ[nBins];
   Double_t ex[nBins] = {0.0};
-  Double_t *xvals = g_corr[0]->GetX();
+  Double_t *xvals = g_Pol->GetX();
   for (Int_t bi=0; bi<nBins; bi++) {
     AN_4targ[bi] = Amp(LeftCounts, RightCounts, Pol[bi], bi);
     e_AN_4targ[bi] = e_Amp(LeftCounts, RightCounts,
@@ -233,8 +231,7 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   cout << " " << endl;
   cout << "Settings________" << endl;
   cout << "Data coming from:            " << pathAN << endl;
-  cout << "Input P corrected data:        " << inputFiles[0] << endl;
-  cout << "Input unCorr P data:           " << inputFiles[1] << endl;
+  cout << "Input P corrected data:        " << inputFiles << endl;
   cout << "physBinned nBins times:     " << nBins << endl;
   cout << "Period and Mass type considered:   " << period_Mtype << endl;
   cout << "Binned in which DY physics:  " << physBinned << endl;
