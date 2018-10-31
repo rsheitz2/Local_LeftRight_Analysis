@@ -12,7 +12,7 @@ Double_t FitMCs(Double_t *x, Double_t *par){
 }
 
 
-void MCFitComparison(TString start=""){
+void fitCheck_mc(TString start=""){
   if (start==""){
     cout << "Script fits data using a sum of MC distributions and ";
     cout << "compares real data with the fit" << endl;
