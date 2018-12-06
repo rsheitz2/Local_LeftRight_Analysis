@@ -49,21 +49,35 @@ Double_t e_Amp(Double_t NL[][4], Double_t NR[][4],
 
 void GeoMean4Targ(TString start =""){
   //Setup_______________
-  TString pathAN = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
-
-  const Int_t nBins =5;
-  TString period_Mtype ="WAll_LowM_AMDY";
+  const Int_t nBins =1;//HMDY
+  TString period_Mtype ="Charles_HMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
-  TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="2.90_3.30";
-  TString fitMrange ="2.00_7.50";
-  TString binRange ="25_43";
-  TString whichFit ="eight";
+  TString process ="DY";//JPsi, psi, DY
+  TString lrMrange ="4.30_8.50";
+  TString fitMrange ="4.30_8.50";
+  TString binRange ="43_85";
+  TString whichFit ="true";
+  TString production ="slot1";//"t3", "slot1"
+  TString additionalCuts ="phiS0.53";
+
+  //const Int_t nBins =5;//JPsi
+  //TString period_Mtype ="W12_LowM_AMDY";
+  //Int_t hbins =150;
+  //TString physBinned ="xPi";//xN, xPi, xF, pT, M
+  //TString process ="JPsi";//JPsi, psi, DY
+  //TString lrMrange ="2.00_5.00";
+  //TString fitMrange ="2.00_7.50";
+  //TString binRange ="25_43";
+  //TString whichFit ="thirteen";
+  //TString production ="slot1";//"t3", "slot1"
+  //TString additionalCuts ="phiS0.195";
 
   Bool_t toWrite =false;
   //Setup_______________
+
+    TString pathAN = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   
   if (start==""){//Basic info
     cout << "\nScript calculates AN using the 4 target geometric mean method";
@@ -101,34 +115,42 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
       exit(EXIT_FAILURE);
     }
     
-    inputFiles = Form("trueCount_%s_%s%s_%s%i_corr.root",
-			 period_Mtype.Data(), process.Data(), fitMrange.Data(),
-			 physBinned.Data(), nBins);
+    inputFiles =
+      Form("trueCount_%s_%s%s_%s%s%i_%s_%s_corr.root", period_Mtype.Data(),
+	   process.Data(), fitMrange.Data(), binRange.Data(), physBinned.Data(),
+	   nBins, production.Data(), additionalCuts.Data());
     pathAN += "trueCount/";
 
-    RDfile =Form("leftRight_byTarget_%s%s_%ibins%s_%ihbin.root",
+    RDfile =Form("leftRight_byTarget_%s%s_%ibins%s_%ihbin_%s_%s.root",
 		 period_Mtype.Data(), lrMrange.Data(), nBins, binRange.Data(),
-		 hbins);
+		 hbins, production.Data(), additionalCuts.Data());
   }
   else if (whichFit=="MC"){
+    cout << "GeoMean currently doesn't work for MC fit" << endl;
+    exit(EXIT_FAILURE);
     inputFiles = Form("mcMFit_%s%s_%s_%s%s_%s%i_%ihbin_corr.root",
 			 whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
 			 process.Data(), lrMrange.Data(), physBinned.Data(),
 			 nBins, hbins);
     pathAN += "mcMFit/";
 
-    RDfile =Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_%ihbin.root",
-		 period_Mtype.Data(), nBins, binRange.Data(), hbins);
+    RDfile =
+      Form("leftRight_byTarget_%s%s_%ibins%s_150hbin_%s_%s.root",
+	   period_Mtype.Data(), fitMrange.Data(), nBins, binRange.Data(),
+	   production.Data(), additionalCuts.Data() );
   }
   else{
-    inputFiles = Form("functMFit_%s%s_%s_%s%s_%s%i_%ihbin_corr.root",
+    inputFiles = Form("functMFit_%s%s_%s_%s%s_%s%s%i_%ihbin_%s_%s_corr.root",
 		      whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
-		      process.Data(), lrMrange.Data(), physBinned.Data(),
-		      nBins, hbins);
+		      process.Data(), lrMrange.Data(), binRange.Data(),
+		      physBinned.Data(), nBins, hbins, production.Data(),
+		      additionalCuts.Data());
     pathAN += "functMFit/";
 
-    RDfile =Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_%ihbin.root",
-		 period_Mtype.Data(), nBins, binRange.Data(), hbins);
+    RDfile =
+      Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_%ihbin_%s_%s.root",
+	   period_Mtype.Data(), nBins, binRange.Data(), hbins,
+	   production.Data(), additionalCuts.Data() );
 }
   TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_leftRight_Analysis/Data/";
@@ -137,6 +159,8 @@ TGeant/Local_leftRight_Analysis/Data/";
   TFile *fRD  = TFile::Open(pathRD + RDfile);
   if (!fAN || !fRD ){
     cout << "fAN or fRD file does not exist " << endl;
+    cout << "fAN = \n"; cout << pathAN+inputFiles << endl;
+    cout << "fRD = \n"; cout << pathRD+RDfile << endl;
     exit(EXIT_FAILURE);
   }
   
@@ -208,20 +232,22 @@ TGeant/Local_leftRight_Analysis/Data/";
   
   //Write output/final settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
-/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation";
+/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
   TString fOutput;
   if (whichFit=="true"){
-    fOutput =Form("%s/Data/GeoMean4Targ/GeoMean4Targ_true_%s_%s%s_%s%i.root",
-		  thisDirPath.Data(), period_Mtype.Data(),
-		  process.Data(), fitMrange.Data(),
-		  physBinned.Data(), nBins);
+    fOutput =
+      Form("%s/GeoMean4Targ_true_%s_%s%s_%s%s%i_%s_%s.root",
+	   thisDirPath.Data(), period_Mtype.Data(), process.Data(),
+	   fitMrange.Data(), binRange.Data(), physBinned.Data(), nBins, 
+	   production.Data(), additionalCuts.Data());
   }
   else{
     fOutput =
-      Form("%s/Data/GeoMean4Targ/GeoMean4Targ_%s%s_%s_%s%s_%s%i_%ihbin.root",
+      Form("%s/GeoMean4Targ_%s%s_%s_%s%s_%s%s%i_%ihbin_%s_%s.root",
 	   thisDirPath.Data(), whichFit.Data(), fitMrange.Data(),
-	   period_Mtype.Data(), process.Data(), lrMrange.Data(),
-	   physBinned.Data(), nBins, hbins);
+	   period_Mtype.Data(), process.Data(), lrMrange.Data(),binRange.Data(),
+	   physBinned.Data(), nBins, hbins, production.Data(),
+	   additionalCuts.Data());
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");

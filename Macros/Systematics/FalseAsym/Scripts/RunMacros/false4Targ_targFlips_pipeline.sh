@@ -22,13 +22,12 @@ fi
 Steps=$1
 analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 
-
-
-
-
-
-##Setup___  first line (30) to seach setup
+##Setup___  first line (25) to seach setup
 ##########
+###Additional settings
+production="slot1"
+phiPhotonCut=0.53 #HMDY=0.1866, #LowM_AMDY=0.195
+##Step ONE settings
 period="WAll"  #HMDY
 fitMrangeType="HMDY"
 nBins=3
@@ -46,7 +45,9 @@ whichFit="true"
 ##Step THREE settings
 
 
-
+###Additional settings
+#production="slot1"
+#phiPhotonCut=0.53 #HMDY=0.1866, #LowM_AMDY=0.195
 ###Step ONE settings  #LowM_AMDY
 #period="WAll"
 #fitMrangeType="LowM_AMDY"
@@ -64,8 +65,7 @@ whichFit="true"
 #whichFit="eight"
 ###Step THREE settings
 
-
-
+additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include all cuts used
 
 ##Setup___ last line (70) to search setup
 lrMrange="${LR_Mmin}_${LR_Mmax}"
@@ -119,7 +119,7 @@ if [ ${Steps} -lt 10 ]; then #Do all previous steps
     echo " "
     cp ${aNPath}/Scripts/pipeline.sh ${aNPath}/Scripts/tmp_pipeline.sh
     ${aNPath}/Scripts/ChangeScripts/changePipeline.sh ${period} $fitMrangeType $nBins $hbins ${physBinned} $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax ${whichFit} \
-	     ${binRange} ${binFile}
+	     ${binRange} ${binFile} ${production} ${phiPhotonCut} ${additionalCuts}
 
     #Execute
     ${aNPath}/Scripts/pipeline.sh 2 >> ${aNPath}/Scripts/log_pipeline.txt
@@ -154,7 +154,7 @@ fi
 #falseGeoMean4Targ_targFlips.C changes
 cp ${sysFApath}/falseGeoMean4Targ_targFlips.C ${sysFApath}/tmp_falseGeoMean4Targ_targFlips.C
 ${sysFApath}/Scripts/ChangeScripts/changeMacro.sh falseGeoMean4Targ_targFlips $nBins ${period}_${fitMrangeType} $hbins $physBinned $process $lrMrange $fitMrange \
-	    $binRange ${whichFit} 
+	    $binRange ${whichFit} ${production} ${additionalCuts}
 
 #Execute falseGeoMean4Targ_targFlips.C
 root -l -b -q "${sysFApath}/falseGeoMean4Targ_targFlips.C(1)" >> ${sysFApath}/log_falseGeoMean4Targ_targFlips.txt

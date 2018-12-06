@@ -1,47 +1,94 @@
-const Int_t nFiles=5;
-const Int_t nMrange=4;
+#include "Include/helperFunctions.h"
 
-void BasicDist(TString start=""){
+void basicDist(TString start=""){
+  //Setup__________
+  TString physType = "PhiS";
+  Double_t xMin=-TMath::Pi(), xMax=TMath::Pi(); Int_t nBins=100;
+  TString additionalCut = "";
+  
+  TString whichMC ="Yu"; //"Yu", "Charles"
+  const Double_t Mmin=4.3, Mmax=8.5; //Mass cut
+  TString whichRD ="slot1"; //"t3", "slot1"
+
+  Bool_t toWrite =false;
+  //Setup__________
+
+  //  Other frequently used setup options
+  /*TString physType = "Mmumu"; Double_t xMin=2., xMax=8.5; Int_t nBins=200;
+  //TString physType = "x_beam"; Double_t xMin=0.1, xMax=0.9; Int_t nBins=100;
+  //TString physType = "x_target"; Double_t xMin=0.04, xMax=0.5; Int_t nBins=200;
+  TString additionalCut = "&&x_beam>0.2&&x_beam<0.8";//*/
+  
+  const Int_t nFiles=5;
+  const Int_t nMrange=4;
+  TString MassCut = Form("Mmumu>%0.2f&&Mmumu<%0.2f", Mmin, Mmax);
+    
   if (start=="") {
     cout << "Script plots the components that add up to a basic distribution";
     cout << "\nThis is done fitting MC distributions as a function of Mass to";
     cout << " to get the contribution from each physical process" << endl;
+    cout << "\nCurrent Settings:" << endl;
+    cout << "Basic distribution plotted:   " << physType << endl;
+    cout << "Mass ranged considered:       " << MassCut << endl;
+    cout << "Additional cuts considered:   " << additionalCut << endl;
+    cout << "Which MC considered:          " << whichMC << endl;
     cout << "\nUsage:" << endl;
     cout << "root \'BasicDist(1)\'" << endl;
     exit(EXIT_FAILURE);
   }
-  //TString physType = "Mmumu"; Double_t xMin=2., xMax=8.5; Int_t nBins=200;
-  TString physType = "x_beam"; Double_t xMin=0.1, xMax=0.9; Int_t nBins=100;
-  //TString physType = "x_target"; Double_t xMin=0.04, xMax=0.5; Int_t nBins=200;
-
-  Int_t iMcut = 2;
-  TString MassCut[nMrange] = {"Mmumu>2.5&&Mmumu<8.5", "Mmumu>2.5&&Mmumu<4.3",
-			      "Mmumu>4.3&&Mmumu<8.5", ""};
-  //TString additionalCut = "&&x_beam>0.2&&x_beam<0.8";
-  TString additionalCut = "";
-  
   
   //{JPsi, psi, OC, AMDY}//Fit results from FitMassComponents.C
-  Double_t Counts[nMrange][nFiles-1] = {
-    {1.53946e+06, 2.98861e+04, 2.13914e+05, 1.62672e+05},//2.5-8.5GeV
-    {2.73913e+06, 4.22147e+04, 3.33131e+05, 2.96746e+05},//2.5-4.3GeV
-    {2.58264e+02, 7.16396e+02, 8.86266e+01, 3.38407e+04},//4.3-8.5GeV
-    {1.53946e+06, 2.98861e+04, 2.13914e+05, 1.62672e+05},//""
-  };
+  TString fitFileName =Form("fitComponents_%s_%s_%0.2f_%0.2f.root",
+			    whichMC.Data(), whichRD.Data(), Mmin, Mmax);
+  TFile *fFits = TFile::Open("Data/FitMassComponents/"+fitFileName);
+  if (!fFits){
+    cout << "fit file does not exist" << endl;
+    exit(EXIT_FAILURE);
+  }
+  TGraphErrors *gPars = (TGraphErrors*)fFits->Get("gPar");
+  Double_t *Counts = gPars->GetY();
 
+  //Aesthetic setup
   Int_t icolor[nFiles+1] = {6,3,9,4,2,1};//{JPsi, psi, OC, AMDY, Sum, RealData}
-  
+
+  //Data file names and paths
   TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Presents/DATA/";
-  TString pathMC = path+"MC_Data/YuShiangMC/";
-  TFile *fJPsi = TFile::Open(pathMC+"JPsi/Yu_Wall_full_main_JPsi_20bins.root");
-  TFile *fpsi = TFile::Open(pathMC+"psi/Yu_Wall_full_main_psi_20bins.root");
-  TFile *fOC = TFile::Open(pathMC+"OC/Yu_Wall_full_main_OC_20bins.root");
-  TFile *fAMDY = TFile::Open(pathMC+"AMDY/Yu_Wall_full_main_AMDY_20bins.root");
-  TFile *fReal = TFile::Open(path+"RealData/AMDY/WAll_AllMass.root");
-
+  TString pathMC;
+  TString dataPathNames[nFiles];
+  if (whichMC=="Yu"){
+    pathMC +=path+"MC_Data/YuShiangMC/";
+    dataPathNames[0] = pathMC+"JPsi/Yu_Wall_full_main_JPsi_20bins.root";
+    dataPathNames[1] = pathMC+"psi/Yu_Wall_full_main_psi_20bins.root";
+    dataPathNames[2] = pathMC+"OC/Yu_Wall_full_main_OC_20bins.root";
+    dataPathNames[3] = pathMC+"AMDY/Yu_Wall_full_main_AMDY_20bins.root";
+  }
+  else if (whichMC=="Charles") {
+    path+"MC_Data/Charles_Official/";
+  }
+  else {
+    cout << "MC specified does not exist" << endl;
+    exit(EXIT_FAILURE);
+  }
+  if (whichRD=="t3"){
+    dataPathNames[4] = path+"RealData/LowM_AMDY/WAll_LowM_AMDY.root";    
+  }
+  else if (whichRD=="slot1"){
+    dataPathNames[4] = path+"RealData/LowM_AMDY/slot1WAll_LowM_AMDY.root";
+  }
+  else {
+    cout << "RD specifed does not exist" << endl;
+    exit(EXIT_FAILURE);
+  }
+  
+  TFile *fJPsi = TFile::Open(dataPathNames[0]);
+  TFile *fpsi = TFile::Open(dataPathNames[1]);
+  TFile *fOC = TFile::Open(dataPathNames[2]);
+  TFile *fAMDY = TFile::Open(dataPathNames[3]);
+  TFile *fReal = TFile::Open(dataPathNames[4]);
   TFile *Files[nFiles] = {fJPsi, fpsi, fOC, fAMDY, fReal};
   TH1D *hist[nFiles];
+  
   TString type[nFiles] = {"JPsi", "psi", "OC", "AMDY", "Real"};
   for (Int_t i=0; i<nFiles; i++) {
     if (!Files[i]) {
@@ -50,6 +97,7 @@ TGeant/Presents/DATA/";
 
     hist[i] = new TH1D(Form("h_%s", type[i].Data()),
 		       Form("h_%s", type[i].Data()), nBins, xMin, xMax);
+    Setup(hist[i]);
   }
   TTree *tJPsi = (TTree*) fJPsi->Get("pT_Weighted");
   TTree *tpsi = (TTree*) fpsi->Get("pT_Weighted");
@@ -57,24 +105,24 @@ TGeant/Presents/DATA/";
   TTree *tAMDY = (TTree*) fAMDY->Get("pT_Weighted");
   TTree *tReal = (TTree*) fReal->Get("pT_Weighted");
 
-  
+  //Draw distributions from tree
   TCanvas* c1 = new TCanvas();
-  tJPsi->Draw(Form("%s>>h_JPsi",physType.Data() ), MassCut[iMcut]+additionalCut,
+  tJPsi->Draw(Form("%s>>h_JPsi",physType.Data() ), MassCut+additionalCut,
 	      "0");
-  tpsi->Draw(Form("%s>>h_psi"  ,physType.Data() ), MassCut[iMcut]+additionalCut,
+  tpsi->Draw(Form("%s>>h_psi"  ,physType.Data() ), MassCut+additionalCut,
 	     "0");
-  tOC->Draw(Form("%s>>h_OC"    ,physType.Data() ), MassCut[iMcut]+additionalCut,
+  tOC->Draw(Form("%s>>h_OC"    ,physType.Data() ), MassCut+additionalCut,
 	    "0");
-  tAMDY->Draw(Form("%s>>h_AMDY",physType.Data() ), MassCut[iMcut]+additionalCut,
+  tAMDY->Draw(Form("%s>>h_AMDY",physType.Data() ), MassCut+additionalCut,
 	      "0");
-  tReal->Draw(Form("%s>>h_Real",physType.Data() ), MassCut[iMcut]+additionalCut,
+  tReal->Draw(Form("%s>>h_Real",physType.Data() ), MassCut+additionalCut,
 	      "0");
   hist[nFiles-1]->Draw(); hist[nFiles-1]->SetLineColor(icolor[nFiles]);
 
   
   for (Int_t i=0; i<nFiles-1; i++) {
     hist[i]->Sumw2();
-    hist[i]->Scale(Counts[iMcut][i]/(hist[i]->Integral()) );
+    hist[i]->Scale(Counts[i]/(hist[i]->Integral()) );
     hist[i]->SetLineColor(icolor[i]);
 
     hist[i]->Draw("sames");
@@ -88,16 +136,32 @@ TGeant/Presents/DATA/";
   
   
   TCanvas* c2 = new TCanvas();
-  auto rp = new TRatioPlot(hist[nFiles-1], histTotal);
-  rp->GetLowYaxis()->SetNdivisions(505);
-  rp->Draw();
+  TRatioPlot *rp = new TRatioPlot(hist[nFiles-1], histTotal);
+  rp->Draw(); Setup(rp); 
+  rp->GetLowerRefGraph()->SetMinimum(0.8);
+  rp->GetLowerRefGraph()->SetMaximum(1.2);
   c2->Update();
 
+  //Write output file
+  TString outName =Form("basicDist_%s%s_%s_%s_%0.2f_%0.2f.root",
+			physType.Data(), additionalCut.Data(),
+			whichMC.Data(), whichRD.Data(), Mmin, Mmax);
+  if (toWrite){
+    TFile* fOut = new TFile("Data/BasicDist/"+outName, "RECREATE");
+    histTotal->Write("SumOfFits");
+    hist[nFiles-1]->Write();
 
+    fOut->Close();
+  }
+
+  //Final Setup output
   cout << " " << endl;
   cout << "Settings !!!!" << endl;
   cout << "Physics type considered	:  " << physType << endl;
-  cout << "Mass Range is		:  " << MassCut[iMcut] << endl;
+  cout << "Mass Range is		:  " << MassCut << endl;
   cout << "Additional cuts		:  " << additionalCut << endl;
+  cout << "Which MC considered:          " << whichMC << endl;
+  if (toWrite) { cout << outName << "   was written" << endl; }
+  else { cout << outName << "    was NOT written" << endl; }
   cout << " " << endl;
 }

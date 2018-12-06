@@ -35,6 +35,7 @@ int main(int argc, char **argv){
     cout << "Option:  -G    (To specify generated MC data)" << endl;
     cout <<"          (Assumed real data if these options are not given)"<<endl;
     cout << " " << endl;
+    cout << "  --Additional Cut Options--"<< endl;
     cout << "Option:  -T trig       (Only specific trigger)" << endl;
     cout << "                  (\"LL\"=last-last, \"LO\"=last-outer, " <<
       "\"LL_LO\"=last-last && last-outer)" << endl;
@@ -42,7 +43,8 @@ int main(int argc, char **argv){
     cout << "    (Default=0.0)" << endl;
     cout << "Option:  -a max       (Maximum mass to consider)" << endl;
     cout << "    (Default=12.0)" << endl;
-    cout << " " << endl;
+    cout <<"Option:  -E phi_photon width  (Cut width around left/right border)";
+    cout << " \n" << endl;
     cout << "----Changing Binning Options----" << endl;
     cout << "Option:  -b textfile with binning information	";
     cout << "(textfile should be made from Macro/Binning/avgBinBounds.C)"<<endl;
@@ -66,13 +68,14 @@ int main(int argc, char **argv){
   //Read input arguments
   Int_t wflag=0, Qflag=0, fflag=0, Sflag=0, Pflag=0, Tflag=0, Vflag=0, Nflag=0;
   Int_t iflag=0, aflag=0, binFlag=0, Dflag=0, Cflag=0, Hflag=0, Gflag=0,Zflag=0;
+  Int_t Eflag=0;
   Int_t c;
   TString fname = "", outFile = "", leftrightChoice="", trig="";
   TString binFile = "", binVar="";
-  Double_t M_min=0.0, M_max=12.0;
+  Double_t M_min=0.0, M_max=12.0, phiCut=0.0;
   Int_t NVar, nHbins=150;
   
-  while ((c = getopt (argc, argv, "Pwf:Q:S:T:V:N:i:a:b:M:DCGHZ:")) != -1) {
+  while ((c = getopt (argc, argv, "Pwf:Q:S:T:V:N:i:a:b:M:DCGHZ:E:")) != -1) {
     switch (c) {
     case 'w':
       wflag = 1;
@@ -132,6 +135,10 @@ int main(int argc, char **argv){
       Zflag = 1;
       nHbins = atoi(optarg);
       break;
+    case 'E':
+      Eflag = 1;
+      phiCut = stof(optarg);
+      break;
     case '?':
       if (optopt == 'u')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
@@ -150,6 +157,8 @@ int main(int argc, char **argv){
       else if (optopt == 'b')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (optopt == 'Z')
+	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+      else if (optopt == 'E')
 	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
       else if (isprint (optopt))
 	fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -451,6 +460,9 @@ int main(int argc, char **argv){
 	cout << "Trigger mask set to: " << trig << " only" << endl;
       }
       if (Gflag){ cout << "NH3 target set to true values" << endl;}
+      if(Eflag){
+	cout << "Phi photon cut around left/right:  " << phiCut << endl;
+      }
       
       cout << " " << endl;
       first = false;
@@ -464,12 +476,17 @@ int main(int argc, char **argv){
     if (Tflag && (trigMask != trigChoice)) continue;
     if (Mmumu < M_min || Mmumu > M_max) continue;
     if (Gflag && (targetPosition!=0 && targetPosition!=1) ) continue;
+    
+    Double_t phi_photon_lab = ShiftPhiSimple(PhiS_simple);
+    if ( (phi_photon_lab < TMath::Pi()/2 + phiCut) &&
+	 (phi_photon_lab > TMath::Pi()/2 - phiCut)) continue;
+    if ( (phi_photon_lab < -TMath::Pi()/2 + phiCut) ||
+	 (phi_photon_lab > 3*TMath::Pi()/2 - phiCut)) continue;
 
     //General useful quantities
     radius = TMath::Sqrt(vx_x*vx_x + vx_y*vx_y);
-
-    //Choose Left/Right
-    Double_t phi_photon_lab = ShiftPhiSimple(PhiS_simple);
+    
+    //Choose Left/Right      
     Bool_t Left=false, Right=false;
     if (leftrightChoice=="True"){
       //True spectrometer left/right (no spin influence)

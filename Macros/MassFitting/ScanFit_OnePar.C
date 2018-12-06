@@ -20,6 +20,12 @@ Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_eight.h"
 #include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
 Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_nine.h"
 
+//2 Crystal Ball w/ psi' M/W = A*JPsi M/W by target
+//   psi' alpha/n parameters free
+//2 Exponential
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
+Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_eleven.h"
+
 
 Double_t DoFit(TH1D *h, Double_t Mmin, Double_t Mmax, TString whichFit,
 	       Double_t onePar){
@@ -35,9 +41,9 @@ Double_t DoFit(TH1D *h, Double_t Mmin, Double_t Mmax, TString whichFit,
   else if (whichFit =="eight"){
     fitFunc = SetupFunc_eight(h, fitFunc, Mmin, Mmax, &nPar, onePar);
   }
-  //else if (whichFit =="nine"){
-  //  fitFunc = SetupFunc_nine(h, fitFunc, Mmin, Mmax, &nPar, onePar);
-  //}
+  else if (whichFit =="eleven"){
+    fitFunc = SetupFunc_eleven(h, fitFunc, Mmin, Mmax, &nPar, onePar);
+  }
   else{
     cout << "Incorrect fit input:   " << whichFit << " given to DoFit 1\n";
     exit(EXIT_FAILURE);
@@ -59,12 +65,13 @@ void ScanFit_OnePar(TString start=""){
   Int_t hbins =150;//# of histogram bins using in mass fitting
   const Int_t nBins =1;
   TString physBinned ="";//"", "xN", "xPi", "xF", "pT"
-  TString whichFit ="eight";
-  Double_t Mmin =1.5;//Fit Mass minimum
-  Double_t Mmax =8.00;//Fit Mass maximum
-  Bool_t hIsUpS =false;
-  Double_t start_par=1.05, end_par=1.19, res_par=0.005; //ifits 1/2/6
-  //Double_t start_par=1.13, end_par=1.16, res_par=0.001; //ifit 5
+  TString whichFit ="eleven";
+  Double_t Mmin =2.0;//Fit Mass minimum
+  Double_t Mmax =8.50;//Fit Mass maximum
+  Bool_t hIsUpS =true;
+  //Double_t start_par=1.05, end_par=1.19, res_par=0.005; //ifits 1/2/6
+  Double_t start_par=1.13, end_par=1.16, res_par=0.001; //ifit 5
+  //Double_t start_par=1.152, end_par=start_par, res_par=0.001; //fit once
   
   //Setup_______________
 

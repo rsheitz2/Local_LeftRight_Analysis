@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -ne 10 ]; then
+if [ $# -ne 12 ]; then
     echo "" 
     echo "Script updates input macro name with input paramters"
     echo "   This is the most generic change.sh file"
@@ -18,6 +18,8 @@ lrMrange=$7
 fitMrange=$8
 binRange=$9
 whichFit=${10}
+production=${11}
+additionalCuts=${12}
 
 
 changeFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/${filename}.C
@@ -35,4 +37,6 @@ sed -i.bak "s/TString lrMrange =.*;/TString lrMrange =\"${lrMrange}\";/" ${chang
 sed -i.bak "s/TString fitMrange =.*;/TString fitMrange =\"${fitMrange}\";/" ${changeFile}
 sed -i.bak "s/TString binRange =.*;/TString binRange =\"${binRange}\";/" ${changeFile}
 sed -i.bak "s/TString whichFit =.*;/TString whichFit =\"${whichFit}\";/" ${changeFile}
+sed -i.bak "s/TString production =.*;/TString production =\"${production}\";/" ${changeFile}
+sed -i.bak "s/TString additionalCuts =.*;/TString additionalCuts =\"${additionalCuts}\";/" ${changeFile}
 sed -i.bak "s/Bool_t toWrite =.*;/Bool_t toWrite =true;/" ${changeFile}

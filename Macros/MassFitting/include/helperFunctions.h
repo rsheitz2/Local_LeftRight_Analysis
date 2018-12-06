@@ -1,4 +1,24 @@
 //Aestheitics
+void SetUp(TRatioPlot *r){
+  r->Draw();
+  r->GetLowerRefGraph()->SetMinimum(0.7);
+  r->GetLowerRefGraph()->SetMaximum(1.3);
+  
+  r->GetLowerRefYaxis()->SetNdivisions(505);
+  r->GetLowerRefYaxis()->SetLabelFont(22);
+  r->GetLowerRefYaxis()->SetLabelSize(0.08);
+
+  r->GetLowerRefXaxis()->SetNdivisions(505);
+  r->GetLowerRefXaxis()->SetLabelFont(22);
+  r->GetLowerRefXaxis()->SetLabelSize(0.08);
+
+  r->GetLowerRefGraph()->SetMarkerStyle(21);
+  r->GetLowerRefGraph()->SetMarkerSize(0.6);
+  
+  r->SetSeparationMargin(0.0);
+}
+
+
 void SetUp(TH1D* h){
   h->GetYaxis()->SetNdivisions(504);
   h->GetYaxis()->SetLabelFont(22);
@@ -112,17 +132,19 @@ void SetUpTF(TF1* f){
 
 //Functions
 Double_t f_CrystalBall(Double_t *x, Double_t *par){
-  //par[3] =alpha, par[4] =n
+  //f(x; alpha, n, xBar, sigma, Amp)
+  //   Amp = par[0], xBar = par[1], sigma = par[2]
+  //   alpha = par[3], n = par[4]
   Double_t A = TMath::Power(par[4]/par[3], par[4])*TMath::Exp(-par[3]*par[3]/2.0);
   Double_t B = par[4]/par[3] - par[3];
   Double_t C = (par[4]/par[3])*(1.0/(par[4]-1.0))*TMath::Exp(-par[3]*par[3]/2.0);
-  Double_t D = TMath::Pi()*(1+TMath::Erf( par[3]/TMath::Sqrt(2)) );
+  Double_t D =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( par[3]/TMath::Sqrt(2) ) );
   
   Double_t Norm = 1.0/(par[2]*(C+D) );
 
   Double_t arg = (x[0] - par[1])/par[2];
   if (arg > -par[3] ) return par[0]*Norm*TMath::Exp(-0.5*arg*arg);
-  else return par[0]*Norm*A*TMath::Power((B - arg), -par[1]);
+  else return par[0]*Norm*A*TMath::Power((B - arg), -par[4]);
 }
 
 
@@ -469,4 +491,15 @@ Double_t RedChiSquareDistr(Double_t *x,Double_t *par)
   x[0] = x[0]*nrFree;
   
   return ChiSquareDistr(x, par);
+}
+
+
+TFile *OpenFile(TString name){
+  TFile *f  = TFile::Open(name);
+  if (!f ){
+    cout << name << "  file does not exist " << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  return f;
 }

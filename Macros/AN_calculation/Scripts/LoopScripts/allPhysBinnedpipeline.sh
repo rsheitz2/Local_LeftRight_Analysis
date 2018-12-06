@@ -23,6 +23,9 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 
 ##Setup___  first line (30) to seach setup
 ##########
+####Additional settings
+#production="slot1"
+#phiPhotonCut=0.53 #HMDY=0.1866, #LowM_AMDY=0.195
 ###Step ONE settings ###### DY
 #period="WAll"
 #fitMrangeType="HMDY"
@@ -40,6 +43,9 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 #whichFit=("true" "true" "true" "true")
 ###Step THREE settings
 
+###Additional settings
+production="slot1"
+phiPhotonCut=0.53 #HMDY=0.187, #LowM_AMDY=0.195
 ##Step ONE settings  ########JPsi
 period="WAll"
 fitMrangeType="LowM_AMDY"
@@ -55,6 +61,8 @@ LR_Mmin=2.00
 LR_Mmax=5.00
 physBinned=("xN" "xPi" "xF" "pT")
 whichFit=("eight" "eight" "eight" "eight")
+
+additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include all cuts used
 
 ##Setup___ last line (60) to search setup
 lrMrange="${LR_Mmin}_${LR_Mmax}"
@@ -107,7 +115,7 @@ for i in `seq 0 3`; do
     
     #pipeline changes
     ${aNPath}/Scripts/changeGenericPipeline.sh ${loopFile} ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax ${physBinned[$i]} $process $LR_Mmin $LR_Mmax \
-	      ${whichFit[$i]} ${binRange} ${binFile}
+	      ${whichFit[$i]} ${binRange} ${binFile} ${production} ${phiPhotonCut} $additionalCuts
     #Execute
     ${PWD}/${loopFile} ${Steps} >> ${PWD}/${loopFile}_log.txt
     if [ $? != 0 ]; then

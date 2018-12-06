@@ -1,17 +1,17 @@
 void tableOfCuts(TString start=""){
   //Setup_______________
   TString period ="W07";
-  TString Mtype ="LowM_AMDY";
-  TString production ="t3";//"t3"=t3, "slot1"=t5
+  TString Mtype ="HMDY";
+  TString production ="slot1";//"t3"=t3, "slot1"=t5
   TString whichCuts ="FinalCuts";//"PhastCuts", "FinalCuts"
     
-  Bool_t toWrite =true;
+  Bool_t toWrite =false;
   //Setup_______________
 
   TString dataPath = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Presents/DATA/RealData/";
-  TString inputFile = Form("%s/%s_%s%s.root", Mtype.Data(), period.Data(),
-			   Mtype.Data(), production.Data());  ;
+  TString inputFile = Form("%s/%s%s_%s.root", Mtype.Data(), production.Data(),
+			   period.Data(), Mtype.Data());
   if (production=="t3"){//No production name for t3 input
     inputFile=Form("%s/%s_%s.root", Mtype.Data(), period.Data(),
 		   Mtype.Data());  

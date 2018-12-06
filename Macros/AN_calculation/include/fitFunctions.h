@@ -26,21 +26,33 @@ Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_nine.h"
 #include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
 Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_ten.h"
 
+//2 Crystal Ball w/ psi' M/W = A*JPsi M/W by target
+//     psi' alpha/n free
+//2 Exponential
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
+Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_eleven.h"
+
+//2 Crystal Ball w/ psi' M/W = A*JPsi M/W by target
+//     psi' alpha free, psi' n = JPsi n
+//2 Exponential
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
+Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_twelve.h"
+
+//2 Crystal Ball w/ psi' M/W/alpha = A*JPsi M/W by target
+//     psi' n = JPsi n
+//2 Exponential
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
+Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_thirteen.h"
+
 
 void DoFit(TH1D *h, TMatrixDSym &cov, Double_t Mmin, Double_t Mmax){
-  h->Sumw2(); //Try different fits till it works....
-  TFitResultPtr status;
-  for (Int_t i=0; i<20; i++) {
-    status = h->Fit("fitFunc", "RLSQ", "", Mmin-0.05*i, Mmax+0.05*i);
-    if (!status->Status() ) break;
-    status = h->Fit("fitFunc", "RLSQ", "", Mmin-0.05*i, Mmax);
-    if (!status->Status() ) break;
-    status = h->Fit("fitFunc", "RLSQ", "", Mmin, Mmax+0.05*i);
-    
-    if (status->Status() && (i+1)==20){
-      cout << h->GetTitle() << "  Fit failed:  " << i+1 << endl;
-      exit(EXIT_FAILURE);
-    }
+  h->Sumw2();
+  TVirtualFitter::SetMaxIterations(50000);
+  TFitResultPtr status = h->Fit("fitFunc", "RLSQ", "", Mmin, Mmax);
+  
+  if (status->Status() ){
+    cout << h->GetTitle() << "  Fit failed" << endl;
+    exit(EXIT_FAILURE); 
   }
 
   cov = status->GetCovarianceMatrix();
@@ -48,9 +60,10 @@ void DoFit(TH1D *h, TMatrixDSym &cov, Double_t Mmin, Double_t Mmax){
 
 
 TF1* FitGetLR(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
-		Double_t LR_Mmin, Double_t LR_Mmax, TString process,
-		TString whichFit, Double_t Mmin, Double_t Mmax){
-  
+	      Double_t LR_Mmin, Double_t LR_Mmax, TString process,
+	      TString whichFit, Double_t Mmin, Double_t Mmax,
+	      TString physBinned="pT"){
+
   Double_t processPars[8] = {0.0};//{aJPsi,mJPsi,wJPsi,Apsi,Mpsi,Wpsi,aDY,cDY}
   Double_t LR_cov[25] = {0.0};
   Double_t binWidth =h[bin]->GetBinWidth(1);
@@ -104,16 +117,10 @@ TF1* FitGetLR(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
     Double_t *pars = fitFunc->GetParameters();
     
     TF1 *f_LR =ComponentFuncts_eight(pars, Mmin, Mmax, process, hIsUpS);
-    IntegrateLR_eight(f_LR, binWidth, LR_Mmin, LR_Mmax,
-		      &(LR[bin]), &(e_LR[bin]) );//*/
-    /*IntegrateLR_eight(f_LR, processPars, LR_cov, binWidth,
-		      (LR_Mmax - LR_Mmin)/2.0, &(LR[bin]), &(e_LR[bin]),
-		      hIsUpS, process);//*/
-    /*IntegrateLRpercent_eight(f_LR, processPars, LR_cov, binWidth,
-			     1.1, &(LR[bin]), &(e_LR[bin]),
-			     hIsUpS, Mmin, Mmax, process);//*/
-    /*IntegrateLRpercent_eight(f_LR, processPars, binWidth, 6.0,
-      &(LR[bin]), &(e_LR[bin]), hIsUpS, process);*/
+    /*IntegrateLR_eight(f_LR, binWidth, LR_Mmin, LR_Mmax,
+      &(LR[bin]), &(e_LR[bin]) );//*/
+    IntegrateLR_eight(f_LR, pars, LR_cov, binWidth, LR_Mmin, LR_Mmax,
+		      &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, hIsUpS, process);
   }
   else if (whichFit =="nine"){
     fitFunc = SetupFunc_nine(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar);
@@ -139,22 +146,61 @@ TF1* FitGetLR(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
     
     Double_t *pars = fitFunc->GetParameters();
     TF1 *f_LR =ComponentFuncts_ten(pars, Mmin, Mmax, process, hIsUpS);
-    /*IntegrateLR_ten(f_LR, processPars, LR_cov, binWidth,
-		    (LR_Mmax - LR_Mmin)/2.0, &(LR[bin]), &(e_LR[bin]),
-		    hIsUpS, Mmin, Mmax, process);//*/
-    /*TF1 *f_LR =ComponentFuncts_ten(pars, Mmin, Mmax, process, hIsUpS,
-				   hRatio[bin]);
-    IntegrateLR_ten(f_LR, h[bin], pars, (LR_Mmax - LR_Mmin)/2.0, LR, e_LR,
-    bin, process);//*/
-    /*IntegrateLR_ten(f_LR, processPars, LR_cov, binWidth,
-		    0.2, &(LR[bin]), &(e_LR[bin]),
-		    hIsUpS, Mmin, Mmax, process);//*/
     IntegrateLRpercent_ten(f_LR, processPars, LR_cov, binWidth,
 			   1.20, &(LR[bin]), &(e_LR[bin]),
-			   hIsUpS, Mmin, Mmax, process);//*/
+			   hIsUpS, Mmin, Mmax, process);
+  }
+  else if (whichFit =="eleven"){
+    fitFunc = SetupFunc_eleven(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar);
+    TMatrixDSym cov;
+    cov.ResizeTo(nPar, nPar);
+    DoFit(h[bin], cov, Mmin, Mmax);
+    
+    ProcessPars_eleven(fitFunc, processPars, LR_cov, cov, process,nPar,hIsUpS);
+    Double_t *pars = fitFunc->GetParameters();
+    
+    TF1 *f_LR =ComponentFuncts_eleven(pars, Mmin, Mmax, process, hIsUpS);
+    //Integrate with errors taken into account
+    IntegrateLR_eleven(f_LR, pars, LR_cov, binWidth, LR_Mmin, LR_Mmax,
+		       &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, hIsUpS, process);
+  }
+  else if (whichFit =="twelve"){
+    fitFunc = SetupFunc_twelve(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar);
+    TMatrixDSym cov;
+    cov.ResizeTo(nPar, nPar);
+    DoFit(h[bin], cov, Mmin, Mmax);
+    
+    ProcessPars_twelve(fitFunc, processPars, LR_cov, cov, process,nPar,hIsUpS);
+    Double_t *pars = fitFunc->GetParameters();
+    
+    TF1 *f_LR =ComponentFuncts_twelve(pars, Mmin, Mmax, process, hIsUpS);
+    //Integrate with errors taken into account
+    IntegrateLR_twelve(f_LR, pars, LR_cov, binWidth, LR_Mmin, LR_Mmax,
+		       &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, hIsUpS, process);
+  }
+  else if (whichFit =="thirteen"){
+    //fitFunc = SetupFunc_thirteen(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar);
+    fitFunc = SetupFunc_thirteen(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar,
+				 bin, physBinned);
+    TMatrixDSym cov;
+    cov.ResizeTo(nPar, nPar);
+    DoFit(h[bin], cov, Mmin, Mmax);
+    
+    ProcessPars_thirteen(fitFunc, processPars, LR_cov, cov, process,nPar,hIsUpS);
+    Double_t *pars = fitFunc->GetParameters();
+    
+    TF1 *f_LR =ComponentFuncts_thirteen(pars, Mmin, Mmax, process, hIsUpS);
+    
+    //Integrate with errors taken into account
+    /*IntegrateLR_thirteen(f_LR, pars, LR_cov, binWidth, LR_Mmin, LR_Mmax,
+      &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, hIsUpS, process);*/
+    
+    //Integrate withOUT  fit errors taken into account
+    IntegrateLR_thirteen(f_LR, binWidth, LR_Mmin, LR_Mmax,
+			 &(LR[bin]), &(e_LR[bin]));
   }
   else{
-    cout << "Int valid fit type:   " << whichFit << endl;
+    cout << "Invalid fit type:   " << whichFit << endl;
     exit(EXIT_FAILURE);
   }
 
@@ -163,11 +209,13 @@ TF1* FitGetLR(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
 
 
 TF1* FitGetLR(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR, Double_t *e_LR,
-		Double_t LR_Mmin, Double_t LR_Mmax, TString process,
-		TString whichFit, Double_t Mmin, Double_t Mmax){
+	      Double_t LR_Mmin, Double_t LR_Mmax, TString process,
+	      TString whichFit, Double_t Mmin, Double_t Mmax,
+	      TString physBinned="pT"){
   //Wrapper function to also get ratio histogram
   TF1 *fitFunc =
-    FitGetLR(h, bin, LR, e_LR, LR_Mmin, LR_Mmax, process, whichFit, Mmin, Mmax);
+    FitGetLR(h, bin, LR, e_LR, LR_Mmin, LR_Mmax, process, whichFit, Mmin, Mmax,
+	     physBinned);
   
   //Determine ratio of fit to data
   TGraphErrors *gError = new TGraphErrors(hRatio[bin]->GetNbinsX() );
@@ -205,8 +253,14 @@ void SelectFitPars(TF1 *fitFunc, Double_t *pars, Double_t *e_pars,
     ProcessPars_nine(fitFunc, pars, e_pars, process, hIsUpS);}
   else if (whichFit =="ten") {
     ProcessPars_ten(fitFunc, pars, e_pars, process, hIsUpS);}
+  else if (whichFit =="eleven") {
+    ProcessPars_eleven(fitFunc, pars, e_pars, process, hIsUpS);}
+  else if (whichFit =="twelve") {
+    ProcessPars_twelve(fitFunc, pars, e_pars, process, hIsUpS);}
+  else if (whichFit =="thirteen") {
+    ProcessPars_thirteen(fitFunc, pars, e_pars, process, hIsUpS);}
   else{
-    cout << "Int valid fit type:   " << whichFit << endl;
+    cout << "Invalid fit type:   " << whichFit << endl;
     exit(EXIT_FAILURE); }
 }
 
@@ -218,8 +272,14 @@ void SelectFitPhysicsPars(TF1 *fitFunc, Double_t *pars, Double_t *e_pars,
     ProcessPhysicsPars_eight(fitFunc, pars, e_pars, process, hIsUpS);}
   else if (whichFit =="ten") {
     ProcessPhysicsPars_ten(fitFunc, pars, e_pars, process, hIsUpS);}
+  else if (whichFit =="eleven") {
+    ProcessPhysicsPars_eleven(fitFunc, pars, e_pars, process, hIsUpS);}
+  else if (whichFit =="twelve") {
+    ProcessPhysicsPars_twelve(fitFunc, pars, e_pars, process, hIsUpS);}
+  else if (whichFit =="thirteen") {
+    ProcessPhysicsPars_thirteen(fitFunc, pars, e_pars, process, hIsUpS);}
   else{
-    cout << "Int valid fit type:   " << whichFit << endl;
+    cout << "Invalid fit type:   " << whichFit << endl;
     exit(EXIT_FAILURE); }
 }
 

@@ -2,7 +2,9 @@
 #define FIT_EIGHT_H
 //2 Crystal Balls for JPsi and psi'
 //      psi' M/W = Get_eight_Ratio(targ)*JPsi M/W
+//      psi' alpha/n parameters are the same as JPsi
 //2 Exponentials for background and DY
+
 
 Double_t Get_eight_Ratio(TString targ){
   if (targ =="UpS") return 1.155;
@@ -14,26 +16,37 @@ Double_t Get_eight_Ratio(TString targ){
 }
 
 
-Double_t Fit_eight_UpS(Double_t *x, Double_t *par){
-  Double_t xShift = x[0]-par[10];
-  Double_t ratioPsi = Get_eight_Ratio("UpS");
-  //par[3] =alpha, par[4] =n
-  Double_t A = TMath::Power(par[4]/par[3], par[4])*TMath::Exp(-par[3]*par[3]/2.0);
+Double_t _CrystalBall(Double_t *x, Double_t *par){
+  //f(x; alpha, n, xBar, sigma, Amp)
+  //   Amp = par[0], xBar = par[1], sigma = par[2]
+  //   alpha = par[3], n = par[4]
+  Double_t A = TMath::Power(par[4]/par[3], par[4])*
+    TMath::Exp(-par[3]*par[3]/2.0);
+  
   Double_t B = par[4]/par[3] - par[3];
-  Double_t C = (par[4]/par[3])*(1.0/(par[4]-1.0))*TMath::Exp(-par[3]*par[3]/2.0);
-  Double_t D = TMath::Pi()*(1+TMath::Erf( par[3]/TMath::Sqrt(2)) );
+  
+  Double_t C = (par[4]/par[3])*(1.0/(par[4]-1.0))*
+    TMath::Exp(-par[3]*par[3]/2.0);
+  
+  Double_t D =TMath::Sqrt( TMath::Pi()/2.0 )*
+  (1+TMath::Erf( par[3]/TMath::Sqrt(2) ) );
 
   Double_t Norm = 1.0/(par[2]*(C+D) );
 
-  Double_t arg_JPsi = (x[0] - par[1])/par[2];
-  Double_t JPsi;
-  if (arg_JPsi > -par[3] ) JPsi = par[0]*Norm*TMath::Exp(-0.5*arg_JPsi*arg_JPsi);
-  else JPsi = par[0]*Norm*A*TMath::Power((B - arg_JPsi), -par[1]);
-    
-  Double_t arg_psi = ( x[0] - par[1]*ratioPsi)/(par[2]*ratioPsi);
-  Double_t psi;
-  if (arg_psi > -par[3] ) psi = par[5]*Norm*TMath::Exp(-0.5*arg_psi*arg_psi);
-  else psi = par[5]*Norm*A*TMath::Power((B - arg_psi), -par[1]);
+  Double_t arg = (x[0] - par[1])/par[2];
+  if (arg > -par[3] ) return par[0]*Norm*TMath::Exp(-0.5*arg*arg);
+  else return par[0]*Norm*A*TMath::Power((B - arg), -par[4]);
+}
+
+
+Double_t Fit_eight_UpS(Double_t *x, Double_t *par){
+  Double_t xShift = x[0]-par[10];
+  Double_t ratioPsi = Get_eight_Ratio("UpS");
+
+  Double_t par_JPsi[] = {par[0], par[1], par[2], par[3], par[4]};
+  Double_t JPsi = _CrystalBall(x, par_JPsi);
+  Double_t par_psi[] = {par[5], par[1]*ratioPsi, par[2]*ratioPsi,par[3],par[4]};
+  Double_t psi = _CrystalBall(x, par_psi);
 
   Double_t CombBg = par[6]*TMath::Exp( par[7]*xShift );
   Double_t DY = par[8]*TMath::Exp( par[9]*xShift );
@@ -45,23 +58,11 @@ Double_t Fit_eight_UpS(Double_t *x, Double_t *par){
 Double_t Fit_eight_DownS(Double_t *x, Double_t *par){
   Double_t xShift = x[0]-par[10];
   Double_t ratioPsi = Get_eight_Ratio("DownS");
-  //par[3] =alpha, par[4] =n
-  Double_t A = TMath::Power(par[4]/par[3], par[4])*TMath::Exp(-par[3]*par[3]/2.0);
-  Double_t B = par[4]/par[3] - par[3];
-  Double_t C = (par[4]/par[3])*(1.0/(par[4]-1.0))*TMath::Exp(-par[3]*par[3]/2.0);
-  Double_t D = TMath::Pi()*(1+TMath::Erf( par[3]/TMath::Sqrt(2)) );
 
-  Double_t Norm = 1.0/(par[2]*(C+D) );
-
-  Double_t arg_JPsi = (x[0] - par[1])/par[2];
-  Double_t JPsi;
-  if (arg_JPsi > -par[3] ) JPsi = par[0]*Norm*TMath::Exp(-0.5*arg_JPsi*arg_JPsi);
-  else JPsi = par[0]*Norm*A*TMath::Power((B - arg_JPsi), -par[1]);
-    
-  Double_t arg_psi = ( x[0] - par[1]*ratioPsi)/(par[2]*ratioPsi);
-  Double_t psi;
-  if (arg_psi > -par[3] ) psi = par[5]*Norm*TMath::Exp(-0.5*arg_psi*arg_psi);
-  else psi = par[5]*Norm*A*TMath::Power((B - arg_psi), -par[1]);
+  Double_t par_JPsi[] = {par[0], par[1], par[2], par[3], par[4]};
+  Double_t JPsi = _CrystalBall(x, par_JPsi);
+  Double_t par_psi[] = {par[5], par[1]*ratioPsi, par[2]*ratioPsi,par[3],par[4]};
+  Double_t psi = _CrystalBall(x, par_psi);
 
   Double_t CombBg = par[6]*TMath::Exp( par[7]*xShift );
   Double_t DY = par[8]*TMath::Exp( par[9]*xShift );
@@ -74,23 +75,11 @@ Double_t Fit_eight_scan(Double_t *x, Double_t *par){
   //Feed one scan parameter as par[11]=psiMW
   Double_t xShift = x[0]-par[10];
   Double_t ratioPsi = par[11];
-  //par[3] =alpha, par[4] =n
-  Double_t A = TMath::Power(par[4]/par[3], par[4])*TMath::Exp(-par[3]*par[3]/2.0);
-  Double_t B = par[4]/par[3] - par[3];
-  Double_t C = (par[4]/par[3])*(1.0/(par[4]-1.0))*TMath::Exp(-par[3]*par[3]/2.0);
-  Double_t D = TMath::Pi()*(1+TMath::Erf( par[3]/TMath::Sqrt(2)) );
 
-  Double_t Norm = 1.0/(par[2]*(C+D) );
-
-  Double_t arg_JPsi = (x[0] - par[1])/par[2];
-  Double_t JPsi;
-  if (arg_JPsi > -par[3] ) JPsi = par[0]*Norm*TMath::Exp(-0.5*arg_JPsi*arg_JPsi);
-  else JPsi = par[0]*Norm*A*TMath::Power((B - arg_JPsi), -par[1]);
-    
-  Double_t arg_psi = ( x[0] - par[1]*ratioPsi)/(par[2]*ratioPsi);
-  Double_t psi;
-  if (arg_psi > -par[3] ) psi = par[5]*Norm*TMath::Exp(-0.5*arg_psi*arg_psi);
-  else psi = par[5]*Norm*A*TMath::Power((B - arg_psi), -par[1]);
+  Double_t par_JPsi[] = {par[0], par[1], par[2], par[3], par[4]};
+  Double_t JPsi = _CrystalBall(x, par_JPsi);
+  Double_t par_psi[] = {par[5], par[1]*ratioPsi, par[2]*ratioPsi,par[3],par[4]};
+  Double_t psi = _CrystalBall(x, par_psi);
 
   Double_t CombBg = par[6]*TMath::Exp( par[7]*xShift );
   Double_t DY = par[8]*TMath::Exp( par[9]*xShift );
@@ -101,6 +90,7 @@ Double_t Fit_eight_scan(Double_t *x, Double_t *par){
 
 void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
 		 Double_t Mmin, Double_t Mmax){
+  //Older parameter setup (no longer used)
   Int_t ipar =0;
   Double_t ratioPsi = Get_eight_Ratio("UpS");
   ratioPsi += Get_eight_Ratio("DownS");
@@ -137,7 +127,6 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
   
   ipar=0;
   Double_t factor =10.0;
-  //Double_t factor =5.0;
   fitFunc->SetParLimits(ipar, A_JPsi/factor, A_JPsi*factor); ipar++;//JPsi
   fitFunc->SetParLimits(ipar, 3.0, 3.6); ipar++;
   fitFunc->SetParLimits(ipar, 0, 0.2); ipar++;
@@ -145,10 +134,8 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
   fitFunc->SetParLimits(ipar, 2.5, 8.0); ipar++;
   fitFunc->SetParLimits(ipar, A_psi/factor, A_psi*factor); ipar++;//psi
   fitFunc->SetParLimits(ipar, 0.0, A_Bg*factor); ipar++;//CombBg
-  //fitFunc->SetParLimits(ipar, A_Bg/factor, A_Bg*factor); ipar++;//CombBg
   fitFunc->SetParLimits(ipar, -7.0, -2.0); ipar++;
   fitFunc->SetParLimits(ipar, 0.0, A_DY*factor); ipar++;//DY
-  //fitFunc->SetParLimits(ipar, A_DY/factor, A_DY*factor); ipar++;//DY
   fitFunc->SetParLimits(ipar, -2.0, 0.0); ipar++;
   fitFunc->SetParLimits(ipar, Mmin, Mmin); ipar++;//Mmin
   
@@ -161,6 +148,7 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
 
 void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
 		 Double_t Mmin, Double_t Mmax, Bool_t hIsUpS){
+  //Newer (currently used) parameter setup
   Int_t ipar =0;
   Double_t ratioPsi = (hIsUpS) ?
     Get_eight_Ratio("UpS") : Get_eight_Ratio("DownS");
@@ -169,7 +157,8 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
   Double_t A_JPsi = h->GetBinContent(h->FindBin(M_JPsi) );
   Double_t A_psi = h->GetBinContent(h->FindBin(M_JPsi*ratioPsi) );
   Double_t A_Bg =  h->GetBinContent(h->FindBin(Mmin) );
-  Double_t DY_slope = -0.95, DY_Mmin = 4.5;
+  //Double_t DY_slope = -0.95, DY_Mmin = 4.5;
+  Double_t DY_slope = -0.90, DY_Mmin = 4.5;
   Double_t A_DY =  h->GetBinContent(h->FindBin(DY_Mmin) );
   A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
   A_Bg = A_Bg - A_DY;
@@ -182,21 +171,9 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
   fitFunc->SetParameter(ipar, A_JPsi); ipar++;//JPsi
   fitFunc->SetParameter(ipar, M_JPsi); ipar++;
   fitFunc->SetParameter(ipar, 0.16); ipar++;
-
-  if (hIsUpS){
-    //fitFunc->SetParameter(ipar, 1.7); ipar++;//W12
-    //fitFunc->SetParameter(ipar, 3.5); ipar++;
-
-    fitFunc->SetParameter(ipar, 1.7); ipar++;//W15
-    fitFunc->SetParameter(ipar, 3.2); ipar++;
-  }
-  else{
-    //fitFunc->SetParameter(ipar, 1.4); ipar++;//W12
-    //fitFunc->SetParameter(ipar, 3.2); ipar++;
-
-    fitFunc->SetParameter(ipar, 1.7); ipar++;//W15
-    fitFunc->SetParameter(ipar, 3.2); ipar++;
-  }
+  fitFunc->SetParameter(ipar, 1.7); ipar++;
+  //fitFunc->SetParameter(ipar, 3.2); ipar++;
+  fitFunc->SetParameter(ipar, 8.0); ipar++;
   
   fitFunc->SetParameter(ipar, A_psi); ipar++;//psi
   fitFunc->SetParameter(ipar, A_Bg); ipar++;//CombBg
@@ -210,26 +187,35 @@ void Paras_eight(TH1D *h, TF1 *fitFunc, Int_t nPar,
   }
 
   ipar=0;
-  Double_t factor =10.0;
-  //Double_t factor =5.0;
-  fitFunc->SetParLimits(ipar, A_JPsi/factor, A_JPsi*factor); ipar++;//JPsi
+  Double_t factor =5.0;
+  fitFunc->SetParLimits(0, A_JPsi/factor, A_JPsi*factor); ipar++;//JPsi
+  fitFunc->SetParLimits(1, 2.8, 3.5); ipar++;
+  fitFunc->SetParLimits(2, 0, 0.25); ipar++;
+  fitFunc->SetParLimits(3, 0.5, 2.0); ipar++;
+  fitFunc->SetParLimits(4, 0.5, 20.0); ipar++;
+  fitFunc->SetParLimits(5, A_psi/factor, A_psi*factor); ipar++;//psi
+  fitFunc->SetParLimits(6, 0.0, A_Bg*factor); ipar++;//CombBg
+  fitFunc->SetParLimits(7, -7.0, -1.0); ipar++;
+  fitFunc->SetParLimits(8, 0.0, A_DY*factor); ipar++;//DY
+  fitFunc->SetParLimits(9, -2.0, 0.0); ipar++;
+  fitFunc->SetParLimits(10, Mmin, Mmin); ipar++;//Mmin
+  
+  /*fitFunc->SetParLimits(ipar, A_JPsi/factor, A_JPsi*factor); ipar++;//JPsi
   fitFunc->SetParLimits(ipar, 2.8, 3.5); ipar++;
   fitFunc->SetParLimits(ipar, 0, 0.25); ipar++;
   fitFunc->SetParLimits(ipar, 1.0, 2.0); ipar++;
   fitFunc->SetParLimits(ipar, 2.5, 4.5); ipar++;
   fitFunc->SetParLimits(ipar, A_psi/factor, A_psi*factor); ipar++;//psi
   fitFunc->SetParLimits(ipar, 0.0, A_Bg*factor); ipar++;//CombBg
-  //fitFunc->SetParLimits(ipar, A_Bg/factor, A_Bg*factor); ipar++;//CombBg
   fitFunc->SetParLimits(ipar, -4.0, -2.0); ipar++;
   fitFunc->SetParLimits(ipar, 0.0, A_DY*factor); ipar++;//DY
-  //fitFunc->SetParLimits(ipar, A_DY/factor, A_DY*factor); ipar++;//DY
   fitFunc->SetParLimits(ipar, -2.0, 0.0); ipar++;
   fitFunc->SetParLimits(ipar, Mmin, Mmin); ipar++;//Mmin
   
   if (ipar != nPar){
     cout << "ipar problem" << endl;
     exit(EXIT_FAILURE);
-  }
+  }//*/
 }
 
 
@@ -293,7 +279,6 @@ TF1* SetupFunc_eight(TH1D *h, Bool_t hIsUpS, TF1 *fitFunc,
   else fitFunc = new TF1("fitFunc", Fit_eight_DownS, Mmin, Mmax, *nPar);
 
   //Setup intial parameters of fit and parameter constraints
-  //Paras_eight(h, fitFunc, *nPar, Mmin, Mmax); //Old parameter setup
   Paras_eight(h, fitFunc, *nPar, Mmin, Mmax, hIsUpS); //Newer more accurate pars
 
   return fitFunc;
@@ -361,17 +346,6 @@ void ProcessPars_eight(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
   else if (process=="DY"){
     cout << "covariance matrix doesn't work yet" << endl;
     exit(EXIT_FAILURE);
-    /*LR_cov[0] = cov(4, 4);
-      LR_cov[1] = cov(4, 5);
-      LR_cov[2] = 0.0;
-        
-      LR_cov[3] = cov(5, 4);
-      LR_cov[4] = cov(5, 5);
-      LR_cov[5] = 0.0;
-
-      LR_cov[6] = 0.0;
-      LR_cov[7] = 0.0;
-      LR_cov[8] = 0.0;*/
   }
   else{
     cout << "Process not defined well in Fit_eight" << endl;
@@ -483,10 +457,10 @@ TF1* ComponentFuncts_eight(Double_t *pars, Double_t Mmin, Double_t Mmax,
 			   TString process, Bool_t hIsUpS){
   Double_t psiMW = (hIsUpS) ? Get_eight_Ratio("UpS") : Get_eight_Ratio("DownS");
   
-  TF1 *JPsi = new TF1("f_JPsi", f_CrystalBall, Mmin, Mmax, 5);
+  TF1 *JPsi = new TF1("f_JPsi", _CrystalBall, Mmin, Mmax, 5);
   JPsi->SetParameters(pars[0], pars[1], pars[2], pars[3], pars[4]);
   
-  TF1 *psi = new TF1("f_psi", f_CrystalBall, Mmin, Mmax, 5);
+  TF1 *psi = new TF1("f_psi", _CrystalBall, Mmin, Mmax, 5);
   psi->SetParameters(pars[5], pars[1]*psiMW, pars[2]*psiMW, pars[3], pars[4]);
 
   TF1 *Bg = new TF1("f_Bg", "[0]*TMath::Exp([1]*(x-[2]) )", Mmin, Mmax);
@@ -536,7 +510,7 @@ void IntegrateLR_eight(TF1 *f, Double_t binWidth,
 void IntegrateLR_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
 		       Double_t binWidth, Double_t LR_Mmin, Double_t LR_Mmax,
 		       Double_t *LR, Double_t *e_LR, Double_t Mmin,
-		       Double_t Mmax, TString process){
+		       Double_t Mmax, Bool_t hIsUpS, TString process){
   //Integration considering correlation errors
   (*LR) = f->Integral(LR_Mmin, LR_Mmax)/binWidth;
   
@@ -544,7 +518,9 @@ void IntegrateLR_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
     (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, pars, LR_cov)/binWidth;
   }
   else if (process =="psi"){
-    Double_t psi_pars[] = {pars[5], pars[1], pars[2], pars[3], pars[4]};
+    Double_t psiMW = (hIsUpS) ? Get_eight_Ratio("UpS"):Get_eight_Ratio("DownS");
+    Double_t psi_pars[] =
+      {pars[5], psiMW*pars[1], psiMW*pars[2], pars[3], pars[4]};
     (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, psi_pars, LR_cov)/binWidth;
   }
   else if (process =="DY"){
@@ -557,10 +533,12 @@ void IntegrateLR_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
 void IntegrateLR_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
 		       Double_t binWidth, Double_t LR_width, Double_t *LR,
 		       Double_t *e_LR, Bool_t hIsUpS, TString process){
+  //Integration considering correlation errors
   //Integrate around mass value
   Double_t Mass = pars[1];
+  Double_t psiMW;
   if (process == "psi") {
-    Double_t psiMW = (hIsUpS) ? Get_eight_Ratio("UpS"):Get_eight_Ratio("DownS");
+    psiMW = (hIsUpS) ? Get_eight_Ratio("UpS"):Get_eight_Ratio("DownS");
     Mass *= psiMW;
   }
   Double_t LR_Mmin = Mass - LR_width;
@@ -571,7 +549,8 @@ void IntegrateLR_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
     (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, pars, LR_cov)/binWidth;
   }
   else if (process =="psi"){
-    Double_t psi_pars[] = {pars[5], pars[1], pars[2], pars[3], pars[4]};
+    Double_t psi_pars[] =
+      {pars[5], psiMW*pars[1], psiMW*pars[2], pars[3], pars[4]};
     (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, psi_pars, LR_cov)/binWidth;
   }
   else {
@@ -599,7 +578,7 @@ void IntegrateLRpercent_eight(TF1 *f, Double_t *pars, Double_t *LR_cov,
   Double_t LR_Mmax = Mass + Width*widthFraction;
   
   IntegrateLR_eight(f, pars, LR_cov, binWidth, LR_Mmin, LR_Mmax, LR, e_LR,
-		    Mmin, Mmax, process);
+		    Mmin, Mmax, hIsUpS, process);
 }
 
 

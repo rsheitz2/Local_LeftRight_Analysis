@@ -25,43 +25,56 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 ##Setup___ (25) first setup search line 
 ##########
 ##Step ONE settings
-period="WAll"
+period="W10"
 fitMrangeType="LowM_AMDY"
 nBins=5
-binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/WAll_JPsi25_43_${nBins}bins.txt
+binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/JPsi/BinValues/slot1WAll_JPsi25_43_5bins.txt"
 hbins=150
-fitMmin=2.00 #true fit mass range
-fitMmax=7.50 #true fit mass range
+fitMmin=2.00
+fitMmax=8.50
 binRange="25_43"
 ##Step TWO settings
 physBinned="xN"
 process="JPsi"
-LR_Mmin=2.90 #does nothing with whichFit==true
-LR_Mmax=3.30 #does nothing with whichFit==true
-whichFit="eight"
-##Step THREE settings
+LR_Mmin=2.00
+LR_Mmax=5.00
+whichFit="thirteen"
+##Additional settings
+production="slot1"
+phiPhotonCut="0.53"
 
-
-
-
+additionalCuts=phiS${phiPhotonCut}
 
 
 
 ##Setup ends, (50) last setup search line
 
+#Default setup
 if [ ${whichFit} == "true" ]; then
-    hbins=150 #this should always be the case
+    hbins=150
 fi
-
 
 InputData=${analysisPath}/Presents/DATA/RealData/
 if [ ${fitMrangeType} == "HMDY" ]; then #Speed optimization for lower data set HMDY
-    InputData+=${fitMrangeType}/${period}_${fitMrangeType}.root
+    InputData+=${fitMrangeType}/
+    if [ ${production} == "slot1" ]; then
+	InputData+=${production}${period}_${fitMrangeType}.root
+    else
+	InputData+=${period}_${fitMrangeType}.root
+    fi
 else
-    InputData+=LowM_AMDY/${period}_LowM_AMDY.root
+    InputData+=LowM_AMDY/
+    if [ $production == "slot1" ]; then
+	InputData+=${production}${period}_LowM_AMDY.root
+    else
+	InputData+=${period}_LowM_AMDY.root
+    fi
 fi
+
 Mmin=1.00
 Mmax=8.50
+
+#Echo out setup
 echo ""
 echo "______Step ONE settings____"
 echo "Period:   ${period}"
@@ -91,7 +104,10 @@ fi
 echo "Kinematic binning type:       ${physBinned}"
 echo "Fit considered:         ${whichFit}"
 echo " "
-echo "______Step THREE settings____"
+echo "______Additional settings____"
+echo "production used:   $production"
+echo "phi photon target frame cut:    $phiPhotonCut"
+echo "All cuts used:     $additionalCuts"
 echo " "
 echo " "
 
@@ -117,13 +133,13 @@ fi
 
 #Execute Step ONE if files don't already exist
 stepOne_OutData=${pathOne}"/Data/leftRight_byTarget_" 
-stepOne_OutData+=${period}"_"${fitMrangeType}${Mmin}_${Mmax}"_"${nBins}"bins"${binRange}"_"${hbins}"hbin.root"
+stepOne_OutData+=${period}"_"${fitMrangeType}${Mmin}_${Mmax}"_"${nBins}"bins"${binRange}"_"${hbins}"hbin"_${production}_${additionalCuts}".root"
 if [ ! -f ${stepOne_OutData} ]; then
     echo "Making stepOneData polarization correct data:"
     echo ""
     echo ""
     echo ""
-    ${pathOne}/leftRight_byTarget -i${Mmin} -a${Mmax} -Q${stepOne_OutData} -b${binFile} -N${nBins} -Z${hbins} -f${InputData} \
+    ${pathOne}/leftRight_byTarget -i${Mmin} -a${Mmax} -Q${stepOne_OutData} -b${binFile} -Z${hbins} -E${phiPhotonCut} -f${InputData} \
 	      >> ${pathOne}/log_leftRight_byTarget.txt
     if [ $? != 0 ]; then
 	echo "leftRight_byTarget did not execute well"
@@ -146,15 +162,17 @@ pathTwo=${pathOne}/Macros/AN_calculation
 stepTwo_OutData=${pathTwo}/Data
 if [ ${whichFit} == "true" ]; then
     echo "trueCount.C"
-    stepTwo_OutData+=/trueCount/trueCount_${period}_${fitMrangeType}_${process}${fitMmin}_${fitMmax}_${physBinned}${nBins}
+    stepTwo_OutData+=/trueCount/trueCount_${period}_${fitMrangeType}_${process}${fitMmin}_${fitMmax}_${binRange}${physBinned}${nBins}
 elif [ ${whichFit} == "MC" ]; then
     echo "mcMFit.C"
+    echo "mcMFit not setup correctly at the moment"
+    exit 1
     stepTwo_OutData+=/mcMFit/mcMFit_${whichFit}${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${LR_Mmin}_${LR_Mmax}_${physBinned}${nBins}_${hbins}hbin
 else
     echo "functMFit.C"
-    stepTwo_OutData+=/functMFit/functMFit_${whichFit}${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${LR_Mmin}_${LR_Mmax}_${physBinned}${nBins}_${hbins}hbin
+    stepTwo_OutData+=/functMFit/functMFit_${whichFit}${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${LR_Mmin}_${LR_Mmax}_${binRange}${physBinned}${nBins}_${hbins}hbin
 fi
-stepTwo_OutData+="_corr.root"
+stepTwo_OutData+=_${production}_${additionalCuts}"_corr.root"
 
 echo "Making stepTwoData"
 echo ""
@@ -162,7 +180,7 @@ echo ""
 if [ ${whichFit} == "true" ]; then
     #Prepare trueCount.C macro settings
     cp ${pathTwo}/trueCount.C ${pathTwo}/tmpTrueTwo.C
-    ${pathTwo}/Scripts/ChangeScripts/changeTrueCount.sh $nBins $period $fitMrangeType $fitMmin $fitMmax $physBinned $process $binRange
+    ${pathTwo}/Scripts/ChangeScripts/changeTrueCount.sh $nBins $period $fitMrangeType $fitMmin $fitMmax $physBinned $process $binRange $production $additionalCuts
     
     #Execute pol corrected and pol unCorr
     root -l -b -q "${pathTwo}/trueCount.C(1)" >> ${pathTwo}/log_trueCount.txt
@@ -178,6 +196,8 @@ if [ ${whichFit} == "true" ]; then
 	rm ${pathTwo}/log_trueCount.txt
     fi
 elif [ ${whichFit} == "MC" ];then
+    echo "Currently MC fit is not supported"
+    exit 1
     #Prepare mcMFit.C macro settings
     cp ${pathTwo}/mcMFit.C ${pathTwo}/tmpMcTwo.C
     ${pathTwo}/Scripts/ChangeScripts/changeMcMFit.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange
@@ -198,7 +218,8 @@ elif [ ${whichFit} == "MC" ];then
 else
     #Prepare functMFit.C macro settings
     cp ${pathTwo}/functMFit.C ${pathTwo}/tmpFunctTwo.C
-    ${pathTwo}/Scripts/ChangeScripts/changeFunctMFit.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange
+    ${pathTwo}/Scripts/ChangeScripts/changeFunctMFit.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange \
+	      $production $additionalCuts
 
     #Execute pol corrected and pol unCorr
     root -l -b -q "${pathTwo}/functMFit.C(1)" >> ${pathTwo}/log_functMFit.txt
@@ -230,15 +251,16 @@ if [ ! -f ${stepTwo_OutData} ]; then
     exit 1
 fi
 
-stepThree_OutData=${pathTwo}/Data/GeoMean4Targ/GeoMean4Targ_${whichFit}${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${LR_Mmin}_${LR_Mmax}_${physBinned}${nBins}
-stepThree_OutData+=".root"
+stepThree_OutData=${pathTwo}/Data/GeoMean4Targ/GeoMean4Targ_${whichFit}${fitMmin}_${fitMmax}_${period}_${fitMrangeType}_${process}${LR_Mmin}_${LR_Mmax}_${binRange}${physBinned}${nBins}
+stepThree_OutData+="_${production}_${additionalCuts}.root"
 echo "Making stepThreeData"
 echo ""
 echo ""
 
 #Prepare GeoMean4Targ.C macro settings
 cp ${pathTwo}/GeoMean4Targ.C ${pathTwo}/tmpThree.C
-${pathTwo}/Scripts/ChangeScripts/changeGeoMean4Targ.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange
+${pathTwo}/Scripts/ChangeScripts/changeGeoMean4Targ.sh $nBins $period $fitMrangeType $hbins $physBinned $process $LR_Mmin $LR_Mmax $fitMmin $fitMmax $whichFit $binRange \
+	  $production $additionalCuts
 
 #Execute 
 root -l -b -q "${pathTwo}/GeoMean4Targ.C(1)" >> ${pathTwo}/log_GeoMean4Targ.txt

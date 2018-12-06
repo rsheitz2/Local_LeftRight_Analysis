@@ -9,12 +9,6 @@ void OffSet(TGraphErrors *g, Double_t offset){
 
 
 void allPhysBinned(TString start=""){
-  TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Local_LeftRight_Analysis/Macros/Systematics/PeriodCompatibility/\
-Data/physBinned";
-  const Int_t nPhysBinned =4;
-  TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
-  
   //Setup_______________
   const Int_t nBins =3;
   TString fitMrangeType ="HMDY";
@@ -22,11 +16,30 @@ Data/physBinned";
   TString process ="DY";//JPsi, psi, DY
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";
-  TString whichFit[nPhysBinned] = {"true", "true", "true", "true"};
-  //TString whichFit[nPhysBinned] = {"six", "six", "seven", "seven"};
+  TString binRange ="43_85";
+  TString whichFit ="true";
+  TString production ="slot1";//"t3", "slot1"
+  TString additionalCuts ="phiS0.53";//*/
+
+  /*const Int_t nBins =5;
+  TString fitMrangeType ="LowM_AMDY";
+  Int_t hbins =150;
+  TString process ="JPsi";//JPsi, psi, DY
+  TString lrMrange ="2.00_5.00";
+  TString fitMrange ="2.00_8.50";
+  TString binRange ="25_43";
+  TString whichFit ="thirteen";
+  TString production ="slot1";//"t3", "slot1"
+  TString additionalCuts ="phiS0.53";//*/
 
   Bool_t toWrite =false;
-  //Setup_______________  
+  //Setup_______________
+
+  TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Local_LeftRight_Analysis/Macros/Systematics/PeriodCompatibility/\
+Data/physBinned";
+  const Int_t nPhysBinned =4;
+  TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
   
   if (start==""){
     cout << "Script draws AN per period and physics binning on a nice plot";
@@ -43,9 +56,7 @@ Data/physBinned";
     cout << "AN physical process:        " << process << endl;
     cout << "LR integral mass range:     " << lrMrange << endl;
     cout << "Fit mass range:     " << fitMrange << endl;
-    cout << "Which fits considered:       " << endl;
-    for (Int_t i=0; i<nPhysBinned; i++) 
-      cout << whichFit[i] << " ";
+    cout << "Which fits considered:       " <<  whichFit << endl;
     cout << "\n\nOutput is to be written:     " << toWrite << endl;
     cout << " " << endl;
     exit(EXIT_FAILURE);
@@ -65,21 +76,23 @@ Data/physBinned";
   TString docName=""; TString physBinnedNames =""; TString fitNames="";
   for (Int_t phys=0; phys<nPhysBinned; phys++) {
     TString fname;
-    if (whichFit[phys] == "true"){
+    if (whichFit == "true"){
       if (fitMrange != lrMrange){
 	cout << "fit Mass range != left/right mass range with true fit" << endl;
 	exit(EXIT_FAILURE);
       }
     
-      fname =Form("%s/physBinnedPeriod_%s_%s_%s%s_%s%i.root", path.Data(),
-		  whichFit[phys].Data(), fitMrangeType.Data(), process.Data(),
-		  lrMrange.Data(), physBinned[phys].Data(), nBins);
+      fname =Form("%s/physBinnedPeriod_%s_%s_%s%s_%s%i_%s_%s.root", path.Data(),
+		  whichFit.Data(), fitMrangeType.Data(), process.Data(),
+		  lrMrange.Data(), physBinned[phys].Data(), nBins,
+		  production.Data(), additionalCuts.Data());
     }
     else {
-      fname =Form("%s/physBinnedPeriod_%s%s_%s_%s%s_%s%i_%ihbin.root",
-		  path.Data(), whichFit[phys].Data(), fitMrange.Data(),
+      fname =Form("%s/physBinnedPeriod_%s%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
+		  path.Data(), whichFit.Data(), fitMrange.Data(),
 		  fitMrangeType.Data(), process.Data(),lrMrange.Data(),
-		  physBinned[phys].Data(), nBins, hbins);
+		  physBinned[phys].Data(), nBins, hbins, production.Data(),
+		  additionalCuts.Data() );
     }
     
     TFile *f_in = TFile::Open(fname);
@@ -89,12 +102,12 @@ Data/physBinned";
     }
     docName += fname+"\n";
     physBinnedNames += physBinned[phys]+" ";
-    fitNames += whichFit[phys]+" ";
+    fitNames += whichFit+" ";
 
     c1->cd(phys+1);
     for (Int_t p=0; p<nPeriods; p++) {
       TGraphErrors *g_AN
-	= (TGraphErrors*) f_in->Get(Form("AN_%s", periods[p].Data() ));
+	= (TGraphErrors*) f_in->Get(Form("AN_W%s", periods[p].Data() ));
       OffSet(g_AN, offsets[phys]*p);
       
       if (p==0) {
@@ -121,17 +134,19 @@ Data/physBinned";
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
 /TGeant/Local_LeftRight_Analysis/Macros/Systematics/PeriodCompatibility";
   TString fOutput;
-  if (whichFit[0] == "true"){
+  if (whichFit == "true"){
     fOutput =
-      Form("%s/Data/allPhysBinned/allPhysBinned_true_%s_%s%s_%ibins.root",
+      Form("%s/Data/allPhysBinned/allPhysBinned_true_%s_%s%s_%ibins_%s_%s.root",
 	   thisDirPath.Data(), fitMrangeType.Data(), process.Data(),
-	   lrMrange.Data(), nBins);
+	   lrMrange.Data(), nBins, production.Data(), additionalCuts.Data());
   }
   else {
     fOutput =
-      Form("%s/Data/allPhysBinned/allPhysBinned_%s_%s_%s%s_%ibins_%ihbin.root",
+      Form("%s/Data/allPhysBinned/\
+allPhysBinned_%s_%s_%s%s_%ibins_%ihbin_%s_%s.root",
 	   thisDirPath.Data(), fitMrange.Data(), fitMrangeType.Data(),
-	   process.Data(), lrMrange.Data(), nBins, hbins);
+	   process.Data(), lrMrange.Data(), nBins, hbins, production.Data(),
+	   additionalCuts.Data());
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");

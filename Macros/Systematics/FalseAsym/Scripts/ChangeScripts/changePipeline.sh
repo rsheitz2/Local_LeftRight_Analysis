@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -ne 14 ]; then
+if [ $# -ne 17 ]; then
      echo "" 
      echo "Script updates input file with input paramters"
      echo ""
@@ -21,6 +21,9 @@ LR_Mmax=${11}
 whichFit=${12}
 binRange=${13}
 binFile=${14}
+production=${15}
+phiPhotonCut=${16}
+additionalCuts=${17}
 
 
 changeFile=${PWD}/${inFile}
@@ -45,3 +48,6 @@ sed -i.bak "25,70s/LR_Mmax=.*/LR_Mmax=${LR_Mmax}/" ${changeFile}
 sed -i.bak "25,70s/whichFit=.*/whichFit=\"${whichFit}\"/" ${changeFile}
 sed -i.bak "25,70s/binRange=.*/binRange=\"${binRange}\"/" ${changeFile}
 sed -i.bak "25,70s%binFile=.*%binFile=\"${binFile}\"%" ${changeFile}
+sed -i.bak "25,70s%production=.*%production=\"${production}\"%" ${changeFile}
+sed -i.bak "25,70s%phiPhotonCut=.*%phiPhotonCut=\"${phiPhotonCut}\"%" ${changeFile}
+sed -i.bak "25,70s%additionalCuts=.*%additionalCuts=\"${additionalCuts}\"%" ${changeFile}

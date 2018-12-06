@@ -21,12 +21,12 @@ void functParas(TString start=""){
   Int_t hbins =150;//# of histogram bins using in mass fitting
   const Int_t nBins =5;
   TString binRange ="25_43";
-  TString physBinned ="xN";//"xN", "xPi", "xF", "pT"
+  TString physBinned ="pT";//"xN", "xPi", "xF", "pT"
   TString process ="JPsi";//JPsi, psi, DY
-  Double_t LR_Mmin =2.90;
-  Double_t LR_Mmax =3.30;//L/R counts mass range
+  Double_t LR_Mmin =2.00;
+  Double_t LR_Mmax =5.00;//L/R counts mass range
   Double_t Mmin =2.00;//Fit Mass minimum
-  Double_t Mmax =6.50;//Fit Mass maximum
+  Double_t Mmax =8.50;//Fit Mass maximum
   TString whichFit ="eight";//*/
   
   Bool_t toWrite =false;

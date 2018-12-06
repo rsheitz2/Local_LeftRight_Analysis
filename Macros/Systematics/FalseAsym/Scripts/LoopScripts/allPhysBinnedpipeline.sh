@@ -24,7 +24,29 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 
 ##Setup___  first line (25) to seach setup
 ##########
-###Step ONE settings ###### DY
+##Additional settings
+production="slot1"
+phiPhotonCut=0.53 #HMDY=0.1866, #LowM_AMDY=0.195
+##Step ONE settings ###### DY
+period="WAll"
+fitMrangeType="HMDY"
+nBins=3
+binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
+hbins=150
+fitMmin=4.30
+fitMmax=8.50
+binRange="43_85"
+##Step TWO settings
+process="DY"
+LR_Mmin=4.30
+LR_Mmax=8.50
+whichFit="true"
+##Step THREE settings
+
+###Additional settings
+#production="slot1"
+#phiPhotonCut=0.53 #HMDY=0.187, #LowM_AMDY=0.195
+####Step ONE settings  ########JPsi
 #period="WAll"
 #fitMrangeType="HMDY"
 #nBins=3
@@ -38,34 +60,12 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 #LR_Mmin=4.30
 #LR_Mmax=8.50
 #whichFit="true"
-###Step THREE settings
-
-##Step ONE settings  ########JPsi
-period="WAll"
-fitMrangeType="HMDY"
-nBins=3
-binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/HMDY/BinValues/WAll_HMDY_3bins.txt"
-hbins=150
-fitMmin=4.30
-fitMmax=8.50
-binRange="43_85"
-##Step TWO settings
-process="DY"
-LR_Mmin=4.30
-LR_Mmax=8.50
-whichFit="true"
 
 
 
 
 
-
-
-
-
-
-
-
+additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include all cuts used
 
 ##Setup___ last line (70) to search setup
 lrMrange="${LR_Mmin}_${LR_Mmax}"
@@ -135,7 +135,7 @@ for i in `seq 0 3`; do
     
     #pipeline changes
     ${sysPath}/Scripts/ChangeScripts/changePipeline.sh ${loopFile} ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax ${physBinned[$i]} $process $LR_Mmin $LR_Mmax \
-	      ${whichFit} ${binRange} ${binFile}
+	      ${whichFit} ${binRange} ${binFile} ${production} ${phiPhotonCut} ${additionalCuts}
     #Execute
     ${loopFile} ${Steps} >> ${sysPath}/Scripts/LoopScripts/${loopFileBaseName}_log.txt
     if [ $? != 0 ]; then

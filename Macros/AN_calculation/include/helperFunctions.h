@@ -301,13 +301,13 @@ Double_t f_CrystalBall(Double_t *x, Double_t *par){
   Double_t A = TMath::Power(par[4]/par[3], par[4])*TMath::Exp(-par[3]*par[3]/2.0);
   Double_t B = par[4]/par[3] - par[3];
   Double_t C = (par[4]/par[3])*(1.0/(par[4]-1.0))*TMath::Exp(-par[3]*par[3]/2.0);
-  Double_t D = TMath::Pi()*(1+TMath::Erf( par[3]/TMath::Sqrt(2)) );
+  Double_t D =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( par[3]/TMath::Sqrt(2) ) );
   
   Double_t Norm = 1.0/(par[2]*(C+D) );
 
   Double_t arg = (x[0] - par[1])/par[2];
   if (arg > -par[3] ) return par[0]*Norm*TMath::Exp(-0.5*arg*arg);
-  else return par[0]*Norm*A*TMath::Power((B - arg), -par[1]);
+  else return par[0]*Norm*A*TMath::Power((B - arg), -par[4]);
 }
 
 #endif

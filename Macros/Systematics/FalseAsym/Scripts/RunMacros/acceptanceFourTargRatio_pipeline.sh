@@ -24,11 +24,14 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 
 ##Setup___  first line (25) to seach setup
 ##########
+###Additional settings
+production="slot1"
+phiPhotonCut=0.53 #HMDY=0.1866, #LowM_AMDY=0.195
 ##Step ONE settings
 period="WAll"
 fitMrangeType="HMDY"
 nBins=3
-binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/WAll_HMDY_${nBins}bins.txt
+binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
 hbins=150
 fitMmin=4.30
 fitMmax=8.50
@@ -41,12 +44,14 @@ LR_Mmax=8.50
 whichFit="true"
 ##Step THREE settings
 
-
+###Additional settings
+#production="slot1"
+#phiPhotonCut=0.53 #HMDY=0.1866, #LowM_AMDY=0.195
 ###Step ONE settings  #LowM_AMDY
 #period="WAll"
 #fitMrangeType="LowM_AMDY"
 #nBins=5
-#binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/WAll_JPsi25_43_${nBins}bins.txt
+#binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/slot1WAll_JPsi25_43_${nBins}bins.txt
 #hbins=150
 #fitMmin=2.90  #true fit mass range
 #fitMmax=3.30  #true fit mass range
@@ -60,12 +65,7 @@ whichFit="true"
 ###Step THREE settings
 
 
-
-
-
-
-
-
+additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include all cuts used
 
 ##Setup___ last line (70) to search setup
 lrMrange="${LR_Mmin}_${LR_Mmax}"
@@ -117,7 +117,7 @@ if [ ${Steps} -lt 11 ]; then #get dependency files for macro
     #systematic_leftRight Pipeline changes
     cp ${sysFApath}/Scripts/RunMacros/false4Targ_targFlips_pipeline.sh ${sysFApath}/Scripts/RunMacros/tmp_false4Targ_targFlips_pipeline.sh
     ${sysFApath}/Scripts/ChangeScripts/changePipeline.sh ${sysFApath}/Scripts/RunMacros/false4Targ_targFlips_pipeline.sh ${period} $fitMrangeType $nBins $hbins \
-		$fitMmin $fitMmax $physBinned $process $LR_Mmin $LR_Mmax $whichFit $binRange $binFile
+		$fitMmin $fitMmax $physBinned $process $LR_Mmin $LR_Mmax $whichFit $binRange $binFile ${production} ${phiPhotonCut} ${additionalCuts}
 
     #Execute
     ${sysFApath}/Scripts/RunMacros/false4Targ_targFlips_pipeline.sh 1 >> ${sysFApath}/Scripts/RunMacros/log_false4Targ_targFlips_pipeline.txt
@@ -141,7 +141,8 @@ echo " "
 echo "acceptanceFourTargRatio.C"
 echo " "
 cp ${sysFApath}/acceptanceFourTargRatio.C ${sysFApath}/tmp_acceptanceFourTargRatio.C
-${sysFApath}/Scripts/ChangeScripts/changeMacro.sh acceptanceFourTargRatio ${nBins} $period_Mtype $hbins ${physBinned} $process $lrMrange $fitMrange $binRange ${whichFit}
+${sysFApath}/Scripts/ChangeScripts/changeMacro.sh acceptanceFourTargRatio ${nBins} $period_Mtype $hbins ${physBinned} $process $lrMrange $fitMrange $binRange ${whichFit} \
+	    ${production} ${additionalCuts}
 
 #Execute
 root -l -b -q "${sysFApath}/acceptanceFourTargRatio.C(1)" >> ${sysFApath}/log_acceptanceFourTargRatio.txt

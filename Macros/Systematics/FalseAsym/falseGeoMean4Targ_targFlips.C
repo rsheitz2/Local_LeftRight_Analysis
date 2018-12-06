@@ -144,31 +144,37 @@ void CalAmp_AmpErr(Double_t *Fasym, Double_t *e_Fasym,
 
 void falseGeoMean4Targ_targFlips(TString start =""){
   //Setup_______________
-  /*const Int_t nBins =3;
-  TString period_Mtype ="WAll_HMDY";
+  const Int_t nBins =3;//HMDY
+  TString period_Mtype ="W12_HMDY";
   Int_t hbins =150;
-  TString physBinned ="xN";//xN, xPi, xF, pT, M
+  TString physBinned ="xPi";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";
   TString binRange ="43_85";
-  TString whichFit ="true";//*/
+  TString whichFit ="true";
+  TString production ="slot1";//"t3", "slot1"
+  TString additionalCuts ="phiS0.53";
   
-  const Int_t nBins =5;
-  TString period_Mtype ="WAll_LowM_AMDY";
-  Int_t hbins =150;
-  TString physBinned ="xN";//xN, xPi, xF, pT, M
-  TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="2.90_3.30";
-  TString fitMrange ="2.00_7.50";
-  TString binRange ="25_43";
-  TString whichFit ="eight";//*/
-
+  //const Int_t nBins =5;//JPsi
+  //TString period_Mtype ="W12_LowM_AMDY";
+  //Int_t hbins =150;
+  //TString physBinned ="xPi";//xN, xPi, xF, pT, M
+  //TString process ="JPsi";//JPsi, psi, DY
+  //TString lrMrange ="2.00_5.00";
+  //TString fitMrange ="2.00_7.50";
+  //TString binRange ="25_43";
+  //TString whichFit ="thirteen";
+  //TString production ="slot1";//"t3", "slot1"
+  //TString additionalCuts ="phiS0.195";
+  
   Bool_t toWrite =false;
   //Setup_______________
 
   TString pathAN = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
+  TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Local_leftRight_Analysis/Data/";
   
   if (start==""){//Basic info
     cout << "\nScript calculates false AN asymmetries using the 4 target";
@@ -210,27 +216,30 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/";
   //File name setups && get files
   TString inputFiles, RDfile;
   if (whichFit=="true"){
-    inputFiles = Form("trueCount_%s_%s%s_%s%i_corr.root",
-			 period_Mtype.Data(), process.Data(), lrMrange.Data(),
-			 physBinned.Data(), nBins);
+    inputFiles =
+      inputFiles =
+      Form("trueCount_%s_%s%s_%s%s%i_%s_%s_corr.root", period_Mtype.Data(),
+	   process.Data(), fitMrange.Data(), binRange.Data(), physBinned.Data(),
+	   nBins, production.Data(), additionalCuts.Data());
     pathAN += "trueCount/";
 
-    RDfile =Form("leftRight_byTarget_%s%s_%ibins%s_%ihbin.root",
+    RDfile =Form("leftRight_byTarget_%s%s_%ibins%s_%ihbin_%s_%s.root",
 		 period_Mtype.Data(), lrMrange.Data(), nBins, binRange.Data(),
-		 hbins);
+		 hbins, production.Data(), additionalCuts.Data());
   }
   else{
-    inputFiles = Form("functMFit_%s%s_%s_%s%s_%s%i_%ihbin_corr.root",
-			 whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
-			 process.Data(), lrMrange.Data(), physBinned.Data(),
-			 nBins, hbins);
+    inputFiles = Form("functMFit_%s%s_%s_%s%s_%s%s%i_%ihbin_%s_%s_corr.root",
+		      whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
+		      process.Data(), lrMrange.Data(), binRange.Data(),
+		      physBinned.Data(), nBins, hbins, production.Data(),
+		      additionalCuts.Data());
     pathAN += "functMFit/";
 
-    RDfile =Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_%ihbin.root",
-		 period_Mtype.Data(), nBins, binRange.Data(), hbins);
+    RDfile =
+      Form("leftRight_byTarget_%s1.00_8.50_%ibins%s_%ihbin_%s_%s.root",
+	   period_Mtype.Data(), nBins, binRange.Data(), hbins,
+	   production.Data(), additionalCuts.Data() );
   }
-  TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Local_leftRight_Analysis/Data/";
   
   TFile *fAN = TFile::Open(pathAN+inputFiles);
   TFile *fRD  = TFile::Open(pathRD + RDfile);
@@ -309,27 +318,29 @@ TGeant/Local_leftRight_Analysis/Data/";
   SetUp(g_fAN_subper);
 
   TCanvas* c1 = new TCanvas();
-  Double_t yMax = 0.15;
-  g_fAN_pol->Draw("AP"); g_fAN_pol->SetMarkerColor(kBlue);
-  g_fAN_subper->Draw("Psame"); g_fAN_subper->SetMarkerColor(kRed);
+  Double_t yMax = (nBins==3) ? 0.75 : 0.25;
+  g_fAN_pol->Draw("AP"); g_fAN_pol->SetMarkerColor(kRed);
+  g_fAN_subper->Draw("Psame"); g_fAN_subper->SetMarkerColor(kBlue);
   g_fAN_pol->GetYaxis()->SetRangeUser(-yMax, yMax);
   DrawLine(g_fAN_pol, 0.0);
   
   //Write output/final settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
-/TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym";
+/TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/TargFlip";
   TString fOutput;
   if (whichFit=="true"){
-    fOutput =Form("%s/Data/TargFlip/falseGeoMean4Targ_%s_%s_%s%s_%s%i.root",
+    fOutput =Form("%s/falseGeoMean4Targ_%s_%s_%s%s_%s%s%i_%s_%s.root",
 		  thisDirPath.Data(), whichFit.Data(), period_Mtype.Data(),
-		  process.Data(), lrMrange.Data(),
-		  physBinned.Data(), nBins);
+		  process.Data(), lrMrange.Data(), binRange.Data(),
+		  physBinned.Data(), nBins, production.Data(),
+		  additionalCuts.Data());
   }
   else{
-    fOutput =Form("%s/Data/TargFlip/falseGeoMean4Targ_%s%s_%s_%s%s_%s%i_%ihbins.root",
+    fOutput =Form("%s/falseGeoMean4Targ_%s%s_%s_%s%s_%s%s%i_%ihbins_%s_%s.root",
 		  thisDirPath.Data(), whichFit.Data(), fitMrange.Data(),
 		  period_Mtype.Data(), process.Data(), lrMrange.Data(),
-		  physBinned.Data(), nBins, hbins);
+		  binRange.Data(), physBinned.Data(), nBins, hbins,
+		  production.Data(), additionalCuts.Data());
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");

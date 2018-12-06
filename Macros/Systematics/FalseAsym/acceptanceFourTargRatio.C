@@ -28,28 +28,32 @@ void Cal_AccRatioAndError(TGraphErrors *g, TGraph *g_Pol,
 
 void acceptanceFourTargRatio(TString start =""){
   //Setup_______________
-  const Int_t nBins =3;
-  TString period_Mtype ="WAll_HMDY";
+    const Int_t nBins =3;//HMDY
+  TString period_Mtype ="W12_HMDY";
   Int_t hbins =150;
-  TString physBinned ="xN";//xN, xPi, xF, pT, M
+  TString physBinned ="xPi";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";
-  TString whichFit ="true";//*/
+  TString binRange ="43_85";
+  TString whichFit ="true";
+  TString production ="slot1";//"t3", "slot1"
+  TString additionalCuts ="phiS0.53";
   
-  /*const Int_t nBins =5;
-  TString period_Mtype ="WAll_LowM_AMDY";
-  Int_t hbins =150;
-  TString physBinned ="xN";//xN, xPi, xF, pT, M
-  TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="2.90_3.30";
-  TString fitMrange ="2.00_7.50";
-  //TString fitMrange ="2.90_3.30";
-  TString whichFit ="ten";//*/
+  //const Int_t nBins =5;//JPsi
+  //TString period_Mtype ="W12_LowM_AMDY";
+  //Int_t hbins =150;
+  //TString physBinned ="xPi";//xN, xPi, xF, pT, M
+  //TString process ="JPsi";//JPsi, psi, DY
+  //TString lrMrange ="2.00_5.00";
+  //TString fitMrange ="2.00_7.50";
+  //TString binRange ="25_43";
+  //TString whichFit ="thirteen";
+  //TString production ="slot1";//"t3", "slot1"
+  //TString additionalCuts ="phiS0.195";
 
-  Bool_t toWrite =false;
+  Bool_t toWrite =true;
   //Setup_______________
-  TString binRange ="25_34";//not used at the moment
   
   TString pathFA = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data/\
@@ -57,8 +61,8 @@ TargFlip/";
 
   if (start==""){//Basic info
     cout << "\nScript calculates acceptance ratios for 4targ geomean" << endl;
-    cout << "Calculation input comes from 2targ geomean false asymmetries\n";
-    cout << "\nInput needed = TGraphErrors of alpha/beta acceptance ratios\n";
+    cout << "Calculation input comes from 4targ geomean false asymmetries\n";
+    cout << "\nInput needed = TGraphErrors of alpha acceptance ratios\n";
     cout << "\n\nTotal local pipeline needed for this script" << endl;
     cout << "systematic_leftRight -> falseGeoMean4Targ_targFlips.C" << endl;
     cout << "\n\nUtilization:" << endl;
@@ -88,15 +92,17 @@ TargFlip/";
   //File name setups && get files
   TString inputFiles;
   if (whichFit=="true"){
-    inputFiles = Form("falseGeoMean4Targ_true_%s_%s%s_%s%i.root",
-		      period_Mtype.Data(), process.Data(), fitMrange.Data(),
-		      physBinned.Data(), nBins);
+    inputFiles = Form("falseGeoMean4Targ_%s_%s_%s%s_%s%s%i_%s_%s.root",
+		      whichFit.Data(), period_Mtype.Data(), process.Data(),
+		      lrMrange.Data(), binRange.Data(),physBinned.Data(), nBins,
+		      production.Data(), additionalCuts.Data());
   }
   else{
-    inputFiles = Form("falseGeoMean4Targ_%s%s_%s_%s%s_%s%i_%ihbins.root",
-		      whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
-		      process.Data(), lrMrange.Data(), physBinned.Data(),
-		      nBins, hbins);
+    inputFiles =
+      Form("falseGeoMean4Targ_%s%s_%s_%s%s_%s%s%i_%ihbins_%s_%s.root",
+	   whichFit.Data(), fitMrange.Data(), period_Mtype.Data(),
+	   process.Data(), lrMrange.Data(), binRange.Data(), physBinned.Data(),
+	   nBins, hbins, production.Data(), additionalCuts.Data());
   }
   
   TFile *fFAs = TFile::Open(pathFA+inputFiles);
@@ -117,12 +123,8 @@ TargFlip/";
   TCanvas* c1 = new TCanvas("False Asym", "False Asym");
   g_subper->Draw("AP"); DrawLine(g_subper, 0.0);
   g_subper->SetTitle("False_Asym");
-  if (process =="DY")
-    g_subper->GetYaxis()->SetRangeUser(-0.15, 0.15);
-  else
-    g_subper->GetYaxis()->SetRangeUser(-0.075, 0.075);
   
-  //Calculation alpha/beta ratios and Draw them
+  //Calculation alpha ratio and Draw them
   Double_t a_subper[nBins], eA_subper[nBins];
   Cal_AccRatioAndError(g_subper, g_Pol, a_subper, eA_subper);
   
@@ -136,7 +138,7 @@ TargFlip/";
   g_alpha_subper->Draw("AP"); g_alpha_subper->SetTitle("Acc_ratio");
   g_alpha_subper->SetMarkerColor(kBlue);
   if (process=="DY")
-    g_alpha_subper->GetYaxis()->SetRangeUser(0.95, 1.05);
+    g_alpha_subper->GetYaxis()->SetRangeUser(0.8, 1.2);
   else
     g_alpha_subper->GetYaxis()->SetRangeUser(0.93, 1.07);
   DrawLine(g_alpha_subper, 1.0);
@@ -144,9 +146,10 @@ TargFlip/";
   //Calculate final systematic error
   Double_t sysErr[nBins], sysErr_statErr[nBins];
   Double_t *ey_subper = g_subper->GetEY();
-  Double_t nSigma =3.0;
+  Double_t nSigma =1.0;
   for (Int_t i=0; i<nBins; i++) {
     sysErr[i] = 1.0-a_subper[i];
+    //sysErr[i] = eA_subper[i];
     if (sysErr[i] < 0) sysErr[i] *= -1.0;
     sysErr[i] += nSigma*eA_subper[i];
     sysErr[i] /= 2.0;
@@ -168,24 +171,30 @@ TargFlip/";
 acceptanceFourTargRatio";
   TString fOutput, fSystematics;
   if (whichFit=="true"){
-    fOutput =Form("%s/acceptanceFourTargRatio_true_%s_%s%s_%s%i.root",
+    fOutput =Form("%s/acceptanceFourTargRatio_true_%s_%s%s_%s%s%i_%s_%s.root",
 		  thisDirPath.Data(), period_Mtype.Data(), process.Data(),
-		  lrMrange.Data(), physBinned.Data(), nBins);
+		  lrMrange.Data(), binRange.Data(), physBinned.Data(), nBins, 
+		  production.Data(), additionalCuts.Data());
     fSystematics =
-      Form("%s/SystematicError/accSys4TargRatio_true_%s_%s%s_%s%i.root",
+      Form("%s/SystematicError/accSys4TargRatio_true_%s_%s%s_%s%s%i_%s_%s.root",
 	   thisDirPath.Data(), period_Mtype.Data(), process.Data(),
-	   lrMrange.Data(), physBinned.Data(), nBins);
+	   lrMrange.Data(), binRange.Data(), physBinned.Data(), nBins,
+	   production.Data(), additionalCuts.Data());
   }
   else{
-    fOutput =Form("%s/acceptanceFourTargRatio_%s%s_%s_%s%s_%s%i_%ihbins.root",
-		  thisDirPath.Data(), whichFit.Data(), fitMrange.Data(),
-		  period_Mtype.Data(), process.Data(), lrMrange.Data(),
-		  physBinned.Data(), nBins, hbins);
-    fSystematics =
-      Form("%s/SystematicError/accSys4TargRatio_%s%s_%s_%s%s_%s%i_%ihbins.root",
+    fOutput =
+      Form("%s/acceptanceFourTargRatio_%s%s_%s_%s%s_%s%s%i_%ihbins_%s_%s.root",
 	   thisDirPath.Data(), whichFit.Data(), fitMrange.Data(),
 	   period_Mtype.Data(), process.Data(), lrMrange.Data(),
-	   physBinned.Data(), nBins, hbins);
+	   binRange.Data(), physBinned.Data(), nBins, hbins, production.Data(),
+	   additionalCuts.Data());
+    fSystematics =
+      Form("%s/SystematicError/\
+accSys4TargRatio_%s%s_%s_%s%s_%s%s%i_%ihbins_%s_%s.root",
+	   thisDirPath.Data(), whichFit.Data(), fitMrange.Data(),
+	   period_Mtype.Data(), process.Data(), lrMrange.Data(),
+	   binRange.Data(), physBinned.Data(), nBins, hbins, production.Data(),
+	   additionalCuts.Data());
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");

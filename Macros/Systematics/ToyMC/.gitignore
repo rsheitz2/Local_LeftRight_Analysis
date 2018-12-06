@@ -1,0 +1,6 @@
+*.swp
+*.root
+Data/*
+*.txt
+*.bak
+Tests

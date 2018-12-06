@@ -22,8 +22,8 @@ Steps=$1
 
 ##Setup___ (20) first setup search line 
 ##########
-Mtype="HMDY" #"LowM_AMDY", "HMDY"
-production="t3" #"t3"=t3, "slot1"=t5
+Mtype="LowM_AMDY" #"LowM_AMDY", "HMDY"
+production="slot1" #"t3"=t3, "slot1"=t5
 whichCuts="FinalCuts" #"PhastCuts", "FinalCuts"
 
 

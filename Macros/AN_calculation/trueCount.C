@@ -36,21 +36,25 @@ void GetLRerror(Double_t *leftCounts, Double_t *rightCounts,
 
 void trueCount(TString start=""){
   //Setup_______________
-  const Int_t nBins =3;//# of physBinned bins
-  TString period_Mtype ="WAll_HMDY";
+  const Int_t nBins =1;//# of physBinned bins
+  TString period_Mtype ="Charles_HMDY";
   TString binRange ="43_85";
   Double_t Mmin =4.30;//LR Mass minimum
   Double_t Mmax =8.50;//LR Mass maximum
   TString physBinned ="xN";//"xF", "pT"
   TString process ="DY";//JPsi, psi, DY
+  TString production ="slot1";//"t3", "slot1"
+  TString additionalCuts ="phiS0.53";
     
   Bool_t toWrite =false;
-  
   //Setup_______________
+  
     TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_leftRight_Analysis/Data/";
-  TString RDfile =Form("leftRight_byTarget_%s%.2f_%.2f_%ibins%s_150hbin.root",
-		       period_Mtype.Data(), Mmin, Mmax, nBins, binRange.Data() );
+    TString RDfile =
+      Form("leftRight_byTarget_%s%.2f_%.2f_%ibins%s_150hbin_%s_%s.root",
+	   period_Mtype.Data(), Mmin, Mmax, nBins, binRange.Data(),
+	   production.Data(), additionalCuts.Data() );
   
   if (start==""){
     cout<<"Script outputs AN and left/right counts per target and polarization";
@@ -244,10 +248,10 @@ TGeant/Local_leftRight_Analysis/Data/";
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
 /TGeant/Local_LeftRight_Analysis/Macros/AN_calculation";
   TString fOutput
-    = Form("%s/Data/trueCount/trueCount_%s_%s%.2f_%.2f_%s%i",
+    = Form("%s/Data/trueCount/trueCount_%s_%s%.2f_%.2f_%s%s%i",
 	   thisDirPath.Data(), period_Mtype.Data(), process.Data(), Mmin, Mmax,
-	   physBinned.Data(), nBins);
-  fOutput += "_corr.root";
+	   binRange.Data(), physBinned.Data(), nBins);
+  fOutput += Form("_%s_%s_corr.root", production.Data(), additionalCuts.Data());
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
     TList *doc = new TList();

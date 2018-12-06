@@ -21,13 +21,17 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 
 
 
-##Setup___  first line (30) to seach setup
+
+##Setup___  first line (25) to seach setup
 ##########
+####Additional settings
+#production="slot1"
+#phiPhotonCut=0.53 #HMDY=0.1866, #LowM_AMDY=0.195
+##phiPhotonCut=0.0 #HMDY=0.1866, #LowM_AMDY=0.195
 ###Step ONE settings ###### DY
-#period=("W07" "W08" "W09" "W10" "W11" "W12" "W13" "W14" "W15" "WAll")
 #fitMrangeType="HMDY"
 #nBins=3
-#binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/WAll_HMDY_${nBins}bins.txt
+#binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
 #hbins=150
 #fitMmin=4.30  #true fit mass range
 #fitMmax=8.50  #true fit mass range
@@ -36,27 +40,37 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 #process="DY"
 #LR_Mmin=4.30
 #LR_Mmax=8.50
-#physBinned="xN"
+#physBinned="pT"
 #whichFit="true"
-###Step THREE settings
 
+
+###Additional settings
+production="slot1"
+phiPhotonCut=0.53 #HMDY=0.187, #LowM_AMDY=0.195
 ##Step ONE settings  ########JPsi
-period=("W07" "W08" "W09" "W10" "W11" "W12" "W13" "W14" "W15" "WAll")
 fitMrangeType="LowM_AMDY"
 nBins=5
-binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/WAll_JPsi25_43_${nBins}bins.txt
 hbins=150
 fitMmin=2.00  #true fit mass range
-fitMmax=7.50  #true fit mass range
+fitMmax=8.50  #true fit mass range
+#fitMmax: xN=6.00, xPi=6.30, xF=pT=8.50
 binRange="25_43"
+binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/slot1WAll_JPsi${binRange}_${nBins}bins.txt
 ##Step TWO settings
 process="JPsi"
-LR_Mmin=2.90
-LR_Mmax=3.30
-physBinned="xN"
-whichFit="eight"
+LR_Mmin=2.00
+LR_Mmax=5.00
+physBinned="pT"
+whichFit="thirteen"
 
-##Setup___ last line (60) to search setup
+
+additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include all cuts used
+
+
+
+
+##Setup___ last line (70) to search setup
+period=("W07" "W08" "W09" "W10" "W11" "W12" "W13" "W14" "W15" "WAll")
 lrMrange="${LR_Mmin}_${LR_Mmax}"
 fitMrange="${fitMmin}_${fitMmax}"
 period_Mtype="${period}_${fitMrangeType}"
@@ -84,9 +98,12 @@ else
     echo "Maximum fit mass range:                          ${fitMmax}"	
 fi
 echo " "
-echo "______Step THREE settings____"
+echo "______Additional settings____"
+echo "production used:   $production"
+echo "phi photon target frame cut:    $phiPhotonCut"
+echo "All cuts used:     $additionalCuts"
 echo " "
-echo "Kinematic binning types:       ${physBinned[@]}"
+echo "Kinematic binning types:       ${physBinned}"
 echo "Fits considered:         ${whichFit[@]}"
 
 if [ ${Steps} == "h" ] || [ ${Steps} -lt 1 ]; then #Help option, output settings
@@ -102,12 +119,12 @@ cp ${PWD}/${loopFile} ${PWD}/${loopFile}_tmp
 
 for per in ${period[@]}; do
     echo ""
-    echo "Physics Binned $per"
+    echo "Period $per"
     echo ""
 
     #pipeline changes
-    ${aNPath}/Scripts/changeGenericPipeline.sh ${loopFile} ${per} $fitMrangeType $nBins $hbins $fitMmin $fitMmax ${physBinned} $process $LR_Mmin $LR_Mmax \
-	     ${whichFit} ${binRange} ${binFile}
+    ${aNPath}/Scripts/ChangeScripts/changeGenericPipeline.sh ${loopFile} ${per} $fitMrangeType $nBins $hbins $fitMmin $fitMmax ${physBinned} $process $LR_Mmin $LR_Mmax \
+	     ${whichFit} ${binRange} ${binFile} ${production} ${phiPhotonCut} $additionalCuts
     #Execute
     ${PWD}/${loopFile} ${Steps} >> ${PWD}/${loopFile}_log.txt
     if [ $? != 0 ]; then

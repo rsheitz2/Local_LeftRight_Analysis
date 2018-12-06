@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -ne 12 ]; then
+if [ $# -ne 14 ]; then
      echo "" 
      echo "Script updates functMFit.C with input paramters"
      echo ""
@@ -18,6 +18,8 @@ else
     fitMmax=${10}
     whichFit=${11}
     binRange=${12}
+    production=${13}
+    additionalCuts=${14}
     
     changeFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/functMFit.C
     sed -i.bak "s/const Int_t nBins =.*;/const Int_t nBins =${nBins};/" ${changeFile}
@@ -29,8 +31,10 @@ else
     sed -i.bak "s/Double_t LR_Mmax =.*;/Double_t LR_Mmax =${LR_Mmax};/" ${changeFile}
     sed -i.bak "s/Double_t Mmin =.*;/Double_t Mmin =${fitMmin};/" ${changeFile}
     sed -i.bak "s/Double_t Mmax =.*;/Double_t Mmax =${fitMmax};/" ${changeFile}
-    sed -i.bak "s/Bool_t toWrite =.*;/Bool_t toWrite =true;/" ${changeFile}
     sed -i.bak "s/TString whichFit =.*;/TString whichFit =\"${whichFit}\";/" ${changeFile}
     sed -i.bak "s/TString binRange =.*;/TString binRange =\"${binRange}\";/" ${changeFile}
+    sed -i.bak "s/TString production =.*;/TString production =\"${production}\";/" ${changeFile}
+    sed -i.bak "s/TString additionalCuts =.*;/TString additionalCuts =\"${additionalCuts}\";/" ${changeFile}
+    sed -i.bak "s/Bool_t toWrite =.*;/Bool_t toWrite =true;/" ${changeFile}
 
 fi

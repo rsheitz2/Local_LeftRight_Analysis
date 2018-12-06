@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -ne 8 ]; then
+if [ $# -ne 10 ]; then
      echo "" 
      echo "Script updates trueCount.C with input paramters"
      echo ""
@@ -14,6 +14,8 @@ else
     physBinned=$6
     process=$7
     binRange=$8
+    production=$9
+    additionalCuts=${10}
     
     changeFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/trueCount.C
     sed -i.bak "s/const Int_t nBins =*.;/const Int_t nBins =${nBins};/" ${changeFile}
@@ -23,5 +25,7 @@ else
     sed -i.bak "s/TString physBinned =.*;/TString physBinned =\"${physBinned}\";/" ${changeFile}
     sed -i.bak "s/TString process =.*;/TString process =\"${process}\";/" ${changeFile}
     sed -i.bak "s/TString binRange =.*;/TString binRange =\"${binRange}\";/" ${changeFile}
+    sed -i.bak "s/TString production =.*;/TString production =\"${production}\";/" ${changeFile}
+    sed -i.bak "s/TString additionalCuts =.*;/TString additionalCuts =\"${additionalCuts}\";/" ${changeFile}
     sed -i.bak "s/Bool_t toWrite =.*;/Bool_t toWrite =true;/" ${changeFile}
 fi
