@@ -5,26 +5,26 @@ void wAvg(){
   const Int_t nBins =1;//HMDY
   TString Mtype ="HMDY";
   Int_t hbins =150;
-  TString physBinned ="pT";//xN, xPi, xF, pT, M
+  TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";
   TString binRange ="43_85";
   TString whichFit ="true";
   TString production ="slot1";
-  TString additionalCuts ="phiS1.44";//*/
+  TString additionalCuts ="phiS0.0";//*/
 
-  /*const Int_t nBins =5;//JPsi
-  TString Mtype ="LowM_AMDY";
+  /*const Int_t nBins =1;//JPsi
+  TString Mtype ="HMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
-  TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="2.00_5.00";
-  TString fitMrange ="2.00_8.50";
-  TString binRange ="25_43";
-  TString whichFit ="thirteen";
+  TString process ="DY";//JPsi, psi, DY
+  TString lrMrange ="4.30_8.50";
+  TString fitMrange ="4.30_8.50";
+  TString binRange ="43_85";
+  TString whichFit ="true";
   TString production ="slot1";
-  TString additionalCuts ="phiS0.53";//*/
+  TString additionalCuts ="phiS0.0";//*/
 
   Bool_t toWrite =true;
    //Setup_______________

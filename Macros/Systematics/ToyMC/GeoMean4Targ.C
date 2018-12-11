@@ -47,13 +47,21 @@ Double_t e_Amp(Double_t NL[][4], Double_t NR[][4],
 }
 
 
+Double_t eAN(Double_t L, Double_t R){
+  Double_t e = TMath::Sqrt(1.0/L + 1.0/R + 2.0/(TMath::Sqrt(R*L)) );
+  e *= 2*L*R/((L+R)*(L+R));
+
+  return e;
+}
+
+
 void GeoMean4Targ(TString start =""){
   //Setup_______________
   Double_t phiScut =1.44;
-  TString additionalCuts ="phiS0.0";
+  TString additionalCuts ="phiS1.44";
   Double_t A_siv =0.1;
-  Int_t N_gen =1000;
-  Bool_t alphaScale =true;
+  Int_t N_gen =100;
+  Bool_t alphaScale =false;
 
   TString physBinned ="xN";//"xF", "pT"
   const Int_t nBins =1;//# of physBinned bins
@@ -82,7 +90,8 @@ TGeant/Local_leftRight_Analysis/Macros/Systematics/ToyMC/Data/";
   }
 
   //File name setups && get files
-  TString RDfile = Form("Gen/generator_%0.3f_%s_gen%i_alpha%i.root",
+  //TString RDfile = Form("Gen/generator_%0.3f_%s_gen%i_alpha%i.root",
+  TString RDfile = Form("GenRej/genRej_%0.3f_%s_gen%i_alpha%i.root",
 			A_siv, additionalCuts.Data(), N_gen, alphaScale);
   TFile *fRD  = OpenFile(pathRD + RDfile);
   
@@ -124,10 +133,16 @@ TGeant/Local_leftRight_Analysis/Macros/Systematics/ToyMC/Data/";
   TGraph* g_Pol =(TGraph*)fRD->Get(Form("%s_Pol", physBinned.Data()));
   Double_t *Pol = g_Pol->GetY();
   
-  //Make 4Targ Asym
+  //Make 4Targ Asym and individual target AN
   Double_t AN_4targ[nBins], e_AN_4targ[nBins];
   Double_t ex[nBins] = {0.0};
   Double_t *xvals = g_Pol->GetX();
+
+  Double_t AN_upS_up[nBins], e_AN_upS_up[nBins];
+  Double_t AN_upS_down[nBins], e_AN_upS_down[nBins];
+  Double_t AN_downS_up[nBins], e_AN_downS_up[nBins];
+  Double_t AN_downS_down[nBins], e_AN_downS_down[nBins];
+  
   for (Int_t bi=0; bi<nBins; bi++) {
     AN_4targ[bi] = Amp(LeftCounts, RightCounts, Pol[bi], bi);
     e_AN_4targ[bi] = e_Amp(LeftCounts, RightCounts,
@@ -136,6 +151,23 @@ TGeant/Local_leftRight_Analysis/Macros/Systematics/ToyMC/Data/";
       cout << "Error: AN error way too small" << endl;
       exit(EXIT_FAILURE);
     }
+
+    //Individual AN
+    AN_upS_up[bi] = (LeftCounts[bi][0] - RightCounts[bi][0]);
+    AN_upS_up[bi] /= (LeftCounts[bi][0] + RightCounts[bi][0]);
+    e_AN_upS_up[bi] = eAN(LeftCounts[bi][0], RightCounts[bi][0]);
+
+    AN_upS_down[bi] = (LeftCounts[bi][1] - RightCounts[bi][1]);
+    AN_upS_down[bi] /= (LeftCounts[bi][1] + RightCounts[bi][1]);
+    e_AN_upS_down[bi] = eAN(LeftCounts[bi][1], RightCounts[bi][1]);
+
+    AN_downS_up[bi] = (LeftCounts[bi][2] - RightCounts[bi][2]);
+    AN_downS_up[bi] /= (LeftCounts[bi][2] + RightCounts[bi][2]);
+    e_AN_downS_up[bi] = eAN(LeftCounts[bi][2], RightCounts[bi][2]);
+
+    AN_downS_down[bi] = (LeftCounts[bi][3] - RightCounts[bi][3]);
+    AN_downS_down[bi] /= (LeftCounts[bi][3] + RightCounts[bi][3]);
+    e_AN_downS_down[bi] = eAN(LeftCounts[bi][3], RightCounts[bi][3]);
   }
 
   //Draw AN
@@ -146,6 +178,47 @@ TGeant/Local_leftRight_Analysis/Macros/Systematics/ToyMC/Data/";
   TCanvas* c1 = new TCanvas();
   g_AN->Draw("AP"); g_AN->GetYaxis()->SetRangeUser(-yMax, yMax);
   DrawLine(g_AN, 0.0);
+
+  //Individual AN per target
+  TCanvas* cTarg = new TCanvas();
+  TGraphErrors* g_AN_upS_up =
+    new TGraphErrors(nBins, xvals, AN_upS_up, ex, e_AN_upS_up);
+  SetUp(g_AN_upS_up);
+  TGraphErrors* g_AN_upS_down =
+    new TGraphErrors(nBins, xvals, AN_upS_down, ex, e_AN_upS_down);
+  SetUp(g_AN_upS_down); Offset(g_AN_upS_down, 0.05);
+  TGraphErrors* g_AN_downS_up =
+    new TGraphErrors(nBins, xvals, AN_downS_up, ex, e_AN_downS_up);
+  SetUp(g_AN_downS_up); Offset(g_AN_downS_up, 0.1);
+  TGraphErrors* g_AN_downS_down =
+    new TGraphErrors(nBins, xvals, AN_downS_down, ex, e_AN_downS_down);
+  SetUp(g_AN_downS_down); Offset(g_AN_downS_down, 0.15);
+
+  g_AN_upS_up->GetYaxis()->SetRangeUser(-1, 1);
+  g_AN_upS_up->Draw("AP"); DrawLine(g_AN_upS_up, A_siv);
+  g_AN_upS_down->Draw("Psame");
+  g_AN_downS_up->Draw("Psame");
+  g_AN_downS_down->Draw("Psame");
+
+  //Individual AN per target Wavg
+  Double_t wAvg[nBins] ={0.0}, e_wAvg[nBins] ={0.0};
+  wAvg[0] += AN_upS_up[0]/(e_AN_upS_up[0]*e_AN_upS_up[0]);
+  wAvg[0] += AN_upS_down[0]/(e_AN_upS_down[0]*e_AN_upS_down[0]);
+  wAvg[0] += AN_downS_up[0]/(e_AN_downS_up[0]*e_AN_downS_up[0]);
+  wAvg[0] += AN_downS_down[0]/(e_AN_downS_down[0]*e_AN_downS_down[0]);
+  e_wAvg[0] += 1.0/(e_AN_upS_up[0]*e_AN_upS_up[0]);
+  e_wAvg[0] += 1.0/(e_AN_upS_down[0]*e_AN_upS_down[0]);
+  e_wAvg[0] += 1.0/(e_AN_downS_up[0]*e_AN_downS_up[0]);
+  e_wAvg[0] += 1.0/(e_AN_downS_down[0]*e_AN_downS_down[0]);
+
+  wAvg[0] /= e_wAvg[0];
+  e_wAvg[0] = TMath::Sqrt(1.0/e_wAvg[0]);
+
+  TGraphErrors* gWavg = new TGraphErrors(nBins, xvals, wAvg, ex, e_wAvg);
+  SetUp(gWavg);
+  c1->cd(); gWavg->Draw("Psame"); Offset(gWavg, 0.1);
+  gWavg->SetMarkerColor(kRed);
+
   
   //Write output/final settings
   TString thisDirPath = "/Users/robertheitz/Documents/Research/DrellYan/\
@@ -156,6 +229,14 @@ Analysis/TGeant/Local_LeftRight_Analysis/Macros/Systematics/ToyMC/Data";
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
     g_AN->Write("AN");
+
+    g_AN_upS_up->Write("AN_upS_up");
+    g_AN_upS_down->Write("AN_upS_down");
+    g_AN_downS_up->Write("AN_downS_up");
+    g_AN_downS_down->Write("AN_downS_down");
+    cTarg->Write("AN_by_Targ");
+    
+    gWavg->Write("Wavg");
   }
 
   cout << "\nSettings________" << endl;
@@ -163,6 +244,11 @@ Analysis/TGeant/Local_LeftRight_Analysis/Macros/Systematics/ToyMC/Data";
   cout << "Input P corrected data:        " << RDfile << endl;
   cout << "physBinned nBins times:     " << nBins << endl;
   cout << "Binned in which DY physics:  " << physBinned << endl;
+  cout << "PhiS cut used:         " << phiScut << endl;
+  cout << "additionalCuts used:   " << additionalCuts << endl;
+  cout << "Sivers amplitude:      " << A_siv << endl;
+  cout << "Number of events generated:   " << N_gen << endl;
+  cout << "Events per target scaled like real data:   " << alphaScale << endl;
   cout << " " << endl;
   if (toWrite){
     cout << "File:  " << fOutput << "   was written" << endl;

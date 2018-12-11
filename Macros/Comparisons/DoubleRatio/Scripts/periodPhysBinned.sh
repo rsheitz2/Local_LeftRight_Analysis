@@ -19,7 +19,7 @@ Steps=$1
 
 ##Setup___  first line (20) to seach setup
 ##########
-nBins=3
+nBins=1
 nHbins=16
 Mtype="HMDY"
 production="slot1"
@@ -46,7 +46,7 @@ if [ ${Steps} == "h" ] || [ ${Steps} -lt 1 ]; then #Help option, output settings
 fi
 
 #Basic Setup
-HOME=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/DoubleRatio
+HOME=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio
 
 #Intial save files to be changed
 loopFile=${HOME}/doubleRatio.C

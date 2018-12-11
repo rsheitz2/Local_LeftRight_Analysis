@@ -2,7 +2,7 @@
 
 void wAvg(){
   //Setup_______________
-  const Int_t nBins =3;//# of physBinned bins
+  const Int_t nBins =1;//# of physBinned bins
   const Int_t nHbins =16;
   TString Mtype ="HMDY";
   TString physBinned ="xN";//"xN", "xPi", "xF", "pT", "M"

@@ -2,18 +2,18 @@
 
 void physBinnedData(TString start=""){
   //Setup_______________
-  /*const Int_t nBins =3;//HMDY
-    TString Mtype ="HMDY";
-    Int_t hbins =150;
-    TString process ="DY";//JPsi, psi, DY
-    TString lrMrange ="4.30_8.50";
-    TString fitMrange ="4.30_8.50";
-    TString binRange ="43_85";
-    TString whichFit ="true";
-    TString production ="slot1";
-    TString additionalCuts ="phiS0.53";//*/
+  const Int_t nBins =3;//HMDY
+  TString Mtype ="HMDY";
+  Int_t hbins =150;
+  TString process ="DY";//JPsi, psi, DY
+  TString lrMrange ="4.30_8.50";
+  TString fitMrange ="4.30_8.50";
+  TString binRange ="43_85";
+  TString whichFit ="true";
+  TString production ="slot1";
+  TString additionalCuts ="phiS0.0";//*/
 
-  const Int_t nBins =5;//JPsi
+  /*const Int_t nBins =5;//JPsi
   TString Mtype ="LowM_AMDY";
   Int_t hbins =150;
   TString process ="JPsi";//JPsi, psi, DY
@@ -67,17 +67,18 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
       }
     
       AsymName =
-	Form("%s/wAvg_%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
+	Form("%s/wAvg_%s_%s_%s%s_%s%s%i_%ihbin_%s_%s.root",
 	     pathAN.Data(), whichFit.Data(), Mtype.Data(), process.Data(),
-	     lrMrange.Data(), physBinned[phys].Data(),
+	     lrMrange.Data(), binRange.Data(), physBinned[phys].Data(),
 	     nBins, hbins, production.Data(), additionalCuts.Data());
     }
     else {
       AsymName =
-	Form("%s/wAvg_%s%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
+	Form("%s/wAvg_%s%s_%s_%s%s_%s%s%i_%ihbin_%s_%s.root",
 	     pathAN.Data(), whichFit.Data(), fitMrange.Data(), Mtype.Data(),
-	     process.Data(), lrMrange.Data(), physBinned[phys].Data(),
-	     nBins, hbins, production.Data(), additionalCuts.Data());
+	     process.Data(), lrMrange.Data(), binRange.Data(),
+	     physBinned[phys].Data(), nBins, hbins, production.Data(),
+	     additionalCuts.Data());
     }
         
     TFile *f_AN = OpenFile(AsymName);

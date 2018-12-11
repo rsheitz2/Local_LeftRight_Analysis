@@ -244,12 +244,12 @@ void SetUpTF(TF1* f){
 }
 
 
-void DrawLine(TGraphErrors *g, Double_t yval){
+void DrawLine(TGraphErrors *g, Double_t yval, Int_t icolor=1){
   Double_t min_x = g->GetXaxis()->GetXmin();	
   Double_t max_x = g->GetXaxis()->GetXmax();	
   TLine* li = new TLine(min_x, yval, max_x, yval);
   
-  li->SetLineColor(1);
+  li->SetLineColor(icolor);
   li->SetLineStyle(8);
   li->SetLineWidth(2);
   

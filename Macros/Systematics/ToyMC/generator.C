@@ -10,7 +10,7 @@ void generator(){
   Double_t phiScut =0.0;
   TString additionalCuts ="phiS0.0";
   Double_t A_siv =0.0;
-  Int_t N_gen =1000;
+  Int_t N_gen =10000;
   Bool_t alphaScale =false;
 
   TString production ="slot1";
