@@ -1,5 +1,6 @@
 #include "include/helperFunctions.h"
-
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
+Local_LeftRight_Analysis/Macros/include/finalSetup.h"
 
 void OffSet(TGraphErrors *g, Double_t offset){
   Double_t *xval = g->GetX();
@@ -19,7 +20,7 @@ void allPhysBinned(TString start=""){
   TString binRange ="43_85";
   TString whichFit ="true";
   TString production ="slot1";//"t3", "slot1"
-  TString additionalCuts ="phiS0.53";//*/
+  TString additionalCuts ="phiS0.0";//*/
 
   /*const Int_t nBins =5;
   TString fitMrangeType ="LowM_AMDY";
@@ -38,8 +39,9 @@ void allPhysBinned(TString start=""){
   TString path = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/Systematics/PeriodCompatibility/\
 Data/physBinned";
-  const Int_t nPhysBinned =4;
-  TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT"};
+  const Int_t nPhysBinned =6;
+  TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT", "M", "xPi"};
+  //2nd xPi is for integrated
   
   if (start==""){
     cout << "Script draws AN per period and physics binning on a nice plot";
@@ -68,30 +70,38 @@ Data/physBinned";
     = {"07", "08", "09", "10", "11", "12", "13", "14", "15"};
   
   //Aesthetics setup
-  TCanvas* c1 = new TCanvas(); c1->Divide(4, 1, 0, 0.01);
+  gStyle->SetLineWidth(2);
+  TCanvas* c1 = new TCanvas(); c1->Divide(nPhysBinned, 1, 0, 0.01);
+  TLegend *legend = new TLegend(0.12, 0.8, 0.8, 0.99);
+  legend->SetNColumns(3);
   Double_t offsets[nPhysBinned] = {0.002, 0.004, 0.004, 0.02};
   Double_t yMax =0.9;
   
   //Get Data file/Get graphs and plot
   TString docName=""; TString physBinnedNames =""; TString fitNames="";
   for (Int_t phys=0; phys<nPhysBinned; phys++) {
+
+    Int_t nBinsName =nBins;
+    if (phys == nPhysBinned-1) {//used for integrated
+      nBinsName =1; }
     TString fname;
+    
     if (whichFit == "true"){
       if (fitMrange != lrMrange){
 	cout << "fit Mass range != left/right mass range with true fit" << endl;
 	exit(EXIT_FAILURE);
       }
     
-      fname =Form("%s/physBinnedPeriod_%s_%s_%s%s_%s%i_%s_%s.root", path.Data(),
-		  whichFit.Data(), fitMrangeType.Data(), process.Data(),
-		  lrMrange.Data(), physBinned[phys].Data(), nBins,
-		  production.Data(), additionalCuts.Data());
+      fname=Form("%s/physBinnedPeriod_%s_%s_%s%s_%s%s%i_%s_%s.root",path.Data(),
+		 whichFit.Data(), fitMrangeType.Data(), process.Data(),
+		 lrMrange.Data(), binRange.Data(), physBinned[phys].Data(),
+		 nBinsName, production.Data(), additionalCuts.Data());
     }
     else {
       fname =Form("%s/physBinnedPeriod_%s%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
 		  path.Data(), whichFit.Data(), fitMrange.Data(),
 		  fitMrangeType.Data(), process.Data(),lrMrange.Data(),
-		  physBinned[phys].Data(), nBins, hbins, production.Data(),
+		  physBinned[phys].Data(), nBinsName, hbins, production.Data(),
 		  additionalCuts.Data() );
     }
     
@@ -111,10 +121,14 @@ Data/physBinned";
       OffSet(g_AN, offsets[phys]*p);
       
       if (p==0) {
+	gPad->SetFrameLineWidth(2);
+	FinalSetup(g_AN); FinalClearTitles(g_AN);
 	g_AN->Draw("AP");
 	g_AN->GetYaxis()->SetRangeUser(-yMax, yMax);
-	
-	if (physBinned[phys] == "xN")
+
+	if (phys==nPhysBinned-1)
+	  g_AN->GetXaxis()->SetLimits(0.48, 0.53);
+	else if (physBinned[phys] == "xN")
 	  g_AN->GetXaxis()->SetLimits(0.05, 0.3);
 	else if (physBinned[phys] == "xPi")
 	  g_AN->GetXaxis()->SetLimits(0.25, 0.8);
@@ -126,9 +140,17 @@ Data/physBinned";
 	DrawLine(g_AN, 0.0);
       }
       else g_AN->Draw("Psame");
+
+      if (physBinned[phys] == "xN")
+	legend->AddEntry(g_AN, Form("W%s", periods[p].Data()), "p");
+      
     }//end period loop
-    
   }//phys binned loop
+
+  //Legend
+  c1->cd(1);
+  legend->SetBorderSize(0); legend->SetTextFont(132); legend->SetTextSize(0.08);
+  legend->Draw("same");
   
   //Write Output/Final Settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\

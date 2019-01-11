@@ -122,7 +122,7 @@ void SetUp(TH1D* h){
   h->GetYaxis()->SetLabelFont(22);
   h->GetYaxis()->SetLabelSize(0.08);
   
-  h->GetXaxis()->SetNdivisions(508);
+  h->GetXaxis()->SetNdivisions(504);
   h->GetXaxis()->SetLabelFont(22);
   h->GetXaxis()->SetLabelSize(0.08);
 }
@@ -162,4 +162,15 @@ void DrawLine(TH1D *h, Double_t yval){
   li->SetLineWidth(2);
   
   li->Draw("same");
+}
+
+
+TFile* OpenFile(TString name){
+  TFile* f = TFile::Open(name);
+  if (!f){
+      cout << "File does not exist:  " << name << endl;
+      exit(EXIT_FAILURE);
+  }
+
+  return f;
 }

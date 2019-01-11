@@ -26,12 +26,12 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 ##########
 ##Additional settings
 production="slot1"
-phiPhotonCut=0.53 #HMDY=0.1866, #LowM_AMDY=0.195
+phiPhotonCut="0.0"
 ##Step ONE settings ###### DY
-period="WAll"
+period="W10"
 fitMrangeType="HMDY"
 nBins=3
-binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
+binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_3bins.txt"
 hbins=150
 fitMmin=4.30
 fitMmax=8.50
@@ -45,12 +45,12 @@ whichFit="true"
 
 ###Additional settings
 #production="slot1"
-#phiPhotonCut=0.53 #HMDY=0.187, #LowM_AMDY=0.195
+#phiPhotonCut="0.0"
 ####Step ONE settings  ########JPsi
-#period="WAll"
+#period="W10"
 #fitMrangeType="HMDY"
 #nBins=3
-#binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/HMDY/BinValues/WAll_HMDY_3bins.txt"
+#binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_3bins.txt"
 #hbins=150
 #fitMmin=4.30
 #fitMmax=8.50
@@ -65,13 +65,13 @@ whichFit="true"
 
 
 
-additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include all cuts used
+additionalCuts="phiS0.0"
 
 ##Setup___ last line (70) to search setup
 lrMrange="${LR_Mmin}_${LR_Mmax}"
 fitMrange="${fitMmin}_${fitMmax}"
 period_Mtype="${period}_${fitMrangeType}"
-physBinned=("xN" "xPi" "xF" "pT")
+physBinned=("xN" "xPi" "xF" "pT" "M")
 echo ""
 echo "______Step ONE settings____"
 echo "Period:   ${period}"
@@ -128,13 +128,13 @@ loopFileBaseName=${loopFileBase%.sh}
 #Intial save files to be changed
 cp ${loopFile} ${sysPath}/Scripts/LoopScripts/${loopFileBase}_tmp
 
-for i in `seq 0 3`; do
+for phys in ${physBinned[@]}; do
     echo ""
-    echo "Physics Binned ${physBinned[$i]}"
+    echo "Physics Binned ${phys}"
     echo ""
     
     #pipeline changes
-    ${sysPath}/Scripts/ChangeScripts/changePipeline.sh ${loopFile} ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax ${physBinned[$i]} $process $LR_Mmin $LR_Mmax \
+    ${sysPath}/Scripts/ChangeScripts/changePipeline.sh ${loopFile} ${period} $fitMrangeType $nBins $hbins $fitMmin $fitMmax ${phys} $process $LR_Mmin $LR_Mmax \
 	      ${whichFit} ${binRange} ${binFile} ${production} ${phiPhotonCut} ${additionalCuts}
     #Execute
     ${loopFile} ${Steps} >> ${sysPath}/Scripts/LoopScripts/${loopFileBaseName}_log.txt
@@ -147,6 +147,26 @@ for i in `seq 0 3`; do
 	rm ${sysPath}/Scripts/LoopScripts/${loopFileBaseName}_log.txt
     fi
 done
+
+
+echo ""
+echo "Integrated:  Physics Binned xN"
+echo ""
+
+#pipeline changes
+${sysPath}/Scripts/ChangeScripts/changePipeline.sh ${loopFile} ${period} $fitMrangeType 1 $hbins $fitMmin $fitMmax xN $process $LR_Mmin $LR_Mmax \
+	  ${whichFit} ${binRange} ${binFile} ${production} ${phiPhotonCut} ${additionalCuts}
+#Execute
+${loopFile} ${Steps} >> ${sysPath}/Scripts/LoopScripts/${loopFileBaseName}_log.txt
+if [ $? != 0 ]; then
+    echo "${loopFile}.sh did not execute well"
+    mv ${loopFile} ${loopFile}.bak
+    mv ${sysPath}/Scripts/LoopScripts/${loopFileBase}_tmp ${loopFile}
+    exit 1
+else
+    rm ${sysPath}/Scripts/LoopScripts/${loopFileBaseName}_log.txt
+fi
+
 
 #Clean up
 mv ${sysPath}/Scripts/LoopScripts/${loopFileBase}_tmp ${loopFile}

@@ -29,9 +29,9 @@ production="slot1"
 phiPhotonCut=0.0 #0.0, 0.044, 0.088, 0.17, 0.36, 0.53, 0.71, 0.88, 1.07 #HMDY=0.1866, #LowM_AMDY=0.195
 ##Step ONE settings ###### DY
 fitMrangeType="HMDY"
-nBins=3
-#binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
-binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/WAll_HMDY_${nBins}bins.txt
+nBins=1
+binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
+#binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/WAll_HMDY_${nBins}bins.txt
 hbins=150
 fitMmin=4.30  #true fit mass range
 fitMmax=8.50  #true fit mass range
@@ -69,8 +69,8 @@ additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include al
 
 ##Setup___ last line (70) to search setup
 period=("W07" "W08" "W09" "W10" "W11" "W12" "W13" "W14" "W15" "WAll")
-physBinned=("xN" "xPi" "xF" "pT")
-loopFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Scripts/pipeline.sh
+physBinned=("xN" "xPi" "xF" "pT" "M")
+loopFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Scripts/Src/pipeline.sh
 
 lrMrange="${LR_Mmin}_${LR_Mmax}"
 fitMrange="${fitMmin}_${fitMmax}"

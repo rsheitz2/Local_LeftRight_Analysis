@@ -265,3 +265,14 @@ void DrawLine(TH1D *h, Double_t yval){
   
   li->Draw("same");
 }
+
+//Useful functions
+TFile* OpenFile(TString name){
+  TFile *f = TFile::Open(name);
+  if (!f){
+    cout << name << " does not exist" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  return f;
+}

@@ -6,9 +6,9 @@ void resolutionHMDYPhiS(TString start=""){
   //Setup__________
   TString whichMC ="Charles"; //"Yu", "Charles"
   const Double_t Mmin=4.3, Mmax=8.5; //Mass cut
-  Bool_t debug =true;
+  Bool_t debug =false;
   
-  Bool_t toWrite =false;
+  Bool_t toWrite =true;
   //Setup__________
 
   TString MassCut = Form("Mmumu>%0.2f&&Mmumu<%0.2f", Mmin, Mmax);
@@ -56,15 +56,15 @@ TGeant/Presents/DATA/MC_Data/YuShiangMC/";
   t_HMDY->SetBranchAddress("q_transverse", &q_transverse);
 
   //Distributions
-  TH1D* hPhiPhoton = new TH1D("hPhiPhoton", "hPhiPhoton", 100, -0.5*TMath::Pi(),
-			      3.0*0.5*TMath::Pi());
+  TH1D* hPhiPhoton = new TH1D("hPhiPhoton", "hPhiPhoton", 100, -TMath::Pi(),
+			      TMath::Pi());
   TH1D* hGenPhiPhoton = new TH1D("hGenPhiPhoton", "hGenPhiPhoton", 100,
-				 -0.5*TMath::Pi(), 3.0*0.5*TMath::Pi());
+				 -TMath::Pi(), TMath::Pi());
 
   TH1D* hDiff = new TH1D("hDiff", "hDiff", 100, -6.28, 6.28);
   TH1D* hHMDY_Diff = new TH1D("hHMDY_Diff", "hHMDY_Diff", 100, -6.28, 6.28);
   TH2D* hPhiDiff = new TH2D("hPhiDiff", "hPhiDiff",
-			    100, -0.5*TMath::Pi(), 3.0*0.5*TMath::Pi(),
+			    100, -TMath::Pi(), TMath::Pi(),
 			    100, -6.28, 6.28);
   TH2D* hMmumuDiff = new TH2D("hMmumuDiff", "hMmumuDiff",
 			      100, 1.0, 10.0,
@@ -72,15 +72,18 @@ TGeant/Presents/DATA/MC_Data/YuShiangMC/";
   
   TH1D* hLR = new TH1D("hLR", "hLR", 2, 0, 2);
   TH2D* hPhiLR = new TH2D("hPhiLR", "hPhiLR",
-			  100, -0.5*TMath::Pi(), 3.0*0.5*TMath::Pi(), 2, 0, 2);
+			  100, -TMath::Pi(), TMath::Pi(), 2, 0, 2);
 
   //Setup for LR crossover percentage
-  Double_t resPhiS =0.1776; //Yu rms value 2.0-8.5
+  //Double_t resPhiS =0.1776; //Yu rms value 2.0-8.5
+  Double_t resPhiS =0.1869; //Charles rms value 4.3-8.5
     
-  const Int_t nPhiSCuts =9;
+  const Int_t nPhiSCuts =12;
   Double_t phiScut[nPhiSCuts] =
-    {0., 0.25*resPhiS, 0.5*resPhiS, resPhiS, 2*resPhiS, 3*resPhiS, 4*resPhiS,
-     5*resPhiS, 6*resPhiS};
+    {0., 0.044, 0.088, 0.17, 0.26, 0.36, 0.53, 0.71, 0.88, 1.07, 1.24, 1.44};
+  /*Double_t phiScut[nPhiSCuts] =
+    {0., 0.5*resPhiS, resPhiS, 2*resPhiS, 3*resPhiS, 4*resPhiS,
+    5*resPhiS, 6*resPhiS};//*/
   Int_t LR_true[nPhiSCuts] ={0}, LR_false[nPhiSCuts] ={0};
 
   //Treeloops
@@ -95,8 +98,8 @@ TGeant/Presents/DATA/MC_Data/YuShiangMC/";
     Double_t phiPhoton = ShiftPhiSimple(PhiS);
     Double_t Gen_phiPhoton = ShiftPhiSimple(Gen_PhiS);
 
-    hPhiPhoton->Fill(phiPhoton);//PhiPhoton
-    hGenPhiPhoton->Fill(Gen_phiPhoton);//Gen_phiPhoton
+    hPhiPhoton->Fill(PhiS);//PhiPhoton
+    hGenPhiPhoton->Fill(Gen_PhiS);//Gen_phiPhoton
 
     //Rec left/right
     Bool_t Left =false, Right =false;
@@ -113,17 +116,17 @@ TGeant/Presents/DATA/MC_Data/YuShiangMC/";
       Gen_Right = true;
 
     Int_t LR_consistent;
-    if ( Gen_Left==Left && Gen_Right==Right) LR_consistent =1;
+    if ( (Gen_Left==Left) && (Gen_Right==Right) ) LR_consistent =1;
     else LR_consistent =0;
     hLR->Fill(LR_consistent);//hLR
-    hPhiLR->Fill(Gen_phiPhoton, LR_consistent);//hPhiLR
+    hPhiLR->Fill(Gen_PhiS, LR_consistent);//hPhiLR
 
     Double_t Diff = phiPhoton-Gen_phiPhoton;
     if (Diff > 3.14){ Diff = -2*TMath::Pi() + Diff; }
     else if (Diff < -3.14) { Diff = 2*TMath::Pi() + Diff; }
     hDiff->Fill(Diff);//hDiff
     hHMDY_Diff->Fill(Diff);
-    hPhiDiff->Fill(Gen_phiPhoton, Diff);//hPhiDiff
+    hPhiDiff->Fill(Gen_PhiS, Diff);//hPhiDiff
     hMmumuDiff->Fill(Mmumu, Diff);//hMmumuDiff
 
     //Crossover percent calculation
@@ -158,14 +161,15 @@ TGeant/Presents/DATA/MC_Data/YuShiangMC/";
   cMdiff->cd(1); hMmumuDiff->Draw("colz");
   Double_t massVal[6], massRMS[6];
   for (Int_t i=0; i<6; i++) {
-    Double_t lowBin =hMmumuDiff->GetXaxis()->FindBin(2+i-0.5);
-    Double_t highBin =hMmumuDiff->GetXaxis()->FindBin(2+i+0.5);
+    Double_t binWidth = (Mmax-Mmin)/6.0;
+    Double_t lowBin =hMmumuDiff->GetXaxis()->FindBin(Mmin+(i-0.5)*binWidth );
+    Double_t highBin =hMmumuDiff->GetXaxis()->FindBin(Mmin+(i+0.5)*binWidth );
     
     massRMS[i] = hMmumuDiff->ProjectionY("h1", lowBin, highBin)->GetRMS();
-    massVal[i] = 2.0 + 1.0*i;
+    massVal[i] = Mmin + binWidth*i;
   }
   TGraph* gMdiff = new TGraph(6, massVal, massRMS);
-  Setup(gMdiff);
+  Setup(gMdiff); gMdiff->SetTitle("Mass vs. PhiS Resolution");
   cMdiff->cd(2); gMdiff->Draw("AP");
 
   TCanvas* cLR = new TCanvas(); cLR->Divide(2);
@@ -175,19 +179,23 @@ TGeant/Presents/DATA/MC_Data/YuShiangMC/";
   Setup(hLR); Setup(hPhiLR);
 
   //crossover percent calculation
-  Double_t crossOver[nPhiSCuts];
+  Double_t crossOver[nPhiSCuts], totalPhiScut[nPhiSCuts];
   for (Int_t i=0; i<nPhiSCuts; i++) {
-    crossOver[i] = 1.0*LR_false[i]/(1.0*LR_true[i] + 1.0*LR_false[i]);
+    crossOver[i] = 100.0*LR_false[i]/(1.0*LR_true[i] + 1.0*LR_false[i]);
+    totalPhiScut[i] = 4*phiScut[i];
   }
-  TGraph* gCrossOver = new TGraph(nPhiSCuts, phiScut, crossOver);
+  TGraph* gCrossOver = new TGraph(nPhiSCuts, totalPhiScut, crossOver);
   Setup(gCrossOver);
   gCrossOver->GetXaxis()->SetTitle("PhiS Cut");
+  gCrossOver->SetTitle("Misidentification_Percent");
 
   TCanvas* cCrossOver = new TCanvas();
   gCrossOver->Draw("AP");
 
-  TString outName = Form("Data/ResolutionPhiS/resolution_%s_%0.2f_%0.2f.root",
+  TString outName = Form("Data/ResolutionPhiS/resolution_%s_%0.2f_%0.2f",
 			 whichMC.Data(), Mmin, Mmax);
+  if (debug) outName += ".root";
+  else outName += "_noDebug.root";
   if (toWrite){
     TFile* fOut = new TFile(outName, "RECREATE");
     hPhiPhoton->Write();

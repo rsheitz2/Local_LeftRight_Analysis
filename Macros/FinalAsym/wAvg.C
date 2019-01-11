@@ -5,7 +5,7 @@ void wAvg(){
   const Int_t nBins =1;//HMDY
   TString Mtype ="HMDY";
   Int_t hbins =150;
-  TString physBinned ="xN";//xN, xPi, xF, pT, M
+  TString physBinned ="M";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";
@@ -26,7 +26,7 @@ void wAvg(){
   TString production ="slot1";
   TString additionalCuts ="phiS0.0";//*/
 
-  Bool_t toWrite =true;
+  Bool_t toWrite =false;
    //Setup_______________
 
   

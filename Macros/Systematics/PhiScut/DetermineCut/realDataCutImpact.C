@@ -10,7 +10,7 @@ void realDataCutImpact(TString start=""){
     TString production ="slot1";//""=t3, "slot1"
   Bool_t debug =false;
   
-  Bool_t toWrite =false;
+  Bool_t toWrite =true;
   //Setup__________
 
   TString MassCut = Form("Mmumu>%0.2f&&Mmumu<%0.2f", Mmin, Mmax);
@@ -46,9 +46,11 @@ TGeant/Presents/DATA/RealData";
 				 100, -TMath::Pi(), TMath::Pi());
 
   //PhiS cut setup
-  const Int_t nPhiScut =9;
-  Double_t phiScuts[nPhiScut] =
-    {0.0, 0.044, 0.088, 0.17, 0.36, 0.53, 0.71, 0.88, 1.07};
+  const Int_t nPhiScut =12;
+  /*Double_t phiScuts[nPhiScut] =
+    {0.0, 0.044, 0.088, 0.17, 0.36, 0.53, 0.71, 0.88, 1.07};//*/
+  Double_t phiScut[nPhiScut] =
+    {0., 0.044, 0.088, 0.17, 0.26, 0.36, 0.53, 0.71, 0.88, 1.07, 1.24, 1.44};
   Double_t NotCutData[nPhiScut] = {0.0}, ex[nPhiScut] ={0.0};
   
   //Tree loop
@@ -71,15 +73,15 @@ TGeant/Presents/DATA/RealData";
     }
 
     for (Int_t c=0; c<nPhiScut; c++) {
-      if ((PhiS_simple > -TMath::Pi() + phiScuts[c])
-	  && (PhiS_simple < -phiScuts[c]) ) {
+      if ((PhiS_simple > -TMath::Pi() + phiScut[c])
+	  && (PhiS_simple < -phiScut[c]) ) {
 	NotCutData[c]++;
       }
-      else if ((PhiS_simple > phiScuts[c])
-	       && (PhiS_simple < TMath::Pi() -phiScuts[c]) ){
+      else if ((PhiS_simple > phiScut[c])
+	       && (PhiS_simple < TMath::Pi() -phiScut[c]) ){
 	NotCutData[c]++;
       }
-    }//nPhiSCuts loop
+    }//nPhiScut loop
   }//tree loop
 
   //Draw distributions
@@ -91,11 +93,7 @@ TGeant/Presents/DATA/RealData";
   hPhiS_polDown->SetLineColor(kRed);
 
   //PhiS cut Distribution setup
-  Double_t resPhiS =0.1776; //Yu rms value 2.0-8.5
-  const Int_t nPhiSCuts =6;
-  Double_t phiScut[nPhiSCuts] =
-    {0., 0.25*resPhiS, 0.5*resPhiS, resPhiS, 2*resPhiS, 3*resPhiS};
-  for (Int_t i=0; i<nPhiSCuts; i++) {
+  for (Int_t i=0; i<nPhiScut; i++) {
     Double_t zero_plus = phiScut[i];
     Double_t zero_minus = -1.0*phiScut[i];
 
@@ -109,19 +107,20 @@ TGeant/Presents/DATA/RealData";
   }
 
   //PhiS not cut
-  Double_t eNotCut[nPhiScut];
-  Double_t CutPercent[nPhiScut];
+  Double_t eNotCut[nPhiScut], CutPercent[nPhiScut], totalPhiScut[nPhiScut];
   Double_t Pol = 0.13;
   for (Int_t c=0; c<nPhiScut; c++) {
     eNotCut[c] = 1.0/( TMath::Sqrt(NotCutData[c])*Pol );
 
-    CutPercent[c] = (NotCutData[0] - NotCutData[c])/NotCutData[0];
+    CutPercent[c] = 100.0*(NotCutData[0] - NotCutData[c])/NotCutData[0];
+
+    totalPhiScut[c] = 4*phiScut[c];
   }
   TGraphErrors* gNotCut =
-    new TGraphErrors(nPhiScut, phiScuts, NotCutData, ex, eNotCut);
+    new TGraphErrors(nPhiScut, totalPhiScut, NotCutData, ex, eNotCut);
   Setup(gNotCut);
   TGraphErrors *gCutPercent =
-    new TGraphErrors(nPhiScut, phiScuts, CutPercent, ex, eNotCut);
+    new TGraphErrors(nPhiScut, totalPhiScut, CutPercent, ex, eNotCut);
   Setup(gCutPercent);
   
   TCanvas* c2 = new TCanvas(); c2->Divide(2);
@@ -129,8 +128,8 @@ TGeant/Presents/DATA/RealData";
   gNotCut->Draw("AP"); gNotCut->SetTitle("PhiS Cut Remaining Data");
   c2->cd(2);
   gCutPercent->Draw("AP"); gCutPercent->SetTitle("Percent Data Cut");
-  gCutPercent->GetXaxis()->SetLimits(-0.2, 1.5);
-  
+  gCutPercent->GetXaxis()->SetLimits(-0.2, 2*TMath::Pi() );
+
   /*TString outName = Form("Data/ResolutionPhiS/resolution_%s_%0.2f_%0.2f.root",
 			 whichMC.Data(), Mmin, Mmax);
   if (toWrite){
@@ -144,7 +143,7 @@ TGeant/Presents/DATA/RealData";
 
     gCrossOver->Write("gCrossOver");
     fOut->Close();
-    }//*/
+  }//*/
 
   //Final Output
   cout << "\nSettings !!!!" << endl;

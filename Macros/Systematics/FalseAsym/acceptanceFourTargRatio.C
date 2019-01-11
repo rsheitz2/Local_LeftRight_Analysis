@@ -28,8 +28,8 @@ void Cal_AccRatioAndError(TGraphErrors *g, TGraph *g_Pol,
 
 void acceptanceFourTargRatio(TString start =""){
   //Setup_______________
-    const Int_t nBins =3;//HMDY
-  TString period_Mtype ="W12_HMDY";
+  const Int_t nBins =3;//HMDY
+  TString period_Mtype ="WAll_HMDY";
   Int_t hbins =150;
   TString physBinned ="xPi";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
@@ -38,7 +38,7 @@ void acceptanceFourTargRatio(TString start =""){
   TString binRange ="43_85";
   TString whichFit ="true";
   TString production ="slot1";//"t3", "slot1"
-  TString additionalCuts ="phiS0.53";
+  TString additionalCuts ="phiS0.0";
   
   //const Int_t nBins =5;//JPsi
   //TString period_Mtype ="W12_LowM_AMDY";
@@ -52,7 +52,7 @@ void acceptanceFourTargRatio(TString start =""){
   //TString production ="slot1";//"t3", "slot1"
   //TString additionalCuts ="phiS0.195";
 
-  Bool_t toWrite =true;
+  Bool_t toWrite =false;
   //Setup_______________
   
   TString pathFA = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
@@ -112,27 +112,36 @@ TargFlip/";
   }
 
   //Get Data from files/Draw FAs
-  TGraphErrors *g_subper =   (TGraphErrors*)fFAs->Get("falseAN_subper");
+  TGraphErrors *g_FAsubper =   (TGraphErrors*)fFAs->Get("falseAN_subper");
   TGraph *g_Pol = (TGraph*)fFAs->Get("Polarization");
 
-  if (!g_subper || !g_Pol){
+  //Jura/Saleve acceptance
+  TGraphErrors *g_FApol =   (TGraphErrors*)fFAs->Get("falseAN_pol");
+
+  if (!g_FAsubper || !g_FApol){
     cout << "Graphs in FA file do not all exist" << endl;
     exit(EXIT_FAILURE);
   }
   
   TCanvas* c1 = new TCanvas("False Asym", "False Asym");
-  g_subper->Draw("AP"); DrawLine(g_subper, 0.0);
-  g_subper->SetTitle("False_Asym");
+  g_FAsubper->Draw("AP"); DrawLine(g_FAsubper, 0.0);
+  g_FAsubper->SetTitle("False_Asym");
   
   //Calculation alpha ratio and Draw them
   Double_t a_subper[nBins], eA_subper[nBins];
-  Cal_AccRatioAndError(g_subper, g_Pol, a_subper, eA_subper);
+  Cal_AccRatioAndError(g_FAsubper, g_Pol, a_subper, eA_subper);
+
+  //Jura/Saleve acceptance
+  Double_t a_pol[nBins], eA_pol[nBins];
+  Cal_AccRatioAndError(g_FApol, g_Pol, a_pol, eA_pol);
   
-  Double_t *xvals = g_subper->GetX();
+  Double_t *xvals = g_FAsubper->GetX();
   Double_t ex[nBins] = {0.0};
   TGraphErrors *g_alpha_subper = new TGraphErrors(nBins, xvals, a_subper, ex,
 						 eA_subper);
-  SetUp(g_alpha_subper); 
+  TGraphErrors *g_alpha_pol = new TGraphErrors(nBins, xvals, a_pol, ex,
+						 eA_pol);
+  SetUp(g_alpha_subper); SetUp(g_alpha_pol); 
 
   TCanvas* c2 = new TCanvas("Acceptance Ratio", "Acceptance Ratio");
   g_alpha_subper->Draw("AP"); g_alpha_subper->SetTitle("Acc_ratio");
@@ -141,15 +150,15 @@ TargFlip/";
     g_alpha_subper->GetYaxis()->SetRangeUser(0.8, 1.2);
   else
     g_alpha_subper->GetYaxis()->SetRangeUser(0.93, 1.07);
+  g_alpha_pol->Draw("Psame");
   DrawLine(g_alpha_subper, 1.0);
 
   //Calculate final systematic error
   Double_t sysErr[nBins], sysErr_statErr[nBins];
-  Double_t *ey_subper = g_subper->GetEY();
+  Double_t *ey_subper = g_FAsubper->GetEY();
   Double_t nSigma =1.0;
   for (Int_t i=0; i<nBins; i++) {
     sysErr[i] = 1.0-a_subper[i];
-    //sysErr[i] = eA_subper[i];
     if (sysErr[i] < 0) sysErr[i] *= -1.0;
     sysErr[i] += nSigma*eA_subper[i];
     sysErr[i] /= 2.0;
@@ -198,9 +207,10 @@ accSys4TargRatio_%s%s_%s_%s%s_%s%s%i_%ihbins_%s_%s.root",
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
-    g_subper->Write("falseAN_subper");
+    g_FAsubper->Write("falseAN_subper");
     g_Pol->Write("Polarization");
     g_alpha_subper->Write("alpha_subper");
+    g_alpha_pol->Write("alpha_pol");
     fResults->Close();
 
     TFile *fSys = new TFile(fSystematics, "RECREATE");

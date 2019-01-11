@@ -369,4 +369,12 @@ void GetBounds(TString binVar, TString binfile, Double_t *bounds){
   else if (binVar=="vxZ_downstream") bounds[iter] = -164.3;
 }
 
+
+void OffSet(TGraphErrors *g, Double_t offset){
+  Double_t *xvals = g->GetX();
+  for (Int_t i=0; i<g->GetN(); i++) {
+    xvals[i] += offset;
+  }
+}
+
 #endif

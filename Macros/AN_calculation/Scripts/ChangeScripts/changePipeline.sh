@@ -20,7 +20,7 @@ else
     binRange=${12}
     binFile=${13}
 
-    changeFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Scripts/pipeline.sh
+    changeFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Scripts/Src/pipeline.sh
     sed -i.bak "25,50s/period=\".*\"/period=\"${period}\"/" ${changeFile}
     sed -i.bak "25,50s/fitMrangeType=\".*\"/fitMrangeType=\"${fitMrangeType}\"/" ${changeFile}
     sed -i.bak "25,50s/nBins=.*/nBins=${nBins}/" ${changeFile}

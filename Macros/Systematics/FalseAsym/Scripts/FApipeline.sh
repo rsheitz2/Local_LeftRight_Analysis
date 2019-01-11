@@ -3,6 +3,9 @@
 if [ $# -ne 1 ]; then
     echo "" 
     echo "This is the final script to run all macros in this folder "
+    echo "  This script runs:"
+    echo "acceptanceFourTargRatio.C, and falseGeoMean4Targ_targFlips.C, wAvg.C, all_FA_Acc.C"
+    echo " "
     echo "This Script loops over all periods and all physics binnings"
     echo "Recommended to skip steps outside of this directory for the time being..."
     echo ""
@@ -26,11 +29,11 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 ##########
 ###Additional settings
 production="slot1"
-phiPhotonCut=0.53 #HMDY=0.1866, #LowM_AMDY=0.195
+phiPhotonCut="0.0"
 ##Step ONE settings
 fitMrangeType="HMDY"
 nBins=3
-binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
+binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_3bins.txt"
 hbins=150
 fitMmin=4.30
 fitMmax=8.50
@@ -44,24 +47,24 @@ whichFit="true"
 
 ###Additional settings
 #production="slot1"
-#phiPhotonCut=0.53 #HMDY=0.187, #LowM_AMDY=0.195
+#phiPhotonCut="0.0"
 ###Step ONE settings  #LowM_AMDY
-#fitMrangeType="LowM_AMDY"
-#nBins=5
-#binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/slot1WAll_JPsi${binRange}_${nBins}bins.txt
+#fitMrangeType="HMDY"
+#nBins=3
+#binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_3bins.txt"
 #hbins=150
-#fitMmin=2.00  #true fit mass range
-#fitMmax=8.50  #true fit mass range
-#binRange="25_43"
+#fitMmin=4.30
+#fitMmax=8.50
+#binRange="43_85"
 ###Step TWO settings
-#process="JPsi" 
-#LR_Mmin=2.00
-#LR_Mmax=5.00
-#whichFit="thirteen"
+#process="DY"
+#LR_Mmin=4.30
+#LR_Mmax=8.50
+#whichFit="true"
 ###Step THREE settings
 
 
-additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include all cuts used
+additionalCuts="phiS0.0"
 
 
 
@@ -126,7 +129,7 @@ for p in ${periods[@]}; do
     echo ""
     echo "Period $p"
     echo ""
-    
+
     ${sysFApath}/Scripts/ChangeScripts/changePipeline.sh ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh ${p} $fitMrangeType $nBins $hbins \
 		$fitMmin $fitMmax null_physBinned $process $LR_Mmin $LR_Mmax $whichFit $binRange $binFile ${production} ${phiPhotonCut} ${additionalCuts}
 
@@ -181,3 +184,81 @@ done
 #Final clean up pipeline
 mv ${sysFApath}/Scripts/LoopScripts/tmp_allPhysBinnedpipeline.sh ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh
 rm ${sysFApath}/Scripts/LoopScripts/allPhysBinnedpipeline.sh.bak
+
+
+#############
+#acceptanceFourTargRatio setup/checks    
+echo " "
+echo "wAvg.C"
+echo " "
+#Intial save files to be changed
+cp ${sysFApath}/wAvg.C ${sysFApath}/wAvg_tmp.C
+
+#Integrated
+${sysFApath}/Scripts/ChangeScripts/changeMacroNoPeriod.sh ${sysFApath}/wAvg.C 1 $fitMrangeType $hbins "xN" $process $lrMrange $fitMrange $binRange $whichFit $production \
+	    $additionalCuts
+
+#Execute
+root -q -b -l ${sysFApath}/wAvg.C >> ${sysFApath}/wAvg_log.txt
+if [ $? != 0 ]; then
+    echo "wAvg.C did not execute well"
+    mv ${sysFApath}/wAvg.C ${sysFApath}/wAvg.C.bak
+    mv ${sysFApath}/wAvg_tmp.C ${sysFApath}/wAvg.C
+    exit 1
+else
+    rm ${sysFApath}/wAvg_log.txt
+fi
+
+#Loop over phys binning
+physBinned=("xN" "xPi" "xF" "pT" "M")
+for phys in ${physBinned[@]}; do
+    echo ""
+    echo "Physics Binned $phys"
+    echo ""
+    
+    #Macro changes
+    ${sysFApath}/Scripts/ChangeScripts/changeMacroNoPeriod.sh ${sysFApath}/wAvg.C $nBins $fitMrangeType $hbins $phys $process $lrMrange $fitMrange $binRange $whichFit \
+		$production $additionalCuts
+    #Execute
+    root -q -b -l ${sysFApath}/wAvg.C >> ${sysFApath}/wAvg_log.txt
+    if [ $? != 0 ]; then
+	echo "wAvg.C did not execute well"
+	mv ${sysFApath}/wAvg.C ${sysFApath}/wAvg.C.bak
+	mv ${sysFApath}/wAvg_tmp.C ${sysFApath}/wAvg.C
+	exit 1
+    else
+	rm ${sysFApath}/wAvg_log.txt
+    fi
+    
+done
+
+#Clean up
+mv ${sysFApath}/wAvg_tmp.C ${sysFApath}/wAvg.C
+rm ${sysFApath}/wAvg.C.bak
+
+
+#############
+#acceptanceFourTargRatio setup/checks    
+echo " "
+echo "all_FA_Acc.C"
+echo " "
+#Intial save files to be changed
+cp ${sysFApath}/all_FA_Acc.C ${sysFApath}/all_FA_Acc_tmp.C
+
+#Macro changes
+${sysFApath}/Scripts/ChangeScripts/changeMacroNoPeriod.sh ${sysFApath}/all_FA_Acc.C $nBins $fitMrangeType $hbins null_physBinned $process $lrMrange $fitMrange $binRange \
+	    $whichFit $production $additionalCuts
+#Execute
+root -q -b -l "${sysFApath}/all_FA_Acc.C(1)" >> ${sysFApath}/all_FA_Acc_log.txt
+if [ $? != 0 ]; then
+    echo "all_FA_Acc.C did not execute well"
+    mv ${sysFApath}/all_FA_Acc.C ${sysFApath}/all_FA_Acc.C.bak
+    mv ${sysFApath}/all_FA_Acc_tmp.C ${sysFApath}/all_FA_Acc.C
+    exit 1
+else
+    rm ${sysFApath}/all_FA_Acc_log.txt
+fi
+    
+#Clean up
+mv ${sysFApath}/all_FA_Acc_tmp.C ${sysFApath}/all_FA_Acc.C
+rm ${sysFApath}/all_FA_Acc.C.bak

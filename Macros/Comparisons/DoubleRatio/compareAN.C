@@ -1,30 +1,6 @@
 #include "include/helperFunctions.h"
-#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
-Local_LeftRight_Analysis/Macros/include/finalSetup.h"
 
-void FinalSetupLocal(TGraphErrors *g){
-  FinalSetup(g);
-
-  g->SetMarkerColor(kRed);
-  g->SetMarkerStyle(20);
-  g->SetTitle("");
-}
-
-
-void DrawLegend(TGraphErrors *g){
-  g->SetName("AN_phys");
-  Double_t sigma;
-  Double_t avg = WeightedAvgAndError(g, &sigma);
-
-  TLegend *leg = new TLegend(0.1,0.9,0.7,0.99);
-  leg->AddEntry("AN_phys", Form("#bar{A}_{N} = %0.2f #pm %0.2f", avg, sigma),
-		"p");
-  leg->SetBorderSize(0); leg->SetTextFont(132); leg->SetTextSize(0.08);
-  leg->Draw("same");
-}
-
-
-void physBinnedData(TString start=""){
+void compareAN(TString start=""){
   //Setup_______________
   const Int_t nBins =3;//HMDY
   TString Mtype ="HMDY";
@@ -53,10 +29,11 @@ void physBinnedData(TString start=""){
 
   TString pathAN = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
-  const Int_t nPhysBinned =6;
-  TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT", "M", "xN"};
-  //Last xN used for integrated values
-    
+  TString pathDR = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data/WAvg";
+  const Int_t nPhysBinned =5;
+  TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT", "xN"};
+  
   if (start==""){
     cout <<"Script draws Final AN asymmetry with systematics binned in physics";
     cout << "\nSystematics are input as a TGraph for each physics bin";
@@ -77,17 +54,15 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
   
   //Aesthetics setup
   TCanvas* cAsym = new TCanvas(); cAsym->Divide(nPhysBinned, 1, 0, 0.01);
-  Double_t yMax =(process=="DY") ? 0.25 : 0.1;
+  Double_t yMax =(process=="DY") ? 0.5 : 0.1;
   
   //Get Data file/Get graphs and plot
   TString physBinnedNames ="", fitNames="";
-  TGraphErrors *g_AN[nPhysBinned];
+  TGraphErrors *g_AN[nPhysBinned], *g_DR[nPhysBinned];
   for (Int_t phys=0; phys<nPhysBinned; phys++) {
-    TString AsymName;
-
-    Int_t nBinsName =nBins;
-    if (phys == nPhysBinned-1) {//used for integrated
-      nBinsName =1; }
+    TString AsymName, DRName;
+    Int_t binsName =nBins;
+    if (phys == nPhysBinned-1){ binsName =1; }//Integrated
     if (whichFit == "true"){
       if (fitMrange != lrMrange){
 	cout << "fit Mass range != left/right mass range with true fit" << endl;
@@ -98,34 +73,53 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
 	Form("%s/wAvg_%s_%s_%s%s_%s%s%i_%ihbin_%s_%s.root",
 	     pathAN.Data(), whichFit.Data(), Mtype.Data(), process.Data(),
 	     lrMrange.Data(), binRange.Data(), physBinned[phys].Data(),
-	     nBinsName, hbins, production.Data(), additionalCuts.Data());
+	     binsName, hbins, production.Data(), additionalCuts.Data());
+
+      Int_t nHbins =8;
+      if (phys ==1){
+	cout << "\n" << nHbins << " bins used for doubleratio\n" << endl;
+      }
+      DRName =
+	Form("%s/wAvg_%s_%s%i_%ihbins_%s.root", pathDR.Data(), Mtype.Data(),
+	     physBinned[phys].Data(), binsName, nHbins, production.Data());
     }
     else {
-      AsymName =
-	Form("%s/wAvg_%s%s_%s_%s%s_%s%s%i_%ihbin_%s_%s.root",
-	     pathAN.Data(), whichFit.Data(), fitMrange.Data(), Mtype.Data(),
-	     process.Data(), lrMrange.Data(), binRange.Data(),
-	     physBinned[phys].Data(), nBinsName, hbins, production.Data(),
-	     additionalCuts.Data());
+      cout << "Doesn't work" << endl;
+      exit(EXIT_FAILURE);
     }
         
     TFile *f_AN = OpenFile(AsymName);
+    TFile *f_DR = OpenFile(DRName);
+
+    g_AN[phys] =(TGraphErrors*)f_AN->Get("AN");
+    g_DR[phys] =(TGraphErrors*)f_DR->Get("Amp");
 
     cAsym->cd(phys+1);
-    gPad->SetFrameLineWidth(2);
-    g_AN[phys] =(TGraphErrors*)f_AN->Get("AN");
-    g_AN[phys]->Draw("AP"); g_AN[phys]->GetYaxis()->SetRangeUser(-yMax, yMax);
-    FinalSetupLocal(g_AN[phys]);
-    if (phys == nPhysBinned-1) {//used for integrated
-      g_AN[phys]->GetXaxis()->SetLimits(0.0, 0.35);
+    Double_t *yAN =g_AN[phys]->GetY();
+    Double_t *e_yAN =g_AN[phys]->GetEY();
+    for (Int_t bi=0; bi<g_AN[phys]->GetN(); bi++) {
+      yAN[bi] = yAN[bi]*TMath::Pi()/2.0;
+      e_yAN[bi] = e_yAN[bi]*TMath::Pi()/2.0;
     }
-    
+
+    g_AN[phys]->Draw("AP"); g_AN[phys]->GetYaxis()->SetRangeUser(-yMax, yMax);
+    g_AN[phys]->SetTitle(""); g_AN[phys]->SetMarkerColor(kBlue);
     DrawLine(g_AN[phys], 0.0);
-    DrawLegend(g_AN[phys]);
+
+    g_DR[phys]->SetMarkerColor(kRed);
+    g_DR[phys]->Draw("Psame");
+    
+    Double_t offset;
+    if (physBinned[phys] =="xF") offset = 0.003;
+    else if (physBinned[phys] =="pT") offset = 0.01;
+    else if (physBinned[phys] =="xN") offset = 0.0009;
+    else if (physBinned[phys] =="xPi") offset = 0.002;
+    offset *= 5.0;
+    OffSet(g_DR[phys], offset);
   }//phys binned loop
   
   //Write Output/Final Settings
-  TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
+  /*TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis \
 /TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/PhysBinnedData";
   TString fOutput;
   if (whichFit=="true"){
@@ -164,6 +158,6 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
   }
   cout << " " << endl;
   if (toWrite) cout << "File:  " << fOutput << "   was written" << endl;
-  else cout << "File: " << fOutput << " was NOT written" << endl;
+  else cout << "File: " << fOutput << " was NOT written" << endl;*/
 }
 

@@ -30,7 +30,7 @@ void doubleRatio(TString start=""){
   //Setup_______________
   const Int_t nBins =3;//# of physBinned bins
   const Int_t nHbins =8;
-  TString period ="W07";
+  TString period ="WAll";
   TString Mtype ="HMDY";
   TString physBinned ="xN";//"xN", "xPi", "xF", "pT", "M"
   TString production ="slot1";//"t3", "slot1"
@@ -211,7 +211,7 @@ TGeant/Presents/DATA/RealData/%s/BinValues/%sWAll_%s_%ibins.txt",
 
   //Write output/Settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data";
+TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data/DoubleRatio";
   TString fOutput =
     Form("%s/doubleRatio_%s_%s_%s%i_%ihbins_%s.root", thisDirPath.Data(),
 	 period.Data(), Mtype.Data(), physBinned.Data(), nBins, nHbins,

@@ -2,8 +2,11 @@
 
 if [ $# -ne 1 ]; then
     echo "" 
-    echo -n "This script loops over physics binning for input pipeline file"
+    echo "Pipeline script for \"integrated\" and \"all physics\" binning in:"
+    echo "   wAvg.C,  physBinnedData.C"
     echo ""
+    echo "To do:"
+    echo "Include other macros sysWphysBinnedData.C and sysOverStat.C"
     echo ""
     echo "To run this script provide as an argument:"
     echo "     \"h\" or \"0\" to see the current settings"
@@ -21,7 +24,7 @@ Steps=$1
 ##########
 ###Additional settings
 production="slot1"
-phiPhotonCut=0.088 
+phiPhotonCut=0.0 
 Mtype="HMDY"
 nBins=3
 hbins=150
@@ -50,7 +53,7 @@ additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include al
 ##Setup___ last line (50) to search setup
 
 #Basic Setup
-physBinned=("xN" "xPi" "xF" "pT")
+physBinned=("xN" "xPi" "xF" "pT" "M")
 HOME=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/FinalAsym
 
 echo ""
@@ -72,7 +75,6 @@ fi
 
 #Intial save files to be changed
 cp ${HOME}/wAvg.C ${HOME}/wAvg_tmp.C
-
 
 #Integrated
 ${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/wAvg.C 1 $Mtype $hbins "xN" $process $lrMrange $fitMrange $binRange $whichFit $production $additionalCuts
@@ -106,7 +108,6 @@ for phys in ${physBinned[@]}; do
     else
 	rm ${HOME}/wAvg_log.txt
     fi
-
     
 done
 

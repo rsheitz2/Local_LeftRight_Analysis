@@ -1,14 +1,14 @@
 #include "include/helperFunctions.h"
 
-void wAvg(){
+void wAvg(TString start=""){
   //Setup_______________
-  const Int_t nBins =1;//# of physBinned bins
-  const Int_t nHbins =16;
+  const Int_t nBins =3;//# of physBinned bins
+  const Int_t nHbins =8;
   TString Mtype ="HMDY";
   TString physBinned ="xN";//"xN", "xPi", "xF", "pT", "M"
   TString production ="slot1";//"t3", "slot1"
   
-  Bool_t toWrite =false;
+  Bool_t toWrite =true;
   //Setup_______________
   
   //Basic Setup
@@ -28,9 +28,9 @@ TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data";
   //Get Data and add for wAvg
   for (Int_t p=0; p<nPer; p++) {
     TString n_Wper =
-      Form("%s/doubleRatio_W%s_%s_%s%i_%ihbins_%s.root", pathDR.Data(),
-	   period[p].Data(), Mtype.Data(), physBinned.Data(), nBins, nHbins,
-	   production.Data());
+      Form("%s/DoubleRatio/doubleRatio_W%s_%s_%s%i_%ihbins_%s.root",
+	   pathDR.Data(), period[p].Data(), Mtype.Data(), physBinned.Data(),
+	   nBins, nHbins, production.Data());
     TFile *f_Wper = OpenFile(n_Wper);
     TGraphErrors *g_Wper = (TGraphErrors*) f_Wper->Get("Amp");
 

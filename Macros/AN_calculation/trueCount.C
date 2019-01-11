@@ -36,15 +36,15 @@ void GetLRerror(Double_t *leftCounts, Double_t *rightCounts,
 
 void trueCount(TString start=""){
   //Setup_______________
-  const Int_t nBins =1;//# of physBinned bins
-  TString period_Mtype ="Charles_HMDY";
+  const Int_t nBins =3;//# of physBinned bins
+  TString period_Mtype ="WAll_HMDY";
   TString binRange ="43_85";
   Double_t Mmin =4.30;//LR Mass minimum
   Double_t Mmax =8.50;//LR Mass maximum
-  TString physBinned ="xN";//"xF", "pT"
+  TString physBinned ="M";//"xF", "pT"
   TString process ="DY";//JPsi, psi, DY
   TString production ="slot1";//"t3", "slot1"
-  TString additionalCuts ="phiS0.53";
+  TString additionalCuts ="phiS0.0";
     
   Bool_t toWrite =false;
   //Setup_______________

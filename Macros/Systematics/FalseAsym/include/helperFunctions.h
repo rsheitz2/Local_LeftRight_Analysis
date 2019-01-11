@@ -99,6 +99,34 @@ Double_t WeightedAvg(vector<Double_t> &A, vector<Double_t> &eA){
 }
 
 
+Double_t WeightedAvgAndError(TGraphErrors *g, Double_t *sigma){
+  Double_t *yvals = g->GetY();
+  Double_t *e_yvals = g->GetEY();
+
+  Double_t avg =0.0, s2 =0.0;
+  for (Int_t i=0; i<g->GetN(); i++) {
+    avg += yvals[i]/(e_yvals[i]*e_yvals[i]);
+    s2 += 1.0/(e_yvals[i]*e_yvals[i]);
+  }
+
+  *sigma = TMath::Sqrt(1.0/s2);
+  
+  return avg/s2;
+}
+
+
+Double_t Avg(TGraph *g){
+  Double_t *yvals = g->GetY();
+
+  Double_t avg =0.0;
+  for (Int_t i=0; i<g->GetN(); i++) {
+    avg += yvals[i];
+  }
+
+  return avg/(g->GetN()*1.0);
+}
+
+
 Double_t WeightedAvg(Double_t A, Double_t B,
 		     Double_t eA, Double_t eB){
   Double_t e = 1/(eA*eA) + 1/(eB*eB);
@@ -260,6 +288,19 @@ void DrawLine(TGraphErrors *g, Double_t yval){
 }
 
 
+void DrawLine(TGraph *g, Double_t yval){
+  Double_t min_x = g->GetXaxis()->GetXmin();	
+  Double_t max_x = g->GetXaxis()->GetXmax();	
+  TLine* li = new TLine(min_x, yval, max_x, yval);
+  
+  li->SetLineColor(1);
+  li->SetLineStyle(8);
+  li->SetLineWidth(2);
+  
+  li->Draw("same");
+}
+
+
 void DrawLine(TH1D *h, Double_t yval){
   Double_t min_x = h->GetXaxis()->GetXmin();	
   Double_t max_x = h->GetXaxis()->GetXmax();	
@@ -324,6 +365,17 @@ Double_t f_CrystalBall(Double_t *x, Double_t *par){
   Double_t arg = (x[0] - par[1])/par[2];
   if (arg > -par[3] ) return par[0]*Norm*TMath::Exp(-0.5*arg*arg);
   else return par[0]*Norm*A*TMath::Power((B - arg), -par[1]);
+}
+
+
+TFile* OpenFile(TString name){
+  TFile *f = TFile::Open(name);
+  if(!f){
+    cout << name << " does not exist" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  return f;
 }
 
 #endif

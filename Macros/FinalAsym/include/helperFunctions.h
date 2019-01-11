@@ -77,6 +77,18 @@ Double_t RatioError(Double_t A, Double_t B,
 
 
 //Additional Calculations
+Double_t Avg(TGraph *g){
+  Double_t *yvals = g->GetY();
+
+  Double_t avg =0.0;
+  for (Int_t i=0; i<g->GetN(); i++) {
+    avg += yvals[i];
+  }
+
+  return avg/(g->GetN()*1.0);
+}
+
+
 Double_t WeightedAvg(vector<Double_t> &A, vector<Double_t> &eA){
 
   Double_t avg=0.0, e=0.0;
@@ -89,6 +101,22 @@ Double_t WeightedAvg(vector<Double_t> &A, vector<Double_t> &eA){
   avg /= e;
 
   return avg;
+}
+
+
+Double_t WeightedAvgAndError(TGraphErrors *g, Double_t *sigma){
+  Double_t *yvals = g->GetY();
+  Double_t *e_yvals = g->GetEY();
+
+  Double_t avg =0.0, s2 =0.0;
+  for (Int_t i=0; i<g->GetN(); i++) {
+    avg += yvals[i]/(e_yvals[i]*e_yvals[i]);
+    s2 += 1.0/(e_yvals[i]*e_yvals[i]);
+  }
+
+  *sigma = TMath::Sqrt(1.0/s2);
+  
+  return avg/s2;
 }
 
 

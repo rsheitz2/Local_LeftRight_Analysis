@@ -49,11 +49,12 @@ void phiScut(TString start=""){
 			      -0.5*TMath::Pi(), 3*0.5*TMath::Pi());
 
   //PhiS cuts
-  const Int_t nPhiSCuts =6;
-  
-  Double_t phiScut[nPhiSCuts] =
-    {0., 0.25*resPhiS, 0.5*resPhiS, resPhiS, 2*resPhiS, 3*resPhiS};
-  Double_t dataCut[nPhiSCuts] ={0.0};
+  const Int_t nPhiScut =12;
+  Double_t phiScut[nPhiScut] =
+    {0., 0.044, 0.088, 0.17, 0.26, 0.36, 0.53, 0.71, 0.88, 1.07, 1.24, 1.44};
+  /*Double_t phiScut[nPhiScut] =
+    {0., 0.25*resPhiS, 0.5*resPhiS, resPhiS, 2*resPhiS, 3*resPhiS};//*/
+  Double_t dataCut[nPhiScut] ={0.0};
   
   for (Int_t ev=0; ev<t->GetEntries(); ev++) {
   //cout << "\nDebug Mode \n"; for (Int_t ev=0; ev<1000; ev++) { //Debug mode
@@ -67,7 +68,7 @@ void phiScut(TString start=""){
     hPhiS->Fill(PhiS);
     hPhiPhoton->Fill(phiPhoton);
 
-    for (Int_t i=0; i<nPhiSCuts; i++) {
+    for (Int_t i=0; i<nPhiScut; i++) {
       Bool_t goodRange =true;
       if ( (phiPhoton < TMath::Pi()/2 + phiScut[i]) &&
 	   (phiPhoton > TMath::Pi()/2 - phiScut[i])) goodRange =false;
@@ -84,17 +85,19 @@ void phiScut(TString start=""){
 
   TCanvas *cCut = new TCanvas(); cCut->Divide(2);
   Int_t totalData =hPhiS->GetEntries();
-  Double_t totError[nPhiSCuts];
-  for (Int_t i=0; i<nPhiSCuts; i++) {
+  Double_t totError[nPhiScut], totalPhiScut[nPhiScut];
+  for (Int_t i=0; i<nPhiScut; i++) {
     totError[i] = 1.0/TMath::Sqrt(totalData - dataCut[i]);
       
-    dataCut[i] /= (1.0*totalData);
+    dataCut[i] *= (100.0/totalData);
+
+    totalPhiScut[i] = 4*phiScut[i];
   }
 
-  TGraph* gCutData = new TGraph(nPhiSCuts, phiScut, dataCut);
-  TGraph* gTotError = new TGraph(nPhiSCuts, phiScut, totError);
+  TGraph* gCutData = new TGraph(nPhiScut, totalPhiScut, dataCut);
+  TGraph* gTotError = new TGraph(nPhiScut, totalPhiScut, totError);
   Setup(gCutData); Setup(gTotError);
-  cCut->cd(1); gCutData->Draw("AP"); gCutData->SetTitle("Cut Data");
+  cCut->cd(1); gCutData->Draw("AP"); gCutData->SetTitle("Cut Data Percent");
   cCut->cd(2); gTotError->Draw("AP"); gTotError->SetTitle("Total Error");
 
   TString outName = Form("Data/PhiScut/phiScut_%s_%0.2f_%0.2f.root",

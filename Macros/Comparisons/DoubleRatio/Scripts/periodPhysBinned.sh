@@ -20,7 +20,7 @@ Steps=$1
 ##Setup___  first line (20) to seach setup
 ##########
 nBins=1
-nHbins=16
+nHbins=8
 Mtype="HMDY"
 production="slot1"
 
@@ -49,34 +49,48 @@ fi
 HOME=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio
 
 #Intial save files to be changed
-loopFile=${HOME}/doubleRatio.C
-cp $loopFile ${loopFile}_tmp
+cp ${HOME}/doubleRatio.C ${HOME}/doubleRatio_tmp.C
+cp ${HOME}/wAvg.C ${HOME}/wAvg_tmp.C
 
-for per in ${period[@]}; do
+for phy in ${physBinned[@]}; do
     echo ""
-    echo "Period $per"
+    echo "Physics Binned $phy"
     echo ""
-
-    for phy in ${physBinned[@]}; do
+    
+    for per in ${period[@]}; do
 	echo ""
-	echo "Physics Binned $phy"
+	echo "Period $per"
 	echo ""
 
 	#pipeline changes
-	${HOME}/Scripts/ChangeScripts/changeMacro.sh ${loopFile} $nBins $nHbins $per $Mtype $phy ${production}
+	${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/doubleRatio.C $nBins $nHbins $per $Mtype $phy ${production}
 	#Execute
-	root -l -b -q "${loopFile}(1)" >> ${loopFile}_log.txt
+	root -l -b -q "${HOME}/doubleRatio.C(1)" >> ${HOME}/doubleRatio_log.txt
 	if [ $? != 0 ]; then
-	    echo "${loopFile} did not execute well"
-	    mv ${loopFile} ${loopFile}.bak
-	    mv ${loopFile}_tmp ${loopFile}
+	    echo "${HOME}/doubleRatio.C did not execute well"
+	    mv ${HOME}/doubleRatio.C ${HOME}/doubleRatio.C.bak
+	    mv ${HOME}/doubleRatio_tmp.C ${HOME}/doubleRatio.C
 	    exit 1
 	else
-	    rm ${loopFile}_log.txt
+	    rm ${HOME}/doubleRatio_log.txt
 	fi
-    done #physics binning
-done #period binning
+    done #period binning
+
+    #pipeline changes
+    ${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/wAvg.C $nBins $nHbins blank $Mtype $phy ${production}
+    #Execute
+    root -l -b -q "${HOME}/wAvg.C(1)" >> ${HOME}/wAvg_log.txt
+    if [ $? != 0 ]; then
+    	echo "wAvg.C did not execute well"
+    	mv ${HOME}/wAvg.C ${HOME}/wAvg.C.bak
+    	mv ${HOME}/wAvg_tmp.C ${HOME}/wAvg.C
+    	exit 1
+    else
+    	rm ${HOME}/wAvg_log.txt
+    fi
+done #physics binning
 
 #Clean up
-mv ${loopFile}_tmp ${loopFile}
-rm ${loopFile}.bak
+mv ${HOME}/doubleRatio_tmp.C ${HOME}/doubleRatio.C
+mv ${HOME}/wAvg_tmp.C ${HOME}/wAvg.C
+rm ${HOME}/*.bak

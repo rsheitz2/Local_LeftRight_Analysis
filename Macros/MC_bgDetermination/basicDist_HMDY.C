@@ -1,17 +1,15 @@
 #include "Include/helperFunctions.h"
 
-void basicDist(TString start=""){
+void basicDist_HMDY(TString start=""){
   //Setup__________
   TString physType = "PhiS";
-  Double_t xMin=-TMath::Pi(), xMax=TMath::Pi(); Int_t nBins=100;
+  Double_t xMin=-TMath::Pi(), xMax=TMath::Pi(); Int_t nBins=50;
   TString additionalCut = "";
   
   TString whichMC ="Charles"; //"Yu", "Charles"
   const Double_t Mmin=4.3, Mmax=8.5; //Mass cut
   TString whichRD ="slot1"; //"t3", "slot1"
-
   Bool_t fromHist =true;
-  Bool_t HMDYonly =false;
 
   Bool_t toWrite =false;
   //Setup__________
@@ -22,7 +20,6 @@ void basicDist(TString start=""){
   //TString physType = "x_target"; Double_t xMin=0.04, xMax=0.5; Int_t nBins=200;
   TString additionalCut = "&&x_beam>0.2&&x_beam<0.8";//*/
   
-  const Int_t nFiles=6;
   TString MassCut = Form("Mmumu>%0.2f&&Mmumu<%0.2f", Mmin, Mmax);
     
   if (start=="") {
@@ -38,17 +35,19 @@ void basicDist(TString start=""){
     cout << "root \'BasicDist(1)\'" << endl;
     exit(EXIT_FAILURE);
   }
+
+  const Int_t nFiles =2;
+  //{AMDY}//Fit results from FitMassComponents.C
+  TString fitFileName =
+    Form("fitComponents_%s_%s_%0.2f_%0.2f_histFit%i_HMonly.root",
+	 whichMC.Data(), whichRD.Data(), Mmin, Mmax, fromHist);
   
-  //{JPsi, psi, OC, AMDY}//Fit results from FitMassComponents.C
-  TString fitFileName =Form("fitComponents_%s_%s_%0.2f_%0.2f_histFit%i.root",
-			    whichMC.Data(), whichRD.Data(), Mmin, Mmax,
-			    fromHist);
   TFile *fFits = OpenFile("Data/FitMassComponents/"+fitFileName);
   TGraphErrors *gPars = (TGraphErrors*)fFits->Get("gPar");
   Double_t *Counts = gPars->GetY();
 
   //Aesthetic setup
-  Int_t icolor[nFiles+1] = {6,3,9,4,2,1, 1};//{JPsi, psi, OC, AMDY,Sum,RealData}
+  Int_t icolor[nFiles+1] = {4,2,1};//{HMDY, Sum, RealData}
 
   //Data file names and paths
   TString localData = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
@@ -56,43 +55,33 @@ TGeant/Presents/DATA/";
   TString dataPathNames[nFiles];
   if (whichMC=="Yu"){
     TString pathMC =localData+"MC_Data/YuShiangMC/";
-    dataPathNames[0] = pathMC+"JPsi/Yu_Wall_full_main_JPsi_20bins.root";
-    dataPathNames[1] = pathMC+"psi/Yu_Wall_full_main_psi_20bins.root";
-    dataPathNames[2] = pathMC+"OC/Yu_Wall_full_main_OC_20bins.root";
-    dataPathNames[3] = pathMC+"AMDY/Yu_Wall_full_main_AMDY_20bins.root";
+    dataPathNames[0] = pathMC+"AMDY/Yu_Wall_full_main_AMDY_20bins.root";
   }
   else if (whichMC=="Charles") {
     TString pathMC ="/Volumes/Seagate/DrellYan/Charles_Official/";
-    dataPathNames[0] = pathMC+"Charles_W12_Jpsi.root";
-    dataPathNames[1] = pathMC+"Charles_W12_Psi.root";
-    dataPathNames[2] = pathMC+"Charles_W12_OC.root";
-    dataPathNames[3] = pathMC+"Charles_W12_LMDY.root";
-    dataPathNames[4] = pathMC+"Charles_W12_HMDY.root";
+    dataPathNames[0] = pathMC+"Charles_W12_HMDY.root";
   }
   else {
     cout << "MC specified does not exist" << endl;
     exit(EXIT_FAILURE);
   }
   if (whichRD=="t3"){
-    dataPathNames[4] = localData+"RealData/LowM_AMDY/WAll_LowM_AMDY.root";    
+    dataPathNames[1] = localData+"RealData/HMDY/WAll_HMDY.root";    
   }
   else if (whichRD=="slot1"){
-    dataPathNames[4] = localData+"RealData/LowM_AMDY/slot1WAll_LowM_AMDY.root";
+    dataPathNames[1] = localData+"RealData/HMDY/slot1WAll_HMDY.root";
   }
   else {
     cout << "RD specifed does not exist" << endl;
     exit(EXIT_FAILURE);
   }
   
-  TFile *fJPsi = TFile::Open(dataPathNames[0]);
-  TFile *fpsi = TFile::Open(dataPathNames[1]);
-  TFile *fOC = TFile::Open(dataPathNames[2]);
-  TFile *fAMDY = TFile::Open(dataPathNames[3]);
-  TFile *fReal = TFile::Open(dataPathNames[4]);
-  TFile *Files[nFiles] = {fJPsi, fpsi, fOC, fAMDY, fReal};
+  TFile *fHMDY = TFile::Open(dataPathNames[0]);
+  TFile *fReal = TFile::Open(dataPathNames[1]);
+  TFile *Files[nFiles] = {fHMDY, fReal};
   TH1D *hist[nFiles];
   
-  TString type[nFiles] = {"JPsi", "psi", "OC", "AMDY", "Real"};
+  TString type[nFiles] = {"HMDY", "Real"};
   for (Int_t i=0; i<nFiles; i++) {
     if (!Files[i]) {
       cout << "File:   " << i << "   does not exist " << endl;
@@ -102,26 +91,16 @@ TGeant/Presents/DATA/";
 		       Form("h_%s", type[i].Data()), nBins, xMin, xMax);
     Setup(hist[i]);
   }
-  TTree *tJPsi = (TTree*) fJPsi->Get("pT_Weighted");
-  TTree *tpsi = (TTree*) fpsi->Get("pT_Weighted");
-  TTree *tOC = (TTree*) fOC->Get("pT_Weighted");
-  TTree *tAMDY = (TTree*) fAMDY->Get("pT_Weighted");
+  TTree *tHMDY = (TTree*) fHMDY->Get("pT_Weighted");
   TTree *tReal = (TTree*) fReal->Get("pT_Weighted");
 
   //Draw distributions from tree
   TCanvas* c1 = new TCanvas();
-  tJPsi->Draw(Form("%s>>h_JPsi",physType.Data() ), MassCut+additionalCut,
-	      "0");
-  tpsi->Draw(Form("%s>>h_psi"  ,physType.Data() ), MassCut+additionalCut,
-	     "0");
-  tOC->Draw(Form("%s>>h_OC"    ,physType.Data() ), MassCut+additionalCut,
-	    "0");
-  tAMDY->Draw(Form("%s>>h_AMDY",physType.Data() ), MassCut+additionalCut,
+  tHMDY->Draw(Form("%s>>h_HMDY",physType.Data() ), MassCut+additionalCut,
 	      "0");
   tReal->Draw(Form("%s>>h_Real",physType.Data() ), MassCut+additionalCut,
 	      "0");
   hist[nFiles-1]->Draw(); hist[nFiles-1]->SetLineColor(icolor[nFiles]);
-
   
   for (Int_t i=0; i<nFiles-1; i++) {
     hist[i]->Sumw2();
@@ -137,9 +116,8 @@ TGeant/Presents/DATA/";
   histTotal->SetLineColor(icolor[nFiles-1]);
   histTotal->Draw("same");
   
-  
   TCanvas* c2 = new TCanvas();
-  TRatioPlot *rp = new TRatioPlot(hist[nFiles-1], histTotal);
+  TRatioPlot *rp = new TRatioPlot(histTotal, hist[nFiles-1]);
   rp->Draw(); Setup(rp); 
   rp->GetLowerRefGraph()->SetMinimum(0.8);
   rp->GetLowerRefGraph()->SetMaximum(1.2);

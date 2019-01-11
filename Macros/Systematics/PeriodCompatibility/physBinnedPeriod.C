@@ -2,29 +2,29 @@
 
 void physBinnedPeriod(TString start=""){
   //Setup_______________
-  const Int_t nBins =1;//HMDY
+  const Int_t nBins =3;//HMDY
   TString fitMrangeType ="HMDY";
   Int_t hbins =150;
-  TString physBinned ="xF";//xN, xPi, xF, pT, M
+  TString physBinned ="M";//xN, xPi, xF, pT, M
   TString process ="DY";
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";
   TString binRange ="43_85";
   TString whichFit ="true";
-  TString production ="t3";//"t3", "slot1"
-  TString additionalCuts ="phiS0.53";//*/
-  
-  /*const Int_t nBins =5;
-  TString fitMrangeType ="LowM_AMDY";
-  Int_t hbins =150;
-  TString physBinned ="pT";//xN, xPi, xF, pT, M
-  TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="2.00_5.00";
-  TString fitMrange ="2.00_8.50";
-  TString binRange ="25_43";
-  TString whichFit ="thirteen";
   TString production ="slot1";//"t3", "slot1"
-  TString additionalCuts ="phiS0.53";//*/
+  TString additionalCuts ="phiS0.0";//*/
+  
+  /*const Int_t nBins =3;
+  TString fitMrangeType ="HMDY";
+  Int_t hbins =150;
+  TString physBinned ="xN";//xN, xPi, xF, pT, M
+  TString process ="DY";//JPsi, psi, DY
+  TString lrMrange ="4.30_8.50";
+  TString fitMrange ="4.30_8.50";
+  TString binRange ="43_85";
+  TString whichFit ="true";
+  TString production ="t3";//"t3", "slot1"
+  TString additionalCuts ="phiS0.0";//*/
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -65,14 +65,15 @@ GeoMean4Targ";
   TCanvas* cAllper = new TCanvas();
   TLegend *legend = new TLegend(0.1,0.7,0.48,0.9);
   Double_t yMax = (fitMrangeType=="HMDY") ? 0.75 : 0.25;
-  Int_t icolor[nPeriods] = {4, 6, 15, 2, 3, 7, 5, 9, 30};
+  Int_t icolor[nPeriods] = {kBlue+2, kRed+2, kGreen+2, kMagenta+2, kCyan+2,
+			    kBlue, kRed, kGreen, kMagenta};
   Int_t imarker[nPeriods] = {20, 21, 22, 23, 24, 25, 26, 27, 28};
   Double_t offset;
   if (physBinned =="xF") offset = 0.003;
   else if (physBinned =="pT") offset = 0.01;
   else if (physBinned =="xN") offset = 0.0009;
   else if (physBinned =="xPi") offset = 0.002;
-  TList *doc = new TList(); TString docName="";
+  else if (physBinned =="xM") offset = 0.035;
 
   //Compute Weighed Average per Period 
   Double_t xVal[nPeriods], perWavg[nPeriods];
@@ -96,8 +97,8 @@ GeoMean4Targ";
 	     binRange.Data(), physBinned.Data(), nBins, hbins,production.Data(),
 	     additionalCuts.Data());
     }
+    cout << "Using data from:  " << fname << endl;
     TFile *f = TFile::Open(fname);
-    docName+= fname+"\n";
 
     if (!f){
       cout << "RD or RD_noCorr file does not exist " << endl;
@@ -118,6 +119,8 @@ GeoMean4Targ";
       g_periods[p]->GetYaxis()->SetRangeUser(-yMax, yMax);
       g_periods[p]->SetTitle("AN");
       g_periods[p]->GetXaxis()->SetTitle(physBinned);
+      if (physBinned=="M")
+	g_periods[p]->GetXaxis()->SetLimits(4.3, 7.0);
       DrawLine(g_periods[p], 0.0);
     }
     else g_periods[p]->Draw("Psame");
@@ -148,12 +151,14 @@ GeoMean4Targ";
   TString fOutput;
   if  (whichFit=="true"){
     fOutput
-      =Form("%s/Data/physBinned/physBinnedPeriod_true_%s_%s%s_%s%i_%s_%s.root",
+      =Form("%s/Data/physBinned/physBinnedPeriod_true_%s_%s%s_%s%s%i_%s_%s.root",
 	    thisDirPath.Data(), fitMrangeType.Data(), process.Data(),
-	    lrMrange.Data(), physBinned.Data(), nBins, production.Data(),
-	    additionalCuts.Data());
+	    lrMrange.Data(), binRange.Data(), physBinned.Data(), nBins,
+	    production.Data(), additionalCuts.Data());
   }
   else {
+    cout << "Need to fix this file naming..." << endl;
+    exit(EXIT_FAILURE);
     fOutput =
       Form("%s/Data/physBinned/\
 physBinnedPeriod_%s%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
@@ -164,9 +169,6 @@ physBinnedPeriod_%s%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
   }
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
-    doc->Add((TObject*)(new TObjString(docName)) );
-    doc->Write("InputData");
-    
     for (Int_t p=0; p<nPeriods; p++)
       g_periods[p]->Write(Form("AN_W%s", periods[p].Data() ));
 

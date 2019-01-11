@@ -69,6 +69,22 @@ Double_t FalseAmp_subper(Double_t NL[][4], Double_t NR[][4],
 }
 
 
+Double_t FalseAmp_2Targ(Double_t *NL, Double_t *NR,
+			Double_t Pol){
+  //For making Jura/Saleve acceptance ratios
+  //Input targets should be entered so correct Left/Right are first to NL/NR
+
+  Double_t L, R;
+  L = NL[0]*NR[1];
+  R = NR[0]*NL[1];
+
+  Double_t A = TMath::Sqrt(L) - TMath::Sqrt(R);
+  A /= TMath::Sqrt(L) + TMath::Sqrt(R);
+
+  return A/Pol;
+}
+
+
 Double_t e_Amp_pol(Double_t NL[][4], Double_t NR[][4],
 		   Double_t e_NL[][4], Double_t e_NR[][4],
 		   Double_t Pol, Int_t bi){
@@ -123,6 +139,40 @@ Double_t e_Amp_subper(Double_t NL[][4], Double_t NR[][4],
 }
 
 
+Double_t e_Amp_2Targ(Double_t *NL, Double_t *NR, Double_t *e_NL, Double_t *e_NR,
+		     Double_t Pol){
+  //Input targets should be entered so correct Left/Right are first to NL/NR
+  //Calculated assuming a false asymmetry
+  
+  Double_t epsilon = FalseAmp_2Targ(NL, NR, 1.0);
+  //epsilon == polarization UNcorrected asymmetry
+
+  Double_t L, R;
+  L = NL[0]*NR[1];
+  R = NR[0]*NL[1];
+
+  L = TMath::Sqrt(L);
+  R = TMath::Sqrt(R);
+  
+  Double_t LinvSum = e_NL[0]*e_NL[0]/( NL[0]*NL[0] );
+  LinvSum += e_NR[1]*e_NR[1]/( NR[1]*NR[1] );
+  Double_t RinvSum = e_NR[0]*e_NR[0]/( NR[0]*NR[0] );
+  RinvSum += e_NL[1]*e_NL[1]/( NL[1]*NL[1] );
+  
+  LinvSum = TMath::Sqrt(LinvSum); RinvSum = TMath::Sqrt(RinvSum);
+  
+  Double_t dL = 0.5*L*LinvSum;
+  Double_t dR = 0.5*R*RinvSum;
+  
+  Double_t error =
+    (1 - epsilon)*(1-epsilon)*dL*dL + (1 + epsilon)*(1 + epsilon)*dR*dR;
+  error = TMath::Sqrt(error);
+  error *= 1.0/(L + R);
+  
+  return error/Pol;
+}
+
+
 void CalAmp_AmpErr(Double_t *Fasym, Double_t *e_Fasym,
 		   Double_t NL[][4], Double_t NR[][4],
 		   Double_t e_NL[][4], Double_t e_NR[][4],
@@ -137,9 +187,17 @@ void CalAmp_AmpErr(Double_t *Fasym, Double_t *e_Fasym,
       Fasym[bi] = FalseAmp_subper(NL, NR, Pol[bi], bi);
       e_Fasym[bi] = e_Amp_subper(NL, NR, e_NL, e_NR, Pol[bi], bi);
     }
+    else if (whichFasym=="2TargupS"){
+      Fasym[bi] = FalseAmp_2Targ(NL[bi], NR[bi], Pol[bi]);
+      e_Fasym[bi] = e_Amp_2Targ(NL[bi], NR[bi], e_NL[bi], e_NR[bi], Pol[bi]);
+    }
+    else if (whichFasym=="2TargdownS"){
+      Fasym[bi] = FalseAmp_2Targ(&(NL[bi][2]), &(NR[bi][2]), Pol[bi]);
+      e_Fasym[bi] = e_Amp_2Targ(&(NL[bi][2]), &(NR[bi][2]),
+				&(e_NL[bi][2]), &(e_NR[bi][2]), Pol[bi]);
+    }
   }
 }
-
 
 
 void falseGeoMean4Targ_targFlips(TString start =""){
@@ -147,14 +205,14 @@ void falseGeoMean4Targ_targFlips(TString start =""){
   const Int_t nBins =3;//HMDY
   TString period_Mtype ="W12_HMDY";
   Int_t hbins =150;
-  TString physBinned ="xPi";//xN, xPi, xF, pT, M
+  TString physBinned ="M";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";
   TString binRange ="43_85";
   TString whichFit ="true";
   TString production ="slot1";//"t3", "slot1"
-  TString additionalCuts ="phiS0.53";
+  TString additionalCuts ="phiS0.0";
   
   //const Int_t nBins =5;//JPsi
   //TString period_Mtype ="W12_LowM_AMDY";
@@ -291,11 +349,15 @@ TGeant/Local_leftRight_Analysis/Data/";
     }
   }
   
-  //Make 4Targ False Asymmetries
-  Double_t fAN_pol[nBins], e_fAN_pol[nBins];
-  Double_t fAN_subper[nBins], e_fAN_subper[nBins];
+  //Make False Asymmetries
   Double_t ex[nBins] = {0.0};
   Double_t *xvals = g_Pol->GetX();
+  //4Targ FAs
+  Double_t fAN_pol[nBins], e_fAN_pol[nBins];
+  Double_t fAN_subper[nBins], e_fAN_subper[nBins];
+  //2Targ FAs (acceptance ratio is J/S)
+  Double_t fAN_upS[nBins], e_fAN_upS[nBins];
+  Double_t fAN_downS[nBins], e_fAN_downS[nBins];
 
   //Get polarization values
   Double_t Pol[nBins];
@@ -308,6 +370,12 @@ TGeant/Local_leftRight_Analysis/Data/";
   CalAmp_AmpErr(fAN_subper, e_fAN_subper, LeftCounts, RightCounts,
 		e_LeftCounts, e_RightCounts, Pol, nBins,
 		"subper");
+  CalAmp_AmpErr(fAN_upS, e_fAN_upS, LeftCounts, RightCounts,
+		e_LeftCounts, e_RightCounts, Pol, nBins,
+		"2TargupS");
+  CalAmp_AmpErr(fAN_downS, e_fAN_downS, LeftCounts, RightCounts,
+		e_LeftCounts, e_RightCounts, Pol, nBins,
+		"2TargdownS");
     
   //Draw false AN
   TGraphErrors *g_fAN_pol =
@@ -317,12 +385,28 @@ TGeant/Local_leftRight_Analysis/Data/";
     = new TGraphErrors(nBins, xvals, fAN_subper, ex, e_fAN_subper);
   SetUp(g_fAN_subper);
 
-  TCanvas* c1 = new TCanvas();
+  TCanvas* c4Targ = new TCanvas();
   Double_t yMax = (nBins==3) ? 0.75 : 0.25;
   g_fAN_pol->Draw("AP"); g_fAN_pol->SetMarkerColor(kRed);
   g_fAN_subper->Draw("Psame"); g_fAN_subper->SetMarkerColor(kBlue);
   g_fAN_pol->GetYaxis()->SetRangeUser(-yMax, yMax);
   DrawLine(g_fAN_pol, 0.0);
+  g_fAN_pol->SetTitle("4Targ False Asymmetries");
+
+  //Draw 2Targ FA
+  TGraphErrors *g_fAN_upS =
+    new TGraphErrors(nBins, xvals, fAN_upS, ex, e_fAN_upS);
+  SetUp(g_fAN_upS);
+  TGraphErrors *g_fAN_downS
+    = new TGraphErrors(nBins, xvals, fAN_downS, ex, e_fAN_downS);
+  SetUp(g_fAN_downS);
+
+  TCanvas* cTwoTarg = new TCanvas();
+  g_fAN_upS->Draw("AP"); g_fAN_upS->SetMarkerColor(kRed);
+  g_fAN_upS->GetYaxis()->SetRangeUser(-yMax*1.5, yMax*1.5);
+  g_fAN_downS->Draw("Psame"); g_fAN_downS->SetMarkerColor(kBlue);
+  DrawLine(g_fAN_upS, 0.0);
+  g_fAN_upS->SetTitle("Two Targ False Asymmetries");
   
   //Write output/final settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
@@ -347,6 +431,9 @@ TGeant/Local_leftRight_Analysis/Data/";
     g_fAN_pol->Write("falseAN_pol");
     g_fAN_subper->Write("falseAN_subper");
     g_PolDil->Write("Polarization");
+
+    g_fAN_upS->Write("falseAN_2Targ_upS");
+    g_fAN_downS->Write("falseAN_2Targ_downS");
   }
 
   cout << " " << endl;
