@@ -5,7 +5,6 @@ Local_LeftRight_Analysis/Macros/include/finalSetup.h"
 void OffSet(TGraphErrors *g, Double_t offset){
   Double_t *xval = g->GetX();
   for (Int_t i=0; i<g->GetN(); i++) xval[i] += offset;
-
 }
 
 

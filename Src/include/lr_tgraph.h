@@ -24,6 +24,12 @@ private:
   TLine *li_asym_downup_left, *li_asym_downup_right;
 
   TGraph *gr_Pol, *gr_Dil;
+  TGraph *gr_Pol_upstream, *gr_Dil_upstream;
+  TGraph *gr_Pol_upstream_up, *gr_Dil_upstream_up;
+  TGraph *gr_Pol_upstream_down, *gr_Dil_upstream_down;
+  TGraph *gr_Pol_downstream, *gr_Dil_downstream;
+  TGraph *gr_Pol_downstream_up, *gr_Dil_downstream_up;
+  TGraph *gr_Pol_downstream_down, *gr_Dil_downstream_down;
 
   std::vector<double> ex;
 

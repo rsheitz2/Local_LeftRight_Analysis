@@ -1,3 +1,6 @@
+#ifndef HELPERFUNCTIONS_H
+#define HELPERFUNCTIONS_H
+
 //Calculations
 Double_t WeightedAvg(vector<Double_t> &A, vector<Double_t> &eA){
 
@@ -85,7 +88,7 @@ void SetUp(TGraphErrors *g, Int_t icolor, Int_t imarker, Double_t xShift){
 
 
 void SetUp(TGraphErrors* g, Int_t icolor=1,
-		 Double_t offset=0.0, Int_t nBins=0){
+	   Double_t offset=0.0, Int_t nBins=0){
   g->SetMarkerStyle(21);
   g->SetMarkerColor(icolor);
 
@@ -168,9 +171,11 @@ void DrawLine(TH1D *h, Double_t yval){
 TFile* OpenFile(TString name){
   TFile* f = TFile::Open(name);
   if (!f){
-      cout << "File does not exist:  " << name << endl;
-      exit(EXIT_FAILURE);
+    cout << "File does not exist:  " << name << endl;
+    exit(EXIT_FAILURE);
   }
 
   return f;
 }
+
+#endif

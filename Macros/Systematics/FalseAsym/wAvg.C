@@ -57,7 +57,10 @@ void wAvg(){
   TString additionalCuts ="phiS0.0";//*/
 
   Bool_t toWrite =false;
-   //Setup_______________
+  //Setup_______________
+
+  //cleanup
+  cout << "\n\n!!!!!\nDo something about period canvases....\n!!!!!\n" << endl;
   
   //Basic Setup
   TString pathFA="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
@@ -65,12 +68,22 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data";
   const Int_t nPer =9;
   TString period[nPer] ={"W07", "W08", "W09", "W10", "W11", "W12", "W13", "W14",
 			 "W15"};
-  
+  Int_t icolor[nPer] = {kBlue+2, kRed+2, kGreen+2, kMagenta+2, kCyan+2,
+			kBlue, kRed, kGreen, kMagenta};
+
+  //TGraph axis's
   Double_t yFAsubper[nBins] ={0.0}, e_yFAsubper[nBins] ={0.0};
+  Double_t yFApol[nBins] ={0.0}, e_yFApol[nBins] ={0.0};
   Double_t yAcc[nBins] ={0.0}, e_yAcc[nBins] ={0.0};
   Double_t ySys[nBins] ={0.0};
   Double_t ex[nBins] ={0.0};
   Double_t *xvals;
+
+  //Period specific
+  TCanvas* cPerFApol = new TCanvas();
+  TLegend *legend = new TLegend(0.1,0.7,0.48,0.9); legend->SetNColumns(3);
+
+  TCanvas* cPer = new TCanvas(); cPer->Divide(3, 3, 0, 0);
 
   //Get Data and add for wAvg
   for (Int_t p=0; p<nPer; p++) {
@@ -110,14 +123,46 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
     TFile *f_FA = OpenFile(perFAsubper); TFile *f_acc = OpenFile(perAcc);
     TFile *f_sys = OpenFile(perSysErr);
     TGraphErrors *g_FAsubper = (TGraphErrors*) f_FA->Get("falseAN_subper");
+    TGraphErrors *g_FApol = (TGraphErrors*) f_FA->Get("falseAN_pol");
+    TGraphErrors *g_upS = (TGraphErrors*) f_FA->Get("falseAN_2Targ_upS");
+    TGraphErrors *g_downS = (TGraphErrors*) f_FA->Get("falseAN_2Targ_downS");
     TGraphErrors *g_Acc = (TGraphErrors*) f_acc->Get("alpha_subper");
     TGraphErrors *g_sys = (TGraphErrors*) f_sys->Get("gSys");
     
     AddWAvg(g_FAsubper, yFAsubper, e_yFAsubper);
+    AddWAvg(g_FApol, yFApol, e_yFApol);
     AddWAvg(g_Acc, yAcc, e_yAcc);
     AddErrorWAvg(g_sys, ySys);
     
     if (p==0) xvals = g_FAsubper->GetX();
+
+    //period only
+    if (p==0){
+      cPerFApol->cd();
+      g_FApol->Draw("AP");
+      DrawLine(g_FApol, 0.0);
+    }
+    else {
+      cPerFApol->cd();
+      g_FApol->Draw("Psame");
+    }
+    OffSet(g_FApol, p*0.001);
+    g_FApol->SetMarkerStyle(p+20); g_FApol->SetMarkerColor(icolor[p]);
+    legend->AddEntry(g_FApol, Form("%s", period[p].Data()), "p");
+
+    if (p==nPer-1) {
+      cPerFApol->cd();
+      legend->Draw("same");
+    }
+
+    cPer->cd(p+1);//changed for thesis plot
+    //g_FApol->Draw("AP"); DrawLine(g_FApol, 0.0);
+    g_upS->Draw("AP"); DrawLine(g_upS, 0.0);
+    g_upS->GetYaxis()->SetRangeUser(-0.9, 0.9);
+    g_upS->GetYaxis()->SetTitle("A_{N,false}");
+    g_upS->SetTitle(Form("%s", period[p].Data()));
+    OffSet(g_downS, 0.005);
+    g_downS->Draw("Psame"); 
   }
 
   //Final wAvg calculation
@@ -125,6 +170,9 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
   for (Int_t i=0; i<nBins; i++) {
     yFAsubper[i] /= e_yFAsubper[i];
     e_yFAsubper[i] = TMath::Sqrt(1.0/e_yFAsubper[i]);
+
+    yFApol[i] /= e_yFApol[i];
+    e_yFApol[i] = TMath::Sqrt(1.0/e_yFApol[i]);
 
     yAcc[i] /= e_yAcc[i];
     e_yAcc[i] = TMath::Sqrt(1.0/e_yAcc[i]);
@@ -137,21 +185,26 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
   TGraphErrors* g_WAvg_FAsubper =
     new TGraphErrors(nBins, xvals, yFAsubper, ex, e_yFAsubper);
 
+  TGraphErrors* g_WAvg_FApol =
+    new TGraphErrors(nBins, xvals, yFApol, ex, e_yFApol);
+
   TGraphErrors* g_WAvg_Acc =
     new TGraphErrors(nBins, xvals, yAcc, ex, e_yAcc);
 
   TGraph* g_WAvg_Sys = new TGraph(nBins, xvals, ySys);
   TGraph* g_WAvg_Sys_Stat = new TGraph(nBins, xvals, ySys_stat);
   
-  SetUp(g_WAvg_FAsubper); SetUp(g_WAvg_Acc);
+  SetUp(g_WAvg_FAsubper); SetUp(g_WAvg_Acc); SetUp(g_WAvg_FApol);
   SetUp(g_WAvg_Sys); SetUp(g_WAvg_Sys_Stat); 
 
   //Draw data
   TCanvas* cFA = new TCanvas();
-  g_WAvg_FAsubper->Draw("AP"); g_WAvg_FAsubper->SetTitle("falseAN_subper");
+  g_WAvg_FAsubper->Draw("AP");
+  g_WAvg_FAsubper->SetTitle("falseAN_subper/pol(blue)");
   if (Mtype=="HMDY"){ g_WAvg_FAsubper->GetYaxis()->SetRangeUser(-0.25, 0.25); }
   else { g_WAvg_FAsubper->GetYaxis()->SetRangeUser(-0.08, 0.08); }
   DrawLine(g_WAvg_FAsubper, 0.0);
+  g_WAvg_FApol->Draw("Psame"); g_WAvg_FApol->SetMarkerColor(kBlue);
 
   TCanvas* cAcc = new TCanvas();
   g_WAvg_Acc->Draw("AP"); g_WAvg_Acc->SetTitle("acc_subper");
@@ -186,6 +239,7 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
     g_WAvg_FAsubper->Write("falseAN_subper");
+    g_WAvg_FApol->Write("falseAN_pol");
     g_WAvg_Acc->Write("acc_subper");
     g_WAvg_Sys->Write("gSys");
     g_WAvg_Sys_Stat->Write("gSys_Stat");

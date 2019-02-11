@@ -144,6 +144,36 @@ void lr_tgraph::Fill(){
     new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol[0]) );
   this->gr_Dil =
     new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil[0]) );
+
+  this->gr_Pol_upstream =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_upstream[0]) );
+  this->gr_Dil_upstream =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_upstream[0]) );
+
+  this->gr_Pol_upstream_up =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_upstream_up[0]) );
+  this->gr_Dil_upstream_up =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_upstream_up[0]) );
+
+  this->gr_Pol_upstream_down =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_upstream_down[0]));
+  this->gr_Dil_upstream_down =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_upstream_down[0]));
+
+    this->gr_Pol_downstream =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_downstream[0]) );
+  this->gr_Dil_downstream =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_downstream[0]) );
+
+  this->gr_Pol_downstream_up =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_downstream_up[0]));
+  this->gr_Dil_downstream_up =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_downstream_up[0]));
+
+  this->gr_Pol_downstream_down =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_downstream_down[0]));
+  this->gr_Dil_downstream_down =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_downstream_down[0]));
   
   setupTGraph(this->gr_asym); setupTGraph(this->gr_asym_upstream);
   setupTGraph(this->gr_asym_downstream);
@@ -177,6 +207,24 @@ void lr_tgraph::Fill(){
 
   setupTGraph(this->gr_Pol);
   setupTGraph(this->gr_Dil);
+
+  setupTGraph(this->gr_Pol_upstream);
+  setupTGraph(this->gr_Dil_upstream);
+
+  setupTGraph(this->gr_Pol_upstream_up);
+  setupTGraph(this->gr_Dil_upstream_up);
+
+  setupTGraph(this->gr_Pol_upstream_down);
+  setupTGraph(this->gr_Dil_upstream_down);
+
+  setupTGraph(this->gr_Pol_downstream);
+  setupTGraph(this->gr_Dil_downstream);
+
+  setupTGraph(this->gr_Pol_downstream_up);
+  setupTGraph(this->gr_Dil_downstream_up);
+
+  setupTGraph(this->gr_Pol_downstream_down);
+  setupTGraph(this->gr_Dil_downstream_down);
 }
 
 
@@ -220,6 +268,36 @@ void lr_tgraph::Fill(TString toFill){
     new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol[0]) );
   this->gr_Dil =
     new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil[0]) );
+
+  this->gr_Pol_upstream =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_upstream[0]) );
+  this->gr_Dil_upstream =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_upstream[0]) );
+
+  this->gr_Pol_upstream_up =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_upstream_up[0]) );
+  this->gr_Dil_upstream_up =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_upstream_up[0]) );
+
+  this->gr_Pol_upstream_down =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_upstream_down[0]));
+  this->gr_Dil_upstream_down =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_upstream_down[0]));
+
+    this->gr_Pol_downstream =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_downstream[0]) );
+  this->gr_Dil_downstream =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_downstream[0]) );
+
+  this->gr_Pol_downstream_up =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_downstream_up[0]));
+  this->gr_Dil_downstream_up =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_downstream_up[0]));
+
+  this->gr_Pol_downstream_down =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgPol_downstream_down[0]));
+  this->gr_Dil_downstream_down =
+    new TGraph(this->nBins, &(this->xval[0]), &(this->avgDil_downstream_down[0]));
   
   double xmin = this->gr_asym->GetXaxis()->GetXmin();
   double xmax = this->gr_asym->GetXaxis()->GetXmax();
@@ -260,6 +338,24 @@ void lr_tgraph::Fill(TString toFill){
 
   setupTGraph(this->gr_Pol);
   setupTGraph(this->gr_Dil);
+
+  setupTGraph(this->gr_Pol_upstream);
+  setupTGraph(this->gr_Dil_upstream);
+
+  setupTGraph(this->gr_Pol_upstream_up);
+  setupTGraph(this->gr_Dil_upstream_up);
+
+  setupTGraph(this->gr_Pol_upstream_down);
+  setupTGraph(this->gr_Dil_upstream_down);
+
+  setupTGraph(this->gr_Pol_downstream);
+  setupTGraph(this->gr_Dil_downstream);
+
+  setupTGraph(this->gr_Pol_downstream_up);
+  setupTGraph(this->gr_Dil_downstream_up);
+
+  setupTGraph(this->gr_Pol_downstream_down);
+  setupTGraph(this->gr_Dil_downstream_down);
 }
 
 
@@ -314,6 +410,34 @@ void lr_tgraph::Write(){
 
   this->gr_Pol->Write(Form("%s_Pol", this->thisName.Data()));
   this->gr_Dil->Write(Form("%s_Dil", this->thisName.Data()));
+
+  this->gr_Pol_upstream->Write(Form("%s_Pol_upstream", this->thisName.Data()));
+  this->gr_Dil_upstream->Write(Form("%s_Dil_upstream", this->thisName.Data()));
+
+  this->gr_Pol_upstream_up->Write(Form("%s_Pol_upstream_up",
+				       this->thisName.Data()));
+  this->gr_Dil_upstream_up->Write(Form("%s_Dil_upstream_up",
+				       this->thisName.Data()));
+
+  this->gr_Pol_upstream_down->Write(Form("%s_Pol_upstream_down",
+				       this->thisName.Data()));
+  this->gr_Dil_upstream_down->Write(Form("%s_Dil_upstream_down",
+				       this->thisName.Data()));
+
+  this->gr_Pol_downstream->Write(Form("%s_Pol_downstream",
+				      this->thisName.Data()));
+  this->gr_Dil_downstream->Write(Form("%s_Dil_downstream",
+				      this->thisName.Data()));
+
+  this->gr_Pol_downstream_up->Write(Form("%s_Pol_downstream_up",
+				       this->thisName.Data()));
+  this->gr_Dil_downstream_up->Write(Form("%s_Dil_downstream_up",
+				       this->thisName.Data()));
+
+  this->gr_Pol_downstream_down->Write(Form("%s_Pol_downstream_down",
+				       this->thisName.Data()));
+  this->gr_Dil_downstream_down->Write(Form("%s_Dil_downstream_down",
+				       this->thisName.Data()));
 
   //Counts
   std::vector<Double_t> left_upS
@@ -461,6 +585,24 @@ void lr_tgraph::setZero(){
 
   this->gr_Pol = NULL;
   this->gr_Dil = NULL;
+
+  this->gr_Pol_upstream = NULL;
+  this->gr_Dil_upstream = NULL;
+
+  this->gr_Pol_upstream_up = NULL;
+  this->gr_Dil_upstream_up = NULL;
+
+  this->gr_Pol_upstream_down = NULL;
+  this->gr_Dil_upstream_down = NULL;
+
+  this->gr_Pol_downstream = NULL;
+  this->gr_Dil_downstream = NULL;
+
+  this->gr_Pol_downstream_up = NULL;
+  this->gr_Dil_downstream_up = NULL;
+
+  this->gr_Pol_downstream_down = NULL;
+  this->gr_Dil_downstream_down = NULL;
 }
 
 

@@ -102,6 +102,7 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data";
   //Aesthetics setup
   gStyle->SetLineWidth(2);
   TCanvas* cwFA = new TCanvas(); cwFA->Divide(nPhysBinned, 1, 0, 0.01);
+  TCanvas* cwFApol = new TCanvas(); cwFApol->Divide(nPhysBinned, 1, 0, 0.01);
   TCanvas* cwAcc = new TCanvas(); cwAcc->Divide(nPhysBinned, 1, 0, 0.01);
   TCanvas* cwSysStat = new TCanvas();cwSysStat->Divide(nPhysBinned, 1, 0, 0.01);
 
@@ -136,16 +137,28 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data";
     //Get Data
     TFile *f_in = OpenFile(fname);
 
-    //FA
+    //FA's (acceptance from subper)
     cwFA->cd(phys+1); gPad->SetFrameLineWidth(2);
     TGraphErrors *g_WAvg_FAsubper = (TGraphErrors*) f_in->Get("falseAN_subper");
     FinalSetup(g_WAvg_FAsubper); FinalClearTitles(g_WAvg_FAsubper);
     g_WAvg_FAsubper->SetMarkerColor(kRed); g_WAvg_FAsubper->SetMarkerStyle(20);
     g_WAvg_FAsubper->Draw("AP");
+    g_WAvg_FAsubper->GetYaxis()->SetRangeUser(-0.25, 0.25);
     DrawLine(g_WAvg_FAsubper, 0.0); DrawLegend(g_WAvg_FAsubper, "FA");
 
     if (phys==nPhysBinned-1)
       g_WAvg_FAsubper->GetXaxis()->SetLimits(0.09, 0.26);
+
+    cwFApol->cd(phys+1); gPad->SetFrameLineWidth(2); //pol doesn't cancel acceptance
+    TGraphErrors *g_WAvg_FApol = (TGraphErrors*) f_in->Get("falseAN_pol");
+    FinalSetup(g_WAvg_FApol); FinalClearTitles(g_WAvg_FApol);
+    g_WAvg_FApol->SetMarkerColor(kRed); g_WAvg_FApol->SetMarkerStyle(20);
+    g_WAvg_FApol->GetYaxis()->SetRangeUser(-0.3, 0.05);
+    g_WAvg_FApol->Draw("AP");
+    DrawLine(g_WAvg_FApol, 0.0); DrawLegend(g_WAvg_FApol, "FA");
+
+    if (phys==nPhysBinned-1)
+      g_WAvg_FApol->GetXaxis()->SetLimits(0.09, 0.26);
 
     //Acceptance
     cwAcc->cd(phys+1); gPad->SetFrameLineWidth(2);
@@ -181,6 +194,7 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data";
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
     cwFA->Write("cwFA");
+    cwFApol->Write("cwFApol");
     cwAcc->Write("cwAcc");
     cwSysStat->Write("cwSysStat");
   }

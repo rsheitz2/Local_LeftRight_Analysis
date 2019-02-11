@@ -30,7 +30,8 @@ phiPhotonCut=0.0 #0.0, 0.044, 0.088, 0.17, 0.36, 0.53, 0.71, 0.88, 1.07 #HMDY=0.
 ##Step ONE settings ###### DY
 fitMrangeType="HMDY"
 nBins=1
-binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
+#binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
+binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}binsRelease.txt
 #binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/WAll_HMDY_${nBins}bins.txt
 hbins=150
 fitMmin=4.30  #true fit mass range

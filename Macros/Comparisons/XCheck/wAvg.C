@@ -1,26 +1,8 @@
 #include "include/helperFunctions.h"
 
-void AddData(TGraphErrors *g, Double_t *wAvg, Double_t *eWavg){
-  Double_t *yval = g->GetY();
-  Double_t *e_yval = g->GetEY();
-  for (Int_t i=0; i<g->GetN(); i++) {
-    wAvg[i] += yval[i]/(e_yval[i]*e_yval[i]);
-    eWavg[i] += 1.0/(e_yval[i]*e_yval[i]);
-  }
-}
-
-
-void FinalWavg(Double_t *wAvg, Double_t *eWavg, Int_t nBins){
-  for (Int_t i=0; i<nBins; i++) {
-    wAvg[i] /= eWavg[i];
-    eWavg[i] = TMath::Sqrt(1.0/eWavg[i]);
-  }
-}
-
-
 void wAvg(){
   //Setup_______________
-  const Int_t nBins =3;//HMDY
+  const Int_t nBins =1;//HMDY
   TString Mtype ="HMDY";
   Int_t hbins =150;
   TString physBinned ="M";//xN, xPi, xF, pT, M
@@ -55,8 +37,6 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
   TString period[nPer] ={"07", "08", "09", "10", "11", "12", "13", "14", "15"};
   
   Double_t yVal_wAvg[nBins] ={0.0}, e_yVal_wAvg[nBins] ={0.0};
-  Double_t yVal_wAvg_upS[nBins] ={0.0}, e_yVal_wAvg_upS[nBins] ={0.0};
-  Double_t yVal_wAvg_downS[nBins] ={0.0}, e_yVal_wAvg_downS[nBins] ={0.0};
   Double_t ex[nBins] ={0.0};
   Double_t *xvals;
 
@@ -81,38 +61,26 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
     }
     TFile *f_Wper = OpenFile(n_Wper);
     TGraphErrors *g_Wper = (TGraphErrors*) f_Wper->Get("AN");
-    TGraphErrors *g_Wper_upS = (TGraphErrors*) f_Wper->Get("AN_ups");
-    TGraphErrors *g_Wper_downS = (TGraphErrors*) f_Wper->Get("AN_downs");
 
-    AddData(g_Wper, yVal_wAvg, e_yVal_wAvg);
-    AddData(g_Wper_upS, yVal_wAvg_upS, e_yVal_wAvg_upS);
-    AddData(g_Wper_downS, yVal_wAvg_downS, e_yVal_wAvg_downS);
+    Double_t *yval = g_Wper->GetY();
+    Double_t *e_yval = g_Wper->GetEY();
+    for (Int_t i=0; i<nBins; i++) {
+      yVal_wAvg[i] += yval[i]/(e_yval[i]*e_yval[i]);
+      e_yVal_wAvg[i] += 1.0/(e_yval[i]*e_yval[i]);
+    }
 
     if (p==0) xvals = g_Wper->GetX();
   }
 
   //Final wAvg calculation
-  FinalWavg(yVal_wAvg, e_yVal_wAvg, nBins);
-  FinalWavg(yVal_wAvg_upS, e_yVal_wAvg_upS, nBins);
-  FinalWavg(yVal_wAvg_downS, e_yVal_wAvg_downS, nBins);
+  for (Int_t i=0; i<nBins; i++) {
+    yVal_wAvg[i] /= e_yVal_wAvg[i];
+    e_yVal_wAvg[i] = TMath::Sqrt(1.0/e_yVal_wAvg[i]);
+  }
 
   TGraphErrors* g_WAvg =
     new TGraphErrors(nBins, xvals, yVal_wAvg, ex, e_yVal_wAvg);
-  TGraphErrors* g_WAvg_upS =
-    new TGraphErrors(nBins, xvals, yVal_wAvg_upS, ex, e_yVal_wAvg_upS);
-  TGraphErrors* g_WAvg_downS =
-    new TGraphErrors(nBins, xvals, yVal_wAvg_downS, ex, e_yVal_wAvg_downS);
-  SetUp(g_WAvg); SetUp(g_WAvg_upS); SetUp(g_WAvg_downS);
-  if (physBinned=="xN"){//Specific setups
-    g_WAvg->GetXaxis()->SetNdivisions(503);
-    g_WAvg_upS->GetXaxis()->SetNdivisions(503);
-    g_WAvg_downS->GetXaxis()->SetNdivisions(503);
-  }
-  else if (physBinned=="xF"){
-    g_WAvg->GetXaxis()->SetLimits(0.05, 0.65);
-    g_WAvg_upS->GetXaxis()->SetLimits(0.05, 0.65);
-    g_WAvg_downS->GetXaxis()->SetLimits(0.05, 0.65);
-  }
+  SetUp(g_WAvg); 
 
   //Draw data
   TCanvas* c1 = new TCanvas();
@@ -120,12 +88,6 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
   if (Mtype=="HMDY"){ g_WAvg->GetYaxis()->SetRangeUser(-0.25, 0.25); }
   else { g_WAvg->GetYaxis()->SetRangeUser(-0.08, 0.08); }
   DrawLine(g_WAvg, 0.0);
-
-  TAxis *xaxis = g_WAvg_upS->GetXaxis();
-  Double_t range = xaxis->GetXmax() - xaxis->GetXmin();
-  OffSet(g_WAvg_downS, range/30.0);
-  g_WAvg_upS->Draw("Psame"); g_WAvg_upS->SetMarkerColor(kBlue);
-  g_WAvg_downS->Draw("Psame"); g_WAvg_downS->SetMarkerColor(kRed);
 
   //Write output/final settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
@@ -150,8 +112,6 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
     g_WAvg->Write("AN");
-    g_WAvg_upS->Write("AN_ups");
-    g_WAvg_downS->Write("AN_downs");
   }
 
   cout << " " << endl;

@@ -2,25 +2,47 @@
 #include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
 Local_LeftRight_Analysis/Macros/include/finalSetup.h"
 
-void FinalSetupLocal(TGraphErrors *g){
+void DrawLegend(TGraphErrors *g){
+  TString name = g->GetName();
+  Double_t sigma;
+  Double_t avg = WeightedAvgAndError(g, &sigma);
+
+  TLegend *leg = new TLegend(0.25,0.9,0.7,0.99);
+  leg->AddEntry(name, Form("#bar{A}_{N} = %0.2f #pm %0.2f", avg, sigma),
+		"p");
+  leg->SetBorderSize(0); leg->SetTextFont(133); leg->SetTextSize(25);
+  leg->Draw("same");
+}
+
+
+void FinalSetupLocal(TGraphErrors *g, TString xName, Double_t yMax,
+		     Bool_t same=false){
+  (same) ? g->Draw("Psame") : g->Draw("AP");
+  g->GetYaxis()->SetRangeUser(-yMax, yMax);
+  
   FinalSetup(g);
 
   g->SetMarkerColor(kRed);
   g->SetMarkerStyle(20);
+  g->SetMarkerSize(1.8);
+  g->SetFillStyle(0);
+  g->SetLineWidth(2);
   g->SetTitle("");
+
+  SetTitleName(g, xName, "x");
+
+  DrawLine(g, 0.0);
+  if (!same) DrawLegend(g);
 }
 
 
-void DrawLegend(TGraphErrors *g){
-  g->SetName("AN_phys");
-  Double_t sigma;
-  Double_t avg = WeightedAvgAndError(g, &sigma);
+void FinalLocalIntegrated(TGraphErrors *g){
+  SetTitleName(g, "A_{N}", "y");
+  g->GetXaxis()->SetLimits(0.0, 0.35);
+  g->GetXaxis()->SetLabelSize(0.0);
+  g->GetXaxis()->SetTickSize(0.0);
 
-  TLegend *leg = new TLegend(0.1,0.9,0.7,0.99);
-  leg->AddEntry("AN_phys", Form("#bar{A}_{N} = %0.2f #pm %0.2f", avg, sigma),
-		"p");
-  leg->SetBorderSize(0); leg->SetTextFont(132); leg->SetTextSize(0.08);
-  leg->Draw("same");
+  DrawLine(g, 0.0);
 }
 
 
@@ -54,8 +76,8 @@ void physBinnedData(TString start=""){
   TString pathAN = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
   const Int_t nPhysBinned =6;
-  TString physBinned[nPhysBinned] ={"xN", "xPi", "xF", "pT", "M", "xN"};
-  //Last xN used for integrated values
+  TString physBinned[nPhysBinned] ={"xN", "xN", "xPi", "xF", "pT", "M"};
+  //First xN used for integrated values
     
   if (start==""){
     cout <<"Script draws Final AN asymmetry with systematics binned in physics";
@@ -76,18 +98,25 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
   }
   
   //Aesthetics setup
-  TCanvas* cAsym = new TCanvas(); cAsym->Divide(nPhysBinned, 1, 0, 0.01);
+  TCanvas* cAsym = new TCanvas();
+  cAsym->SetLeftMargin(0.2); cAsym->Divide(nPhysBinned, 1, 0, 0);
   Double_t yMax =(process=="DY") ? 0.25 : 0.1;
+  TCanvas* cAsym_1targ= new TCanvas();
+  cAsym_1targ->SetLeftMargin(0.2); cAsym_1targ->Divide(nPhysBinned, 1, 0, 0);
+  TString xNames[nPhysBinned] =
+    {"", "x_{N}", "x_{#pi}", "x_{F}", "q_{T} (GeV/c)","M_{#mu#mu} (GeV/c^{2})"};
   
   //Get Data file/Get graphs and plot
   TString physBinnedNames ="", fitNames="";
   TGraphErrors *g_AN[nPhysBinned];
+  TGraphErrors *g_AN_upS[nPhysBinned], *g_AN_downS[nPhysBinned];;
   for (Int_t phys=0; phys<nPhysBinned; phys++) {
     TString AsymName;
 
-    Int_t nBinsName =nBins;
-    if (phys == nPhysBinned-1) {//used for integrated
-      nBinsName =1; }
+    Bool_t integrated =false;
+    if (phys == 0) 
+      integrated =true;
+    Int_t nBinsName = (integrated) ? 1 : nBins;
     if (whichFit == "true"){
       if (fitMrange != lrMrange){
 	cout << "fit Mass range != left/right mass range with true fit" << endl;
@@ -111,17 +140,26 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
         
     TFile *f_AN = OpenFile(AsymName);
 
-    cAsym->cd(phys+1);
-    gPad->SetFrameLineWidth(2);
+    cAsym->cd(phys+1); gPad->SetFrameLineWidth(2);
     g_AN[phys] =(TGraphErrors*)f_AN->Get("AN");
-    g_AN[phys]->Draw("AP"); g_AN[phys]->GetYaxis()->SetRangeUser(-yMax, yMax);
-    FinalSetupLocal(g_AN[phys]);
-    if (phys == nPhysBinned-1) {//used for integrated
-      g_AN[phys]->GetXaxis()->SetLimits(0.0, 0.35);
-    }
-    
-    DrawLine(g_AN[phys], 0.0);
-    DrawLegend(g_AN[phys]);
+    g_AN[phys]->SetName("AN");
+    FinalSetupLocal(g_AN[phys], xNames[phys], yMax);
+    if (integrated) { FinalLocalIntegrated(g_AN[phys]); }
+
+    cAsym_1targ->cd(phys+1); gPad->SetFrameLineWidth(2);
+    g_AN_upS[phys] =(TGraphErrors*)f_AN->Get("AN_ups");
+    g_AN_upS[phys]->SetName("AN_upS");
+    FinalSetupLocal(g_AN_upS[phys], xNames[phys], 0.43);
+    g_AN_upS[phys]->GetYaxis()->SetNdivisions(505);
+    if (integrated) { FinalLocalIntegrated(g_AN_upS[phys]); }
+
+    g_AN_downS[phys] =(TGraphErrors*)f_AN->Get("AN_downs");
+    g_AN_downS[phys]->SetName("AN_downs");
+    FinalSetupLocal(g_AN_downS[phys], xNames[phys], 0.43, true);
+    g_AN_downS[phys]->GetYaxis()->SetNdivisions(505);
+    if (integrated) { FinalLocalIntegrated(g_AN_downS[phys]); }
+    g_AN_downS[phys]->SetMarkerColor(kBlue);
+    DrawLegend(g_AN_downS[phys]);
   }//phys binned loop
   
   //Write Output/Final Settings
@@ -148,7 +186,8 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
       g_AN[i]->Write(Form("AN_%s", physBinned[i].Data() ));
     }
 
-    cAsym->Write();
+    cAsym->Write("Asym2Targ");
+    cAsym_1targ->Write("Asym1Targs");
   }
 
   if (start!=1){

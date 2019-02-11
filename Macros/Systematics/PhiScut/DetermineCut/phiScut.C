@@ -9,7 +9,7 @@ void phiScut(TString start=""){
   Double_t resPhiS =0.1776; //Yu rms value 2.0-8.5
   //Double_t resPhiS =0.299; //Yu rms value 4.3-8.5
   
-  Bool_t toWrite =true;
+  Bool_t toWrite =false;
   //Setup_______________
 
   TString MassCut = Form("Mmumu>%0.2f&&Mmumu<%0.2f", Mmin, Mmax);
