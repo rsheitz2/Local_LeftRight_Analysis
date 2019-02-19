@@ -54,9 +54,9 @@ void fitEventWeighting()
   const Int_t nBins =3;//HMDY
   TString Mtype ="HMDY";
   TString production ="slot1";
-  TString period ="W08";
+  TString period ="W07";
   TString physBinned ="xN";
-  TString minimizer ="MINOS";//MIGRAD, HESSE, MINOS
+  TString minimizer ="MIGRAD";//MIGRAD, HESSE, MINOS
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -151,7 +151,7 @@ void fitEventWeighting()
   CheckPhysicality(L_upS_Pup_int, L_upS_Pdown_int,
 		   a1_upS_int, a2_upS_int, a3_upS_int,
 		   A_upS_int);
-  
+    
   //Phys Binned
   Double_t A_upS_phys[nBins], eA_upS_phys[nBins];
   Double_t A_upS_phys_corr[nBins], eA_upS_phys_corr[nBins];
@@ -219,10 +219,11 @@ void fitEventWeighting()
   
   SetUp(g_A_upS_int); SetUp(g_L_upS_Pup_int); SetUp(g_L_upS_Pdown_int);
   SetUp(g_a1_upS_int); SetUp(g_a2_upS_int); SetUp(g_a3_upS_int);
+  SetUp(g_A_upS_int_expected);
   
   SetUp(g_A_upS_phys); SetUp(g_L_upS_Pup_phys); SetUp(g_L_upS_Pdown_phys);
   SetUp(g_a1_upS_phys); SetUp(g_a2_upS_phys); SetUp(g_a3_upS_phys);
-  SetUp(g_A_upS_int_expected); SetUp(g_A_upS_phys_expected);
+  SetUp(g_A_upS_phys_expected);
 
   TString parTitles[] = {"A_{N}", "L Pup", "L Pdown", "a1", "a2", "a3"};
   TGraphErrors *g_upS_phys[] =
@@ -254,6 +255,8 @@ void fitEventWeighting()
   g_A_upS_int_expected->Draw("Psame");
   g_A_upS_int_expected->SetMarkerColor(kRed);
 
+  
+      
   //Downstream
   ///////////////
   //Integrated

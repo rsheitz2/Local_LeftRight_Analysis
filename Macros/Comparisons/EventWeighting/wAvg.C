@@ -27,17 +27,17 @@ TGeant/Local_LeftRight_Analysis/Macros/Comparisons/EventWeighting/Data";
   Double_t *xvals;
 
   TString upSNames[nGraph] =
-    {"g_A_upS_phys", "g_L_upS_Pup_phys", "g_L_upS_Pup_phys",
+    {"g_A_upS_phys", "g_L_upS_Pup_phys", "g_L_upS_Pdown_phys",
      "g_a1_upS_phys", "g_a2_upS_phys", "g_a3_upS_phys",
      "g_A_upS_phys_expected",
-     "g_A_upS_int", "g_L_upS_Pup_int", "g_L_upS_Pup_int",
+     "g_A_upS_int", "g_L_upS_Pup_int", "g_L_upS_Pdown_int",
      "g_a1_upS_int", "g_a2_upS_int", "g_a3_upS_int",
      "g_A_upS_int_expected"};
   TString downSNames[nGraph] =
-    {"g_A_downS_phys", "g_L_downS_Pup_phys", "g_L_downS_Pup_phys",
+    {"g_A_downS_phys", "g_L_downS_Pup_phys", "g_L_downS_Pdown_phys",
      "g_a1_downS_phys", "g_a2_downS_phys", "g_a3_downS_phys",
      "g_A_downS_phys_expected",
-     "g_A_downS_int", "g_L_downS_Pup_int", "g_L_downS_Pup_int",
+     "g_A_downS_int", "g_L_downS_Pup_int", "g_L_downS_Pdown_int",
      "g_a1_downS_int", "g_a2_downS_int", "g_a3_downS_int",
      "g_A_downS_int_expected"};
 
@@ -101,15 +101,71 @@ TGeant/Local_LeftRight_Analysis/Macros/Comparisons/EventWeighting/Data";
     
   }//period loop
 
+  //Combined targets
+  TGraphErrors *g_all[nGraph];
+  TCanvas* cAll = new TCanvas(); cAll->Divide(3, 2);
+  TCanvas* cAll_int = new TCanvas(); cAll_int->Divide(3, 2);
+  for (Int_t g=0; g<nGraph; g++) {
+    Double_t wAvg[nBins], eWavg[nBins];
+    Double_t *yUpS = g_upS[g]->GetY();
+    Double_t *yDownS = g_downS[g]->GetY();
+    Double_t *e_yUpS = g_upS[g]->GetEY();
+    Double_t *e_yDownS = g_downS[g]->GetEY();
+    for (Int_t bi=0; bi<g_upS[g]->GetN(); bi++) {
+      wAvg[bi] = WeightedAvg(yUpS[bi], yDownS[bi], e_yUpS[bi], e_yDownS[bi]);
+      eWavg[bi] =  WeightedErr(e_yUpS[bi], e_yDownS[bi]);
+    }
+
+    g_all[g] = new TGraphErrors(g_upS[g]->GetN(), xvals, wAvg, ex, eWavg);
+    SetUp(g_all[g]);
+
+    if (g<6){
+      cAll->cd(g+1);
+      g_all[g]->Draw("AP");
+
+      if (g==0 || g>=3) DrawLine(g_all[g], 0.0);
+      if (g==0) g_all[g]->GetYaxis()->SetRangeUser(-0.6, 0.6);
+      else if (g==3 || g==4) g_all[g]->GetYaxis()->SetRangeUser(-0.1, 0.1);
+    }
+    else if (g==6){
+      cAll->cd(1);
+      g_all[g]->Draw("Psame");
+      OffSet(g_all[g]);
+      g_all[g]->SetMarkerColor(kRed);
+      g_all[g]->SetMarkerStyle(25);
+    }
+    else if (g<13){
+      cAll_int->cd(g+1-7);
+      g_all[g]->Draw("AP");
+
+      if (g==7 || g>=10) DrawLine(g_all[g], 0.0);
+      if (g==7) g_all[g]->GetYaxis()->SetRangeUser(-0.6, 0.6);
+      else if (g==10 || g==11) g_all[g]->GetYaxis()->SetRangeUser(-0.1, 0.1);
+    }
+    else {
+      cAll_int->cd(1);
+      g_all[g]->Draw("Psame");
+      OffSet(g_all[g]);
+      g_all[g]->SetMarkerColor(kRed);
+      g_all[g]->SetMarkerStyle(25);
+    }
+  }//End combined targets
+
   //Draw data
   TCanvas* cupS = new TCanvas(); cupS->Divide(3, 2);
   TCanvas* cdownS = new TCanvas(); cdownS->Divide(3, 2);
   for (Int_t i=0; i<6; i++) {
     cupS->cd(i+1);
     g_upS[i]->Draw("AP");
-
+    if (i==0 || i>=3) DrawLine(g_upS[i], 0.0);
+    if (i==0) g_upS[i]->GetYaxis()->SetRangeUser(-0.6, 0.6);
+    else if (i==3 || i==4) g_upS[i]->GetYaxis()->SetRangeUser(-0.1, 0.1);
+    
     cdownS->cd(i+1);
     g_downS[i]->Draw("AP");
+    if (i==0 || i>=3) DrawLine(g_downS[i], 0.0);
+    if (i==0) g_downS[i]->GetYaxis()->SetRangeUser(-0.6, 0.6);
+    else if (i==3 || i==4) g_downS[i]->GetYaxis()->SetRangeUser(-0.1, 0.1);
   }
   
   cupS->cd(1);

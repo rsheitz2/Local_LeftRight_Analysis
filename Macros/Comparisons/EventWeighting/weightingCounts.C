@@ -22,8 +22,8 @@ void weightingCounts(){
   const Int_t nBins =3;//HMDY
   TString Mtype ="HMDY";
   TString production ="slot1";
-  TString period ="W13";
-  TString physBinned ="xPi";
+  TString period ="W07";
+  TString physBinned ="xN";
   
   Double_t Mmin =4.3;//Not changed for now
   Double_t Mmax =8.5;

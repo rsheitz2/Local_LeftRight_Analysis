@@ -104,6 +104,23 @@ Double_t WeightedAvg(vector<Double_t> &A, vector<Double_t> &eA){
 }
 
 
+Double_t WeightedAvgAndError(vector<Double_t> &A, vector<Double_t> &eA,
+		     Double_t &sigma){
+
+  Double_t avg=0.0, e=0.0;
+  for (vector<Double_t>::iterator iA=A.begin(), iE=eA.begin(); iA!=A.end();
+       iA++, iE++) {
+    avg += *iA/( (*iE) * (*iE) );
+    e += 1.0/( (*iE) * (*iE) );
+  }
+  
+  avg /= e;
+  
+  sigma = 1.0/TMath::Sqrt(e);
+  return avg;
+}
+
+
 Double_t WeightedAvgAndError(TGraphErrors *g, Double_t *sigma){
   Double_t *yvals = g->GetY();
   Double_t *e_yvals = g->GetEY();
@@ -207,6 +224,26 @@ void OffSet(TGraphErrors *g){
 }
 
 
+void OffSet(TGraphAsymmErrors *g){
+  Double_t min_x = g->GetXaxis()->GetXmin();	
+  Double_t max_x = g->GetXaxis()->GetXmax();
+  Double_t offset = (max_x - min_x)*0.02;
+  
+  Double_t *xval = g->GetX();
+  for (Int_t i=0; i<g->GetN(); i++) xval[i] += offset;
+}
+
+
+void OffSetPercent(TGraphErrors *g, Double_t percent=0.02){
+  Double_t min_x = g->GetXaxis()->GetXmin();	
+  Double_t max_x = g->GetXaxis()->GetXmax();
+  Double_t offset = (max_x - min_x)*percent;
+  
+  Double_t *xval = g->GetX();
+  for (Int_t i=0; i<g->GetN(); i++) xval[i] += offset;
+}
+
+
 void SetUp(TGraphErrors* g, Int_t icolor=1,
 	   Double_t offset=0.0, Int_t nBins=0){
   g->SetMarkerStyle(21);
@@ -230,6 +267,19 @@ void SetUp(TGraphErrors* g, Int_t icolor=1,
 void SetUp(TGraph* g){
   g->SetMarkerStyle(21);
   
+  g->GetYaxis()->SetNdivisions(504);
+  g->GetYaxis()->SetLabelFont(22);
+  g->GetYaxis()->SetLabelSize(0.08);
+  
+  g->GetXaxis()->SetNdivisions(504);
+  g->GetXaxis()->SetLabelFont(22);
+  g->GetXaxis()->SetLabelSize(0.08);
+}
+
+
+void SetUp(TGraphAsymmErrors* g){
+  g->SetMarkerStyle(21);
+
   g->GetYaxis()->SetNdivisions(504);
   g->GetYaxis()->SetLabelFont(22);
   g->GetYaxis()->SetLabelSize(0.08);

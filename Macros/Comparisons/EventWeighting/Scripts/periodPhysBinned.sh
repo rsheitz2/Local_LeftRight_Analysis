@@ -2,7 +2,8 @@
 
 if [ $# -ne 1 ]; then
     echo "" 
-    echo -n "This script loops over all physics periods for all physics binnings"
+    echo "This script loops over all physics periods for all physics binnings"
+    echo "      (Integrated binning is also automatically performed)"
     echo ""
     echo ""
     echo "To run this script provide as an argument:"
@@ -19,10 +20,10 @@ Steps=$1
 
 ##Setup___  first line (20) to seach setup
 ##########
-nBins=3
+nBins=3  #Integrated (nBins=1) is automatically performed
 Mtype="HMDY"
 production="slot1"
-minimizer="MINOS" #"MIGRAD", "MINOS"
+minimizer="HESSE" #"MIGRAD", "MINOS", "HESSE"
 
 
 
@@ -36,6 +37,7 @@ echo "______Step ONE settings____"
 echo "Number of kinematic bins:   ${nBins}"
 echo "Mass type considered:    $Mtype"
 echo "production used:   $production"
+echo "minimizer used:    $minimizer"
 echo " "
 echo "Kinematic binning types:       ${physBinned[@]}"
 echo "Periods considered:         ${period[@]}"
@@ -62,10 +64,11 @@ for phy in ${physBinned[@]}; do
 	echo "Period $per"
 	echo ""
 
-	#pipeline changes
+	##########
+	#Weighting Counts
+	#phys binned && integrated
 	${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/weightingCounts.C $nBins $per $Mtype $phy ${production} "blank"
-	#Execute
-	root -l -b -q ${HOME}/weightingCounts.C >> ${HOME}/weightingCounts_log.txt
+	root -l -b -q ${HOME}/weightingCounts.C >> ${HOME}/weightingCounts_log.txt #Execute
 	if [ $? != 0 ]; then
 	    echo "${HOME}/weightingCounts.C did not execute well"
 	    mv ${HOME}/weightingCounts.C ${HOME}/weightingCounts.C.bak
@@ -75,10 +78,11 @@ for phy in ${physBinned[@]}; do
 	    rm ${HOME}/weightingCounts_log.txt
 	fi
 
-	#pipeline changes
+	##########
+	#fitEventWeighting
+	#phys binned && integrated
 	${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/fitEventWeighting.C $nBins $per $Mtype $phy ${production} ${minimizer}
-	#Execute
-	root -l -b -q ${HOME}/fitEventWeighting.C >> ${HOME}/fitEventWeighting_log.txt
+	root -l -b -q ${HOME}/fitEventWeighting.C >> ${HOME}/fitEventWeighting_log.txt 	#Execute
 	if [ $? != 0 ]; then
 	    echo "${HOME}/fitEventWeighting.C did not execute well"
 	    mv ${HOME}/fitEventWeighting.C ${HOME}/fitEventWeighting.C.bak
@@ -87,9 +91,12 @@ for phy in ${physBinned[@]}; do
 	else
 	    rm ${HOME}/fitEventWeighting_log.txt
 	fi
+	
     done #period binning
 
-    #pipeline changes
+    ##########
+    #wAvg
+    #phys binned && integrated
     ${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/wAvg.C $nBins $nHbins "blank" $Mtype $phy ${production} ${minimizer}
     #Execute
     root -l -b -q ${HOME}/wAvg.C >> ${HOME}/wAvg_log.txt
@@ -101,6 +108,7 @@ for phy in ${physBinned[@]}; do
     else
     	rm ${HOME}/wAvg_log.txt
     fi
+
 done #physics binning
 
 #Clean up
