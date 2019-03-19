@@ -1,38 +1,12 @@
 #include "include/helperFunctions.h"
 
-
-Double_t MakeAsym(Double_t L, Double_t R, Double_t P){
-  Double_t A = L - R;
-  A /= ( L + R );
-  A /= P;
-
-  return A;
-}
-
+Double_t MakeAsym(Double_t L, Double_t R, Double_t P);
 
 Double_t MakeAsymError(Double_t L, Double_t R, Double_t e_L, Double_t e_R,
-		       Double_t P){
-  Double_t dL2 = e_L*e_L;
-  Double_t dR2 = e_R*e_R;
-
-  Double_t e = dL2/( L*L )  + dR2/( R*R );
-  e = TMath::Sqrt( e );
-  e *= 2.0*L*R/( (L+R)*(L+R) );
-  e /= P;
-  
-  return e;
-}
-
+		       Double_t P);
 
 void GetLRerror(Double_t *leftCounts, Double_t *rightCounts,
-		Double_t *e_leftCounts, Double_t *e_rightCounts, Int_t nBins){
-
-  for (Int_t i=0; i<nBins; i++) {
-    e_leftCounts[i] = TMath::Sqrt(leftCounts[i]);
-    e_rightCounts[i] = TMath::Sqrt(rightCounts[i]);
-  }
-}
-
+		Double_t *e_leftCounts, Double_t *e_rightCounts, Int_t nBins);
 
 void trueCount(TString start=""){
   //Setup_______________
@@ -49,12 +23,12 @@ void trueCount(TString start=""){
   Bool_t toWrite =false;
   //Setup_______________
   
-    TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
+  TString pathRD = "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_leftRight_Analysis/Data/";
-    TString RDfile =
-      Form("leftRight_byTarget_%s%.2f_%.2f_%ibins%s_150hbin_%s_%s.root",
-	   period_Mtype.Data(), Mmin, Mmax, nBins, binRange.Data(),
-	   production.Data(), additionalCuts.Data() );
+  TString RDfile =
+    Form("leftRight_byTarget_%s%.2f_%.2f_%ibins%s_150hbin_%s_%s.root",
+	 period_Mtype.Data(), Mmin, Mmax, nBins, binRange.Data(),
+	 production.Data(), additionalCuts.Data() );
   
   if (start==""){
     cout<<"Script outputs AN and left/right counts per target and polarization";
@@ -288,4 +262,37 @@ TGeant/Local_leftRight_Analysis/Data/";
     cout << "File:  " << fOutput << "   was written" << endl;
   }
   else cout << "File: " << fOutput << " was NOT written" << endl;
+}
+
+
+Double_t MakeAsym(Double_t L, Double_t R, Double_t P){
+  Double_t A = L - R;
+  A /= ( L + R );
+  A /= P;
+
+  return A;
+}
+
+
+Double_t MakeAsymError(Double_t L, Double_t R, Double_t e_L, Double_t e_R,
+		       Double_t P){
+  Double_t dL2 = e_L*e_L;
+  Double_t dR2 = e_R*e_R;
+
+  Double_t e = dL2/( L*L )  + dR2/( R*R );
+  e = TMath::Sqrt( e );
+  e *= 2.0*L*R/( (L+R)*(L+R) );
+  e /= P;
+  
+  return e;
+}
+
+
+void GetLRerror(Double_t *leftCounts, Double_t *rightCounts,
+		Double_t *e_leftCounts, Double_t *e_rightCounts, Int_t nBins){
+
+  for (Int_t i=0; i<nBins; i++) {
+    e_leftCounts[i] = TMath::Sqrt(leftCounts[i]);
+    e_rightCounts[i] = TMath::Sqrt(rightCounts[i]);
+  }
 }

@@ -1,112 +1,22 @@
 #include "include/helperFunctions.h"
 
 Double_t Amp(Double_t NL[][4], Double_t NR[][4],
-	     Double_t Pol, Int_t bi){
-  //NL[][4] => 4 = nTargPol
-  
-  Double_t Lup, Rup;
-  Lup = NL[bi][upS_up]*NL[bi][upS_down];
-  Rup = NR[bi][upS_up]*NR[bi][upS_down];
+	     Double_t Pol, Int_t bi);
 
-  Double_t Ldown, Rdown;
-  Ldown = NL[bi][downS_up]*NL[bi][downS_down];
-  Rdown = NR[bi][downS_up]*NR[bi][downS_down];
-
-  Double_t L=Lup*Ldown, R=Rup*Rdown;
-  L = TMath::Power(L, 0.25);
-  R = TMath::Power(R, 0.25);
-  
-  Double_t A = L - R;
-  A /= ( L + R );
-  A /= Pol;
-  
-  return A;
-}
-
-
-Double_t OneTargAmp(Double_t *NL, Double_t *NR, Double_t Pol){
-  //Regular geomean asymmetry
-  
-  Double_t L = NL[0]*NL[1];
-  Double_t R = NR[0]*NR[1];
-
-  L = TMath::Sqrt(L);
-  R = TMath::Sqrt(R);
-  
-  Double_t A = L - R;
-  A /= ( L + R );
-  A /= Pol;
-  
-  return A;
-}
-
+Double_t OneTargAmp(Double_t *NL, Double_t *NR, Double_t Pol);
 
 Double_t e_Amp(Double_t NL[][4], Double_t NR[][4],
 	       Double_t e_NL[][4], Double_t e_NR[][4],
-	       Double_t Pol, Int_t bi){
-  //NL[][4] => 4 = nTargPol
-  Int_t nTargPol=4;
-  
-  Double_t L=1.0, R=1.0;
-  Double_t LinvSum2=0.0, RinvSum2=0.0;
-  for (Int_t tr=0; tr<nTargPol; tr++) {
-    L *= NL[bi][tr]; R *= NR[bi][tr];
-    LinvSum2 += e_NL[bi][tr]*e_NL[bi][tr]/(NL[bi][tr]*NL[bi][tr] );
-    RinvSum2 += e_NR[bi][tr]*e_NR[bi][tr]/(NR[bi][tr]*NR[bi][tr] );
-  }
-  L = TMath::Power(L, 0.25);
-  R = TMath::Power(R, 0.25);
-
-  Double_t e = L*R/( 2*(L + R)*(L + R) );
-  Double_t error = e*TMath::Sqrt(LinvSum2 + RinvSum2)/Pol;
-
-  if (error < 10e-9) {
-      cout << "Error: AN error way too small" << endl;
-      exit(EXIT_FAILURE);
-  }
-
-  return error;
-}
-
+	       Double_t Pol, Int_t bi);
 
 Double_t e_OneTargAmp(Double_t *NL, Double_t *NR,
 		      Double_t *e_NL, Double_t *e_NR,
-		      Double_t Pol){
-  //Regular geomean asymmetry
-  
-  Double_t L, R;
-  L = NL[0]*NL[1];
-  R = NR[0]*NR[1];
-
-  L = TMath::Sqrt(L);
-  R = TMath::Sqrt(R);
-  
-  Double_t A = L - R;
-  A /= ( L + R );
-
-  Double_t dL2 = 0.5*L*0.5*L*( e_NL[0]*e_NL[0]/(NL[0]*NL[0]) +
-			       e_NL[1]*e_NL[1]/(NL[1]*NL[1]) );
-  Double_t dR2 = 0.5*R*0.5*R*( e_NR[0]*e_NR[0]/(NR[0]*NR[0]) +
-			       e_NR[1]*e_NR[1]/(NR[1]*NR[1]) );
-
-  Double_t error = ( 1-A )*( 1-A )*dL2 + ( 1+A )*( 1+A )*dR2;
-  error = TMath::Sqrt( error );
-  error *= 1.0/( L + R );
-  error /= Pol;
-
-  if (error < 10e-9) {
-    cout << "Error: AN error way too small" << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  return error;
-}
-
+		      Double_t Pol);
 
 void GeoMean4Targ(TString start =""){
   //Setup_______________
   const Int_t nBins =3;//HMDY
-  TString period_Mtype ="W07_HMDY";
+  TString period_Mtype ="WAll_HMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
@@ -370,4 +280,106 @@ TGeant/Local_leftRight_Analysis/Data/";
     cout << "File:  " << fOutput << "   was written" << endl;
   }
   else cout << "File: " << fOutput << " was NOT written" << endl;
+}
+
+Double_t Amp(Double_t NL[][4], Double_t NR[][4],
+	     Double_t Pol, Int_t bi){
+  //NL[][4] => 4 = nTargPol
+  
+  Double_t Lup, Rup;
+  Lup = NL[bi][upS_up]*NL[bi][upS_down];
+  Rup = NR[bi][upS_up]*NR[bi][upS_down];
+
+  Double_t Ldown, Rdown;
+  Ldown = NL[bi][downS_up]*NL[bi][downS_down];
+  Rdown = NR[bi][downS_up]*NR[bi][downS_down];
+
+  Double_t L=Lup*Ldown, R=Rup*Rdown;
+  L = TMath::Power(L, 0.25);
+  R = TMath::Power(R, 0.25);
+  
+  Double_t A = L - R;
+  A /= ( L + R );
+  A /= Pol;
+  
+  return A;
+}
+
+
+Double_t OneTargAmp(Double_t *NL, Double_t *NR, Double_t Pol){
+  //Regular geomean asymmetry
+  
+  Double_t L = NL[0]*NL[1];
+  Double_t R = NR[0]*NR[1];
+
+  L = TMath::Sqrt(L);
+  R = TMath::Sqrt(R);
+  
+  Double_t A = L - R;
+  A /= ( L + R );
+  A /= Pol;
+  
+  return A;
+}
+
+
+Double_t e_Amp(Double_t NL[][4], Double_t NR[][4],
+	       Double_t e_NL[][4], Double_t e_NR[][4],
+	       Double_t Pol, Int_t bi){
+  //NL[][4] => 4 = nTargPol
+  Int_t nTargPol=4;
+  
+  Double_t L=1.0, R=1.0;
+  Double_t LinvSum2=0.0, RinvSum2=0.0;
+  for (Int_t tr=0; tr<nTargPol; tr++) {
+    L *= NL[bi][tr]; R *= NR[bi][tr];
+    LinvSum2 += e_NL[bi][tr]*e_NL[bi][tr]/(NL[bi][tr]*NL[bi][tr] );
+    RinvSum2 += e_NR[bi][tr]*e_NR[bi][tr]/(NR[bi][tr]*NR[bi][tr] );
+  }
+  L = TMath::Power(L, 0.25);
+  R = TMath::Power(R, 0.25);
+
+  Double_t e = L*R/( 2*(L + R)*(L + R) );
+  Double_t error = e*TMath::Sqrt(LinvSum2 + RinvSum2)/Pol;
+
+  if (error < 10e-9) {
+      cout << "Error: AN error way too small" << endl;
+      exit(EXIT_FAILURE);
+  }
+
+  return error;
+}
+
+
+Double_t e_OneTargAmp(Double_t *NL, Double_t *NR,
+		      Double_t *e_NL, Double_t *e_NR,
+		      Double_t Pol){
+  //Regular geomean asymmetry
+  
+  Double_t L, R;
+  L = NL[0]*NL[1];
+  R = NR[0]*NR[1];
+
+  L = TMath::Sqrt(L);
+  R = TMath::Sqrt(R);
+  
+  Double_t A = L - R;
+  A /= ( L + R );
+
+  Double_t dL2 = 0.5*L*0.5*L*( e_NL[0]*e_NL[0]/(NL[0]*NL[0]) +
+			       e_NL[1]*e_NL[1]/(NL[1]*NL[1]) );
+  Double_t dR2 = 0.5*R*0.5*R*( e_NR[0]*e_NR[0]/(NR[0]*NR[0]) +
+			       e_NR[1]*e_NR[1]/(NR[1]*NR[1]) );
+
+  Double_t error = ( 1-A )*( 1-A )*dL2 + ( 1+A )*( 1+A )*dR2;
+  error = TMath::Sqrt( error );
+  error *= 1.0/( L + R );
+  error /= Pol;
+
+  if (error < 10e-9) {
+    cout << "Error: AN error way too small" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  return error;
 }

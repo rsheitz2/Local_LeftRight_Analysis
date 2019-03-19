@@ -35,7 +35,7 @@ void doubleRatio(TString start=""){
   TString physBinned ="xN";//"xN", "xPi", "xF", "pT", "M"
   TString production ="slot1";//"t3", "slot1"
   
-  Bool_t toWrite =true;
+  Bool_t toWrite =false;
   //Setup_______________
 
   //More setup

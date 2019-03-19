@@ -16,7 +16,7 @@ void FinalSetup(TGraph *g){
   g->GetXaxis()->SetLabelSize(25);
   g->GetXaxis()->SetLabelOffset(0.0);
     
-  g->GetYaxis()->SetLabelFont(131);
+  g->GetYaxis()->SetLabelFont(133);
   g->GetYaxis()->SetLabelSize(25);
 }
 
@@ -57,6 +57,40 @@ void FinalClearTitles(TH1D *h){
 
 
 void SetTitleName(TGraphErrors *g, TString name, TString whichAxis="x"){
+  if (whichAxis=="x"){
+    g->GetXaxis()->SetTitle(name);
+    g->GetXaxis()->SetTitleFont(133);
+    g->GetXaxis()->SetTitleSize(25);
+    g->GetXaxis()->CenterTitle(true);
+  }
+  else if (whichAxis=="y"){
+    TLatex *latex = new TLatex();
+    latex->SetTextSize(25);
+    latex->SetTextFont(133);
+    //latex->DrawLatexNDC(0.1, 0.6, name);
+    latex->DrawLatexNDC(0.01, 0.6, name);
+  }
+}
+
+
+void SetTitleName(TGraphAsymmErrors *g, TString name, TString whichAxis="x"){
+  if (whichAxis=="x"){
+    g->GetXaxis()->SetTitle(name);
+    g->GetXaxis()->SetTitleFont(133);
+    g->GetXaxis()->SetTitleSize(25);
+    g->GetXaxis()->CenterTitle(true);
+  }
+  else if (whichAxis=="y"){
+    TLatex *latex = new TLatex();
+    latex->SetTextSize(25);
+    latex->SetTextFont(133);
+    //latex->DrawLatexNDC(0.1, 0.6, name);
+    latex->DrawLatexNDC(0.01, 0.6, name);
+  }
+}
+
+
+void SetTitleName(TGraph *g, TString name, TString whichAxis="x"){
   if (whichAxis=="x"){
     g->GetXaxis()->SetTitle(name);
     g->GetXaxis()->SetTitleFont(133);
