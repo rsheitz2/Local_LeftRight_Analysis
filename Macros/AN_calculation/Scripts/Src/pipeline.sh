@@ -25,25 +25,25 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 ##Setup___ (25) first setup search line 
 ##########
 ##Step ONE settings
-period="W10"
+period="W07"
 fitMrangeType="LowM_AMDY"
-nBins=5
-binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/JPsi/BinValues/slot1WAll_JPsi25_43_5bins.txt"
+nBins=3
+binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/JPsi/BinValues/Wall_JPsi25_43_3bins.txt"
 hbins=150
-fitMmin=2.00
-fitMmax=8.50
+fitMmin=2.87
+fitMmax=3.38
 binRange="25_43"
 ##Step TWO settings
 physBinned="xN"
 process="JPsi"
-LR_Mmin=2.00
-LR_Mmax=5.00
-whichFit="thirteen"
+LR_Mmin=2.87
+LR_Mmax=3.38
+whichFit="true"
 ##Additional settings
 production="slot1"
-phiPhotonCut="0.53"
+phiPhotonCut="0.0"
 
-additionalCuts=phiS${phiPhotonCut}
+additionalCuts="phiS0.0"
 
 
 

@@ -1,4 +1,5 @@
-#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/Systematics/PhiScut/Include/helperFunctions.h"
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
+Local_LeftRight_Analysis/Macros/Systematics/PhiScut/Include/helperFunctions.h"
 
 void sysStatError(TString start=""){
   //Setup__________
@@ -7,6 +8,10 @@ void sysStatError(TString start=""){
   
   TString whichMC ="Charles"; //"Yu", "Charles"
   TString whichRD ="slot1"; //"t3", "slot1"
+  
+  Double_t AN_assumed =0.05, eAN_assumed =0.05;
+  Double_t Pol_assumed =0.13;
+  TString finalPhiSCut ="0.0";
     
   Bool_t toWrite =false;
   //Setup__________
@@ -28,42 +33,38 @@ void sysStatError(TString start=""){
 
   //Get data files
   TString path ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Local_LeftRight_Analysis/Macros/";
-  TString pathSys = path+"Systematics/PhiScut/DetermineCut/";
-  TString pathStat = path+"FinalAsym/Data/WAvg/";
+TGeant/Local_LeftRight_Analysis/Macros/Systematics/PhiScut/DetermineCut/";
   TString nameSys =
     Form("Data/ResolutionPhiS/resolution_%s_%0.2f_%0.2f_noDebug.root",
 	 whichMC.Data(), Mmin, Mmax);
-  TString nameStat =
-    Form("wAvg_true_LowM_AMDY_JPsi%0.2f_%0.2f_29_34xN1_150hbin_slot1_phiS0.0.root",
-	 Mmin, Mmax);
-  cout << "Sys error file: " << nameSys << "    Stat error file: "
-       << nameStat << endl;
-  TFile *fsys = OpenFile(pathSys+nameSys);
-  TFile *fstat = OpenFile(pathStat+nameStat);
+  TString nameStat = Form("Data/PhiScut/phiScut_%s_%0.2f_%0.2f.root",
+			  whichRD.Data(), Mmin, Mmax);
+  cout << "Sys error file: " << nameSys << "    Stat error file: " <<
+    nameStat << endl;
+  TFile *fsys = OpenFile(path+nameSys);
+  TFile *fstat = OpenFile(path+nameStat);
 
   TGraph *gCrossOver = (TGraph*)fsys->Get("gCrossOver");
-  TGraph *gTotStatError = (TGraph*)fstat->Get("AN");
+  TGraph *gTotStatError = (TGraph*)fstat->Get("gTotError");
 
   Double_t *yCrossOver = gCrossOver->GetY();
   Double_t *yTotStatError= gTotStatError->GetY();
-  const Int_t nPhiScut =1;
+  const Int_t nPhiScut =12;
   Double_t ySys_PhiS[nPhiScut], totError_PhiS[nPhiScut], yStat_PhiS[nPhiScut];
   Double_t yFinalSys[1], xFinalSys[1] ={1.5};
   Double_t phiScut[nPhiScut] =
-    {0.};
+    {0., 0.044, 0.088, 0.17, 0.26, 0.36, 0.53, 0.71, 0.88, 1.07, 1.24, 1.44};
   
   for (Int_t i=0; i<nPhiScut; i++) {
-    ySys_PhiS[i] =
-      yCrossOver[i]*(gTotStatError->GetY()[0]+gTotStatError->GetEY()[0]);
-    cout << yCrossOver[i] << " " << yCrossOver[i]/gTotStatError->GetEY()[0] << endl;
-        
+    ySys_PhiS[i] = yCrossOver[i]*(AN_assumed+eAN_assumed)/100.0;
+    yStat_PhiS[i] = yTotStatError[i]/Pol_assumed;
+    
     totError_PhiS[i] =
       TMath::Sqrt(ySys_PhiS[i]*ySys_PhiS[i] + yStat_PhiS[i]*yStat_PhiS[i] );
 
     if (i==0){
       cout << "\nFinal systematics for phiS cut:  " << phiScut[i] << endl;
-      cout << "For file naming, phiS cut should equal:  " << endl;
+      cout << "For file naming, phiS cut should equal:  " <<finalPhiSCut <<endl;
       cout << " " << endl;
       yFinalSys[0] = ySys_PhiS[i];
     }
@@ -76,7 +77,6 @@ TGeant/Local_LeftRight_Analysis/Macros/";
   TGraph *gStat_PhiS = new TGraph(nPhiScut, totalPhiScut, yStat_PhiS);
   Setup(gSys_PhiS); Setup(gTotError_PhiS); Setup(gStat_PhiS);
 
-  cout <<"Final Sys Error: " << yFinalSys[0] << endl;
   TGraph *gSys = new TGraph(1, xFinalSys, yFinalSys);
   Setup(gSys);
 
@@ -93,8 +93,8 @@ TGeant/Local_LeftRight_Analysis/Macros/";
   gSys->Draw("AP"); gSys->SetTitle("FinalSystematics");
 
   TString outName =
-    Form("Data/SysStatError/sysStatError_%s_%s_%0.2f_%0.2f_phiS0.0.root",
-	 whichMC.Data(), whichRD.Data(), Mmin, Mmax );
+    Form("Data/SysStatError/sysStatError_%s_%s_%0.2f_%0.2f_phiS%s.root",
+	 whichMC.Data(), whichRD.Data(), Mmin, Mmax, finalPhiSCut.Data() );
   if (toWrite){
     TFile* fOut = new TFile(outName, "RECREATE");
     gSys_PhiS->Write("gSys_PhiS");

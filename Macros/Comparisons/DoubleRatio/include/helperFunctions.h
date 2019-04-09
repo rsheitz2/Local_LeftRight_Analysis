@@ -133,6 +133,23 @@ Double_t WeightedErr(Double_t eA, Double_t eB){
 }
 
 
+Double_t WeightedAvgAndError(TGraphErrors *g, Double_t *sigma){
+  Double_t *yvals = g->GetY();
+  Double_t *e_yvals = g->GetEY();
+
+  Double_t avg =0.0, s2 =0.0;
+  for (Int_t i=0; i<g->GetN(); i++) {
+    avg += yvals[i]/(e_yvals[i]*e_yvals[i]);
+    s2 += 1.0/(e_yvals[i]*e_yvals[i]);
+  }
+
+  *sigma = TMath::Sqrt(1.0/s2);
+  
+  return avg/s2;
+}
+
+
+
 Double_t GaussInt(Double_t A, Double_t sigma){
   
   return TMath::Sqrt( 2*TMath::Pi() )*A*sigma;

@@ -18,8 +18,10 @@ void combine_mcLMDYandHMDY(){
   cout << "exponential near the boundary and extrapolating in between" << endl;
 
   TString lrPath ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/";
-  TString nameLMDY ="Data/leftRight_byTarget_Charles_LMDY1.00_8.50_5bins25_43_150hbin.root";
-  TString nameHMDY ="Data/leftRight_byTarget_Charles_HMDY1.00_8.50_5bins25_43_150hbin.root";
+  /*TString nameLMDY ="Data/leftRight_byTarget_Charles_LMDY1.00_8.50_5bins25_43_150hbin.root";
+    TString nameHMDY ="Data/leftRight_byTarget_Charles_HMDY1.00_8.50_5bins25_43_150hbin.root";//*/
+  TString nameLMDY ="Data/leftRight_byTarget_Charles_LMDY1.00_8.50_4bins29_34_150hbin.root";
+  TString nameHMDY ="Data/leftRight_byTarget_Charles_HMDY1.00_8.50_4bins29_34_150hbin.root";//*/
   TFile *fHMDY = TFile::Open(lrPath+nameHMDY);
   TFile *fLMDY = TFile::Open(lrPath+nameLMDY);
 

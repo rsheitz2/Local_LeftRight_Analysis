@@ -2,11 +2,12 @@
 
 void wAvg(TString start=""){
   //Setup_______________
-  const Int_t nBins =3;//# of physBinned bins
+  const Int_t nBins =1;//# of physBinned bins
   const Int_t nHbins =8;
   TString Mtype ="HMDY";
-  TString physBinned ="xN";//"xN", "xPi", "xF", "pT", "M"
+  TString physBinned ="M";//"xN", "xPi", "xF", "pT", "M"
   TString production ="slot1";//"t3", "slot1"
+  TString whichTSA ="Pretz";//"Siv", "Trans", "Pretz"
   
   Bool_t toWrite =true;
   //Setup_______________
@@ -28,9 +29,9 @@ TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data";
   //Get Data and add for wAvg
   for (Int_t p=0; p<nPer; p++) {
     TString n_Wper =
-      Form("%s/DoubleRatio/doubleRatio_W%s_%s_%s%i_%ihbins_%s.root",
+      Form("%s/DoubleRatio/doubleRatio_W%s_%s_%s%i_%ihbins_%s_%s.root",
 	   pathDR.Data(), period[p].Data(), Mtype.Data(), physBinned.Data(),
-	   nBins, nHbins, production.Data());
+	   nBins, nHbins, production.Data(), whichTSA.Data());
     TFile *f_Wper = OpenFile(n_Wper);
     TGraphErrors *g_Wper = (TGraphErrors*) f_Wper->Get("Amp");
 
@@ -89,8 +90,8 @@ TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data";
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data/WAvg";
   TString fOutput =
-    Form("%s/wAvg_%s_%s%i_%ihbins_%s.root", thisDirPath.Data(), Mtype.Data(),
-	 physBinned.Data(), nBins, nHbins, production.Data());
+    Form("%s/wAvg_%s_%s%i_%ihbins_%s_%s.root", thisDirPath.Data(), Mtype.Data(),
+	 physBinned.Data(), nBins, nHbins, production.Data(), whichTSA.Data());
   
   if(toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
@@ -103,6 +104,7 @@ TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data/WAvg";
   cout << "Mass range considered:      " << Mtype << endl;
   cout << "Binned in which DY physics: " << physBinned << endl;
   cout << "Production considered:      " << production << endl;
+  cout << "TSA determined:     " << whichTSA << endl;
   cout << "\nTo write output file:       " << toWrite << endl;
   if (toWrite){
     cout << "File:  " << fOutput << "   was written" << endl;

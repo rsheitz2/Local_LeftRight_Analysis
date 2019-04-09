@@ -104,6 +104,17 @@ Double_t WeightedAvg(vector<Double_t> &A, vector<Double_t> &eA){
 }
 
 
+Double_t WeightedAvg(Double_t A, Double_t B,
+		     Double_t eA, Double_t eB){
+  Double_t e = 1/(eA*eA) + 1/(eB*eB);
+  
+  Double_t avg = A/(eA*eA) + B/(eB*eB);
+  avg /= e;
+
+  return avg;
+}
+
+
 Double_t WeightedAvgAndError(vector<Double_t> &A, vector<Double_t> &eA,
 		     Double_t &sigma){
 
@@ -134,17 +145,6 @@ Double_t WeightedAvgAndError(TGraphErrors *g, Double_t *sigma){
   *sigma = TMath::Sqrt(1.0/s2);
   
   return avg/s2;
-}
-
-
-Double_t WeightedAvg(Double_t A, Double_t B,
-		     Double_t eA, Double_t eB){
-  Double_t e = 1/(eA*eA) + 1/(eB*eB);
-  
-  Double_t avg = A/(eA*eA) + B/(eB*eB);
-  avg /= e;
-
-  return avg;
 }
 
 
@@ -301,6 +301,17 @@ void SetUp(TH1D* h){
 }
 
 
+void SetUp(TH2D* h){
+  h->GetYaxis()->SetNdivisions(504);
+  h->GetYaxis()->SetLabelFont(22);
+  h->GetYaxis()->SetLabelSize(0.08);
+  
+  h->GetXaxis()->SetNdivisions(504);
+  h->GetXaxis()->SetLabelFont(22);
+  h->GetXaxis()->SetLabelSize(0.08);
+}
+
+
 void SetUp(TH1D* h, Double_t xmin, Double_t xmax){
   h->GetYaxis()->SetNdivisions(504);
   h->GetYaxis()->SetLabelFont(22);
@@ -350,6 +361,36 @@ void DrawLine(TH1D *h, Double_t yval){
   li->Draw("same");
 }
 
+
+void DrawLine(TH2D *h, Double_t yval, TString whichAxis="y"){
+  if (whichAxis=="y"){
+    Double_t min_x = h->GetXaxis()->GetXmin();	
+    Double_t max_x = h->GetXaxis()->GetXmax();	
+    TLine* li = new TLine(min_x, yval, max_x, yval);
+  
+  
+    li->SetLineColor(1);
+    li->SetLineStyle(8);
+    li->SetLineWidth(2);
+  
+    li->Draw("same");
+  }
+
+  else if (whichAxis=="x"){
+    Double_t min_y = h->GetYaxis()->GetXmin();	
+    Double_t max_y = h->GetYaxis()->GetXmax();	
+    TLine* li = new TLine(yval, min_y, yval, max_y);
+  
+  
+    li->SetLineColor(1);
+    li->SetLineStyle(8);
+    li->SetLineWidth(2);
+  
+    li->Draw("same");
+  }
+}
+
+
 //Usefunctions
 void GetPolarization(Double_t *vals_noPcorr, Double_t *vals, Double_t *Pol,
 		     Int_t nBins){
@@ -370,6 +411,15 @@ void GetPolarization(Double_t *vals_noPcorr, Double_t *vals, Double_t *Pol,
   for (Int_t bi=0; bi<nBins; bi++) {
     if ( isnan(Pol[bi]) ) Pol[bi] = Pol_mean;
   }
+}
+
+
+void GetPolarization(TGraph *g_Pol, TGraph *g_Dil, Double_t *Pol){
+  Int_t nBins = g_Pol->GetN();
+  Double_t *y_Pol = g_Pol->GetY();
+  Double_t *y_Dil = g_Dil->GetY();
+
+  for (Int_t bi=0; bi<nBins; bi++) { Pol[bi] = y_Pol[bi]*y_Dil[bi]; }
 }
 
 

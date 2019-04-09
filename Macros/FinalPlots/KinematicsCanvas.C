@@ -1,7 +1,5 @@
-#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
-Local_LeftRight_Analysis/Macros/include/helperFunctions.h"
-#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
-Local_LeftRight_Analysis/Macros/include/finalSetup.h"
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/include/helperFunctions.h"
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/include/finalSetup.h"
 
 
 void DrawLegend(TGraphErrors *g){

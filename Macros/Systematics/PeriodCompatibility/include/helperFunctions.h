@@ -131,6 +131,17 @@ void SetUp(TH1D* h){
 }
 
 
+void SetUp(TH2D* h){
+  h->GetYaxis()->SetNdivisions(504);
+  h->GetYaxis()->SetLabelFont(22);
+  h->GetYaxis()->SetLabelSize(0.08);
+  
+  h->GetXaxis()->SetNdivisions(504);
+  h->GetXaxis()->SetLabelFont(22);
+  h->GetXaxis()->SetLabelSize(0.08);
+}
+
+
 void SetUp(TF1* f){
   f->GetYaxis()->SetNdivisions(504);
   f->GetYaxis()->SetLabelFont(22);

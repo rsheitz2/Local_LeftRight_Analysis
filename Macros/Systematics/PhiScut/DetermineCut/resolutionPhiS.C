@@ -1,77 +1,16 @@
-#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Local_LeftRight_Analysis/Macros/Systematics/PhiScut/Include/\
-helperFunctions.h"
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/Systematics/PhiScut/Include/helperFunctions.h"
 
 void TreeLoop(TTree *t, TH1D** h1, TH2D** h2, TH1D *hProcess, Double_t *var[],
 	      Double_t Mmin, Double_t Mmax,
 	      Int_t *LR_true, Int_t *LR_false, Double_t *phiScut,
-	      Int_t nPhiSCuts, Bool_t debug){
-  
-  Int_t tree_entries = (debug) ? 10000 : t->GetEntries();
-  if (debug) cout << "Debug mode is in effect" << endl;
-  else cout << "Debug mode is   NOT   in effect" << endl;
-  for (Int_t ev=0; ev<tree_entries; ev++) {
-    t->GetEntry(ev, 0);
-
-    if (*var[2] < Mmin) continue;//Mmumu cut
-    if (*var[2] > Mmax) continue;
-
-    Double_t phiPhoton = ShiftPhiSimple(*var[0]);
-    Double_t Gen_phiPhoton = ShiftPhiSimple(*var[1]);
-
-    h1[0]->Fill(phiPhoton);//PhiPhoton
-    h1[1]->Fill(Gen_phiPhoton);//Gen_phiPhoton
-
-    //Rec left/right
-    Bool_t Left =false, Right =false;
-    if ((phiPhoton < TMath::Pi()/2) && (phiPhoton > -TMath::Pi()/2) )
-      Left = true;
-    else if ((phiPhoton <3*TMath::Pi()/2) && (phiPhoton>TMath::Pi()/2) )
-      Right = true;
-
-    //Gen left/right
-    Bool_t Gen_Left =false, Gen_Right =false;
-    if ((Gen_phiPhoton < TMath::Pi()/2) && (Gen_phiPhoton > -TMath::Pi()/2) )
-      Gen_Left = true;
-    else if ((Gen_phiPhoton <3*TMath::Pi()/2) && (Gen_phiPhoton>TMath::Pi()/2) )
-      Gen_Right = true;
-
-    Int_t LR_consistent;
-    if ( Gen_Left==Left && Gen_Right==Right) LR_consistent =1;
-    else LR_consistent =0;
-    h1[2]->Fill(LR_consistent);//hLR
-    h2[0]->Fill(Gen_phiPhoton, LR_consistent);//hPhiLR
-
-    Double_t Diff = phiPhoton-Gen_phiPhoton;
-    if (Diff > 3.14){ Diff = -2*TMath::Pi() + Diff; }
-    else if (Diff < -3.14) { Diff = 2*TMath::Pi() + Diff; }
-    h1[3]->Fill(Diff);//hDiff
-    hProcess->Fill(Diff);
-    h2[1]->Fill(Gen_phiPhoton, Diff);//hPhiDiff
-    h2[2]->Fill(*var[2], Diff);//hMmumuDiff
-
-    //Crossover percent calculation
-    for (Int_t i=0; i<nPhiSCuts; i++) {
-      Bool_t goodRange =true;
-      if ( (phiPhoton < TMath::Pi()/2 + phiScut[i]) &&
-	   (phiPhoton > TMath::Pi()/2 - phiScut[i])) goodRange =false;
-      if ( (phiPhoton < -TMath::Pi()/2 + phiScut[i]) ||
-	   (phiPhoton > 3*TMath::Pi()/2 - phiScut[i])) goodRange =false;
-
-      if (goodRange){
-	if (LR_consistent) LR_true[i]++;
-	else LR_false[i]++;
-      }
-    }
-  }//End tree loop
-}
-
+	      Int_t nPhiSCuts, Bool_t debug);
 
 void resolutionPhiS(TString start=""){
   //Setup__________
-  TString whichMC ="Charles"; //"Yu", "Charles"
+  TString whichMC ="Yu"; //"Yu", "Charles"
   const Double_t Mmin=4.3, Mmax=8.5; //Mass cut
-  Bool_t debug =true;
+  //const Double_t Mmin=2.87, Mmax=3.38; //Mass cut
+  Bool_t debug =false;
   
   Bool_t toWrite =false;
   //Setup__________
@@ -203,17 +142,24 @@ TGeant/Presents/DATA/MC_Data/YuShiangMC/";
   Double_t *variables[] = {&PhiS, &Gen_PhiS, &Mmumu};
 
   //Treeloops
-  TreeLoop(t_AMDY, h1All, h2All, hAMDY_Diff, variables, Mmin, Mmax, LR_true,
-	   LR_false, phiScut, nPhiSCuts, debug);
-  TreeLoop(t_OC, h1All, h2All, hOC_Diff, variables, Mmin, Mmax, LR_true,
-	   LR_false, phiScut, nPhiSCuts, debug);
-  TreeLoop(t_psi, h1All, h2All, hPsi_Diff, variables, Mmin, Mmax, LR_true,
-	   LR_false, phiScut, nPhiSCuts, debug);
-  TreeLoop(t_JPsi, h1All, h2All, hJPsi_Diff, variables, Mmin, Mmax, LR_true,
-	   LR_false, phiScut, nPhiSCuts, debug);
-  if (whichMC=="Charles"){
-    TreeLoop(t_HMDY, h1All, h2All, hHMDY_Diff, variables, Mmin, Mmax, LR_true,
+  if (Mmin < 4.3){
+    cout << "only JPsi used dut to mass range" << endl;
+      TreeLoop(t_JPsi, h1All, h2All, hJPsi_Diff, variables, Mmin, Mmax, LR_true,
+	       LR_false, phiScut, nPhiSCuts, debug);
+  }
+  else{
+    TreeLoop(t_AMDY, h1All, h2All, hAMDY_Diff, variables, Mmin, Mmax, LR_true,
 	     LR_false, phiScut, nPhiSCuts, debug);
+    TreeLoop(t_OC, h1All, h2All, hOC_Diff, variables, Mmin, Mmax, LR_true,
+	     LR_false, phiScut, nPhiSCuts, debug);
+    TreeLoop(t_psi, h1All, h2All, hPsi_Diff, variables, Mmin, Mmax, LR_true,
+	     LR_false, phiScut, nPhiSCuts, debug);
+    TreeLoop(t_JPsi, h1All, h2All, hJPsi_Diff, variables, Mmin, Mmax, LR_true,
+	     LR_false, phiScut, nPhiSCuts, debug);
+    if (whichMC=="Charles"){
+      TreeLoop(t_HMDY, h1All, h2All, hHMDY_Diff, variables, Mmin, Mmax, LR_true,
+	       LR_false, phiScut, nPhiSCuts, debug);
+    }
   }
 
   //Draw distributions
@@ -288,4 +234,69 @@ TGeant/Presents/DATA/MC_Data/YuShiangMC/";
   if (toWrite) { cout << outName << "   was written" << endl; }
   else { cout << outName << "    was NOT written" << endl; }
   cout << " " << endl;
+}
+
+
+void TreeLoop(TTree *t, TH1D** h1, TH2D** h2, TH1D *hProcess, Double_t *var[],
+	      Double_t Mmin, Double_t Mmax,
+	      Int_t *LR_true, Int_t *LR_false, Double_t *phiScut,
+	      Int_t nPhiSCuts, Bool_t debug){
+  
+  Int_t tree_entries = (debug) ? 10000 : t->GetEntries();
+  if (debug) cout << "Debug mode is in effect" << endl;
+  else cout << "Debug mode is   NOT   in effect" << endl;
+  for (Int_t ev=0; ev<tree_entries; ev++) {
+    t->GetEntry(ev, 0);
+
+    if (*var[2] < Mmin) continue;//Mmumu cut
+    if (*var[2] > Mmax) continue;
+
+    Double_t phiPhoton = ShiftPhiSimple(*var[0]);
+    Double_t Gen_phiPhoton = ShiftPhiSimple(*var[1]);
+
+    h1[0]->Fill(phiPhoton);//PhiPhoton
+    h1[1]->Fill(Gen_phiPhoton);//Gen_phiPhoton
+
+    //Rec left/right
+    Bool_t Left =false, Right =false;
+    if ((phiPhoton < TMath::Pi()/2) && (phiPhoton > -TMath::Pi()/2) )
+      Left = true;
+    else if ((phiPhoton <3*TMath::Pi()/2) && (phiPhoton>TMath::Pi()/2) )
+      Right = true;
+
+    //Gen left/right
+    Bool_t Gen_Left =false, Gen_Right =false;
+    if ((Gen_phiPhoton < TMath::Pi()/2) && (Gen_phiPhoton > -TMath::Pi()/2) )
+      Gen_Left = true;
+    else if ((Gen_phiPhoton <3*TMath::Pi()/2) && (Gen_phiPhoton>TMath::Pi()/2) )
+      Gen_Right = true;
+
+    Int_t LR_consistent;
+    if ( Gen_Left==Left && Gen_Right==Right) LR_consistent =1;
+    else LR_consistent =0;
+    h1[2]->Fill(LR_consistent);//hLR
+    h2[0]->Fill(Gen_phiPhoton, LR_consistent);//hPhiLR
+
+    Double_t Diff = phiPhoton-Gen_phiPhoton;
+    if (Diff > 3.14){ Diff = -2*TMath::Pi() + Diff; }
+    else if (Diff < -3.14) { Diff = 2*TMath::Pi() + Diff; }
+    h1[3]->Fill(Diff);//hDiff
+    hProcess->Fill(Diff);
+    h2[1]->Fill(Gen_phiPhoton, Diff);//hPhiDiff
+    h2[2]->Fill(*var[2], Diff);//hMmumuDiff
+
+    //Crossover percent calculation
+    for (Int_t i=0; i<nPhiSCuts; i++) {
+      Bool_t goodRange =true;
+      if ( (phiPhoton < TMath::Pi()/2 + phiScut[i]) &&
+	   (phiPhoton > TMath::Pi()/2 - phiScut[i])) goodRange =false;
+      if ( (phiPhoton < -TMath::Pi()/2 + phiScut[i]) ||
+	   (phiPhoton > 3*TMath::Pi()/2 - phiScut[i])) goodRange =false;
+
+      if (goodRange){
+	if (LR_consistent) LR_true[i]++;
+	else LR_false[i]++;
+      }
+    }
+  }//End tree loop
 }

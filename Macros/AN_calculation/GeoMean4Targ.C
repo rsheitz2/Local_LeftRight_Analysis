@@ -15,7 +15,7 @@ Double_t e_OneTargAmp(Double_t *NL, Double_t *NR,
 
 void GeoMean4Targ(TString start =""){
   //Setup_______________
-  const Int_t nBins =3;//HMDY
+  /*const Int_t nBins =3;//HMDY
   TString period_Mtype ="WAll_HMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
@@ -25,19 +25,19 @@ void GeoMean4Targ(TString start =""){
   TString binRange ="43_85";
   TString whichFit ="true";
   TString production ="slot1";//"t3", "slot1"
-  TString additionalCuts ="phiS0.0";
+  TString additionalCuts ="phiS0.0";//*/
 
-  //const Int_t nBins =5;//JPsi
-  //TString period_Mtype ="W12_LowM_AMDY";
-  //Int_t hbins =150;
-  //TString physBinned ="xPi";//xN, xPi, xF, pT, M
-  //TString process ="JPsi";//JPsi, psi, DY
-  //TString lrMrange ="2.00_5.00";
-  //TString fitMrange ="2.00_7.50";
-  //TString binRange ="25_43";
-  //TString whichFit ="thirteen";
-  //TString production ="slot1";//"t3", "slot1"
-  //TString additionalCuts ="phiS0.195";
+  const Int_t nBins =5;//JPsi
+  TString period_Mtype ="WAll_LowM_AMDY";
+  Int_t hbins =150;
+  TString physBinned ="xN";//xN, xPi, xF, pT, M
+  TString process ="JPsi";//JPsi, psi, DY
+  TString lrMrange ="2.80_3.44";
+  TString fitMrange ="2.80_3.44";
+  TString binRange ="25_43";
+  TString whichFit ="true";
+  TString production ="slot1";//"t3", "slot1"
+  TString additionalCuts ="phiS0.0";
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -308,7 +308,6 @@ Double_t Amp(Double_t NL[][4], Double_t NR[][4],
 
 Double_t OneTargAmp(Double_t *NL, Double_t *NR, Double_t Pol){
   //Regular geomean asymmetry
-  
   Double_t L = NL[0]*NL[1];
   Double_t R = NR[0]*NR[1];
 

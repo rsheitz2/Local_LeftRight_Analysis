@@ -4,89 +4,21 @@
 TF1* FitGetLR(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
 	      Double_t LR_Mmin, Double_t LR_Mmax, TString process,
 	      TString whichFit, Double_t Mmin, Double_t Mmax,TString physBinned,
-	      TCanvas *c1, TH1D *hChi2){
-  
-  if (strncmp(Form("%s", h[bin]->GetTitle() ), "MuMu_left_upstream", 11) == 0)
-    c1->cd(2*bin+1);
-  else if (strncmp(Form("%s", h[bin]->GetTitle()),"MuMu_left_downstream",11)==0)
-    c1->cd(2*bin+1);
-  else
-    c1->cd(2*bin+2);
-
-  gPad->SetLogy();
-  TF1 *fitFunc = FitGetLR(h, hRatio, bin, LR, e_LR,LR_Mmin, LR_Mmax, process,
-			  whichFit, Mmin, Mmax, physBinned);
-
-  //Get reduced Chi2
-  Double_t Chi2 =fitFunc->GetChisquare();
-  Double_t ndf =fitFunc->GetNDF();
-  Double_t redChi2 = Chi2/ndf;
-  hChi2->Fill(redChi2);
-
-  return fitFunc;
-}
-
+	      TCanvas *c1, TH1D *hChi2);
 
 void FitOne(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
 	    Double_t LR_Mmin, Double_t LR_Mmax, TString process,
 	    TString whichFit, Double_t Mmin, Double_t Mmax, TString physBinned,
-	    TCanvas *c1){
-  //Used to draw just one histogram fit (for better visibility)
-  c1->cd(1);
-  gPad->SetLogy();
-  TF1 *fitFunc = FitGetLR(h, hRatio, bin, LR, e_LR, LR_Mmin, LR_Mmax, process,
-			  whichFit, Mmin, Mmax, physBinned);
-}
+	    TCanvas *c1);
 
-
-Double_t MakeAsym(Double_t L, Double_t R, Double_t P){
-  Double_t A = L - R;
-  A /= ( L + R );
-  A /= P;
-
-  return A;
-}
-
+Double_t MakeAsym(Double_t L, Double_t R, Double_t P);
 
 Double_t MakeAsymError(Double_t L, Double_t R, Double_t e_L, Double_t e_R,
-		       Double_t P){
-  Double_t dL2 = e_L*e_L;
-  Double_t dR2 = e_R*e_R;
+		       Double_t P);
 
-  Double_t e = dL2/( L*L )  + dR2/( R*R );
-  e = TMath::Sqrt( e );
-  e *= 2.0*L*R/( (L+R)*(L+R) );
-  e /= P;
-  
-  return e;
-}
+Double_t LocalChi2(TH1D *h, Double_t min, Double_t max);
 
-
-Double_t LocalChi2(TH1D *h, Double_t min, Double_t max){
-  Int_t lowerBin = h->FindBin(min);
-  Int_t upperBin = h->FindBin(max);
-
-  Double_t Chi2 =0.0;
-  for (Int_t bi=lowerBin; bi<upperBin+1; bi++) {
-    Double_t val = h->GetBinContent(bi);
-    Double_t eVal = h->GetBinError(bi);
-    Chi2 += (val-1.0)*(val-1.0)/(eVal*eVal);
-  }
-
-  Chi2 = TMath::Sqrt(Chi2);
-  Int_t ndf = upperBin - lowerBin;
-  Chi2 /= (1.0*ndf+1.0);
-
-  return Chi2;
-}
-
-
-void SetupRatio(TH1D* h, Double_t RatioPercent){
-  h->GetYaxis()->SetRangeUser(1-RatioPercent,1+RatioPercent);
-  h->GetXaxis()->SetRangeUser(2.0, 8.5);
-  DrawLine(h, 1.0);
-}
-
+void SetupRatio(TH1D* h, Double_t RatioPercent);
 
 void functMFit(TString start=""){
   
@@ -103,8 +35,8 @@ void functMFit(TString start=""){
     Double_t Mmax =8.50;//Fit Mass maximum
     TString whichFit ="eight";//*/
   
-  TString period_Mtype ="WAll_LowM_AMDY";
-  Int_t hbins =150;//# of histogram bins using in mass fitting
+  TString period_Mtype ="W15_LowM_AMDY";
+  Int_t hbins =90;//# of histogram bins using in mass fitting
   const Int_t nBins =5;
   TString binRange ="25_43";
   TString physBinned ="pT";//"xN", "xPi", "xF", "pT"
@@ -114,7 +46,7 @@ void functMFit(TString start=""){
   Double_t Mmin =2.00;//Fit Mass minimum
   Double_t Mmax =8.5;//Fit Mass maximum xN=6.00, xPi=6.30, xF=pT=8.50
   TString production ="slot1";//"t3", "slot1"
-  TString additionalCuts ="phiS0.195"; //HMDY=0.1866, #LowM_AMDY=0.195
+  TString additionalCuts ="phiS0.0"; //HMDY=0.1866, #LowM_AMDY=0.195
   TString whichFit ="thirteen";//*/
   
   Bool_t toWrite =false;
@@ -529,7 +461,7 @@ TGeant/Local_leftRight_Analysis/Data/";
   
   TCanvas* cAN = new TCanvas("AN by tar && pol"); cAN->Divide(2, 2);
   Double_t yMax;
-  if (process =="JPsi")  yMax =0.45;
+  if (process =="JPsi")  yMax =1.0;
   else if (process =="psi")  yMax =1.0;
   else if (process =="DY")  yMax =3.0;
   cAN->cd(1);
@@ -609,4 +541,91 @@ TGeant/Local_leftRight_Analysis/Data/";
     cout << "File:  " << fOutput << "   was written" << endl;
   }
   else cout << "File: " << fOutput << " was NOT written" << endl;
+}
+
+
+TF1* FitGetLR(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
+	      Double_t LR_Mmin, Double_t LR_Mmax, TString process,
+	      TString whichFit, Double_t Mmin, Double_t Mmax,TString physBinned,
+	      TCanvas *c1, TH1D *hChi2){
+  
+  if (strncmp(Form("%s", h[bin]->GetTitle() ), "MuMu_left_upstream", 11) == 0)
+    c1->cd(2*bin+1);
+  else if (strncmp(Form("%s", h[bin]->GetTitle()),"MuMu_left_downstream",11)==0)
+    c1->cd(2*bin+1);
+  else
+    c1->cd(2*bin+2);
+
+  gPad->SetLogy();
+  TF1 *fitFunc = FitGetLR(h, hRatio, bin, LR, e_LR,LR_Mmin, LR_Mmax, process,
+			  whichFit, Mmin, Mmax, physBinned);
+
+  //Get reduced Chi2
+  Double_t Chi2 =fitFunc->GetChisquare();
+  Double_t ndf =fitFunc->GetNDF();
+  Double_t redChi2 = Chi2/ndf;
+  hChi2->Fill(redChi2);
+
+  return fitFunc;
+}
+
+
+void FitOne(TH1D **h, TH1D **hRatio, Int_t bin, Double_t *LR,Double_t *e_LR,
+	    Double_t LR_Mmin, Double_t LR_Mmax, TString process,
+	    TString whichFit, Double_t Mmin, Double_t Mmax, TString physBinned,
+	    TCanvas *c1){
+  //Used to draw just one histogram fit (for better visibility)
+  c1->cd(1);
+  gPad->SetLogy();
+  TF1 *fitFunc = FitGetLR(h, hRatio, bin, LR, e_LR, LR_Mmin, LR_Mmax, process,
+			  whichFit, Mmin, Mmax, physBinned);
+}
+
+
+Double_t MakeAsym(Double_t L, Double_t R, Double_t P){
+  Double_t A = L - R;
+  A /= ( L + R );
+  A /= P;
+
+  return A;
+}
+
+
+Double_t MakeAsymError(Double_t L, Double_t R, Double_t e_L, Double_t e_R,
+		       Double_t P){
+  Double_t dL2 = e_L*e_L;
+  Double_t dR2 = e_R*e_R;
+
+  Double_t e = dL2/( L*L )  + dR2/( R*R );
+  e = TMath::Sqrt( e );
+  e *= 2.0*L*R/( (L+R)*(L+R) );
+  e /= P;
+  
+  return e;
+}
+
+
+Double_t LocalChi2(TH1D *h, Double_t min, Double_t max){
+  Int_t lowerBin = h->FindBin(min);
+  Int_t upperBin = h->FindBin(max);
+
+  Double_t Chi2 =0.0;
+  for (Int_t bi=lowerBin; bi<upperBin+1; bi++) {
+    Double_t val = h->GetBinContent(bi);
+    Double_t eVal = h->GetBinError(bi);
+    Chi2 += (val-1.0)*(val-1.0)/(eVal*eVal);
+  }
+
+  Chi2 = TMath::Sqrt(Chi2);
+  Int_t ndf = upperBin - lowerBin;
+  Chi2 /= (1.0*ndf+1.0);
+
+  return Chi2;
+}
+
+
+void SetupRatio(TH1D* h, Double_t RatioPercent){
+  h->GetYaxis()->SetRangeUser(1-RatioPercent,1+RatioPercent);
+  h->GetXaxis()->SetRangeUser(2.0, 8.5);
+  DrawLine(h, 1.0);
 }

@@ -1,4 +1,4 @@
-#include "include/helperFunctions.h"
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/include/helperFunctions.h"
 
 Double_t MakeAsym(Double_t L, Double_t R, Double_t P);
 
@@ -10,15 +10,25 @@ void GetLRerror(Double_t *leftCounts, Double_t *rightCounts,
 
 void trueCount(TString start=""){
   //Setup_______________
-  const Int_t nBins =3;//# of physBinned bins
-  TString period_Mtype ="WAll_HMDY";
-  TString binRange ="43_85";
-  Double_t Mmin =4.30;//LR Mass minimum
-  Double_t Mmax =8.50;//LR Mass maximum
-  TString physBinned ="M";//"xF", "pT"
-  TString process ="DY";//JPsi, psi, DY
+  const Int_t nBins =5;//# of physBinned bins
+  TString period_Mtype ="W07_LowM_AMDY";
+  TString binRange ="25_43";
+  Double_t Mmin =2.80;//LR Mass minimum
+  Double_t Mmax =3.44;//LR Mass maximum
+  TString physBinned ="xN";//"xF", "pT"
+  TString process ="JPsi";//JPsi, psi, DY
   TString production ="slot1";//"t3", "slot1"
-  TString additionalCuts ="phiS0.0";
+  TString additionalCuts ="phiS0.0";//*/
+
+  /*const Int_t nBins =1;//# of physBinned bins
+  TString period_Mtype ="W07_LowM_AMDY";
+  TString binRange ="25_43";
+  Double_t Mmin =3.02;//LR Mass minimum
+  Double_t Mmax =3.22;//LR Mass maximum
+  TString physBinned ="xN";//"xF", "pT"
+  TString process ="JPsi";//JPsi, psi, DY
+  TString production ="slot1";//"t3", "slot1"
+  TString additionalCuts ="phiS0.0";//*/
     
   Bool_t toWrite =false;
   //Setup_______________

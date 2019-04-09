@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -ne 7 ]; then
+if [ $# -ne 8 ]; then
      echo "" 
      echo "Script updates input script with input parameters"
      echo ""
@@ -13,6 +13,7 @@ else
     Mtype=$5
     physBinned=$6
     production=$7
+    whichTSA=$8
 
     if [ ! -f ${changeFile} ]; then
 	echo "$changeFile  does not exist"
@@ -25,5 +26,6 @@ else
     sed -i.bak "s/TString Mtype =.*;/TString Mtype =\"${Mtype}\";/" ${changeFile}
     sed -i.bak "s/TString physBinned =.*;/TString physBinned =\"${physBinned}\";/" ${changeFile}
     sed -i.bak "s/TString production =.*;/TString production =\"${production}\";/" ${changeFile}
+    sed -i.bak "s/TString whichTSA =.*;/TString whichTSA =\"${whichTSA}\";/" ${changeFile}
     sed -i.bak "s/Bool_t toWrite =.*;/Bool_t toWrite =true;/" ${changeFile}
 fi

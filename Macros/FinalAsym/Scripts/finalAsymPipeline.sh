@@ -4,6 +4,7 @@ if [ $# -ne 1 ]; then
     echo "" 
     echo "Pipeline script for \"integrated\" and \"all physics\" binning in:"
     echo "   wAvg.C,  physBinnedData.C"
+    echo "   Integrated is already included"
     echo ""
     echo "To do:"
     echo "Include other macros sysWphysBinnedData.C and sysOverStat.C"
@@ -22,31 +23,31 @@ Steps=$1
 
 ##Setup___  first line (20) to seach setup
 ##########
-###Additional settings
+####Additional settings
+#production="slot1"
+#phiPhotonCut=0.0 
+#Mtype="HMDY"
+#nBins=3 #integrated taken care of
+#hbins=150
+#lrMrange="4.30_8.50"  #true fit mass range
+#binRange="43_85"
+#process="DY"
+#fitMrange="4.30_8.50"
+#whichFit="true"
+
+
+###JPsi
 production="slot1"
-phiPhotonCut=0.0 
-Mtype="HMDY"
-nBins=3
+phiPhotonCut=0.0 #HMDY=0.187, #LowM_AMDY=0.195
+Mtype="LowM_AMDY"
+nBins=3 #integrated taken care of
 hbins=150
-lrMrange="4.30_8.50"  #true fit mass range
-binRange="43_85"
-process="DY"
-fitMrange="4.30_8.50"
+lrMrange="2.87_3.38" #"3.08_3.17" #"2.87_3.38" 
+binRange=#"29_34" #"31_32" #"29_34" #25_43
+process="JPsi"
+fitMrange=$lrMrange
 whichFit="true"
 
-
-####JPsi
-#production="slot1"
-#phiPhotonCut=0.53 #HMDY=0.187, #LowM_AMDY=0.195
-#period="WAll"
-#Mtype="LowM_AMDY"
-#nBins=5
-#hbins=150
-#lrMrange="2.00_5.00" 
-#binRange="25_43"
-#process="JPsi"
-#fitMrange="2.00_8.50""
-#whichFit="eight"
 
 additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include all cuts used
 

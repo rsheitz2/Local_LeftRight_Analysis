@@ -2,8 +2,8 @@
 
 void sysStatError(TString start=""){
   //Setup__________
-  //const Double_t Mmin=4.3, Mmax=8.5; //Mass cut
-  const Double_t Mmin=2.87, Mmax=3.38; //Mass cut
+  const Double_t Mmin=4.3, Mmax=8.5; //Mass cut
+  //const Double_t Mmin=2.87, Mmax=3.38; //Mass cut
   
   TString whichMC ="Charles"; //"Yu", "Charles"
   TString whichRD ="slot1"; //"t3", "slot1"
@@ -56,8 +56,8 @@ TGeant/Local_LeftRight_Analysis/Macros/";
   for (Int_t i=0; i<nPhiScut; i++) {
     ySys_PhiS[i] =
       yCrossOver[i]*(gTotStatError->GetY()[0]+gTotStatError->GetEY()[0]);
-    cout << yCrossOver[i] << " " << yCrossOver[i]/gTotStatError->GetEY()[0] << endl;
-        
+    cout << yCrossOver[i] << " " << gTotStatError->GetY()[0] << " " << gTotStatError->GetEY()[0] << endl;
+    
     totError_PhiS[i] =
       TMath::Sqrt(ySys_PhiS[i]*ySys_PhiS[i] + yStat_PhiS[i]*yStat_PhiS[i] );
 
@@ -76,7 +76,7 @@ TGeant/Local_LeftRight_Analysis/Macros/";
   TGraph *gStat_PhiS = new TGraph(nPhiScut, totalPhiScut, yStat_PhiS);
   Setup(gSys_PhiS); Setup(gTotError_PhiS); Setup(gStat_PhiS);
 
-  cout <<"Final Sys Error: " << yFinalSys[0] << endl;
+  cout << yFinalSys[0] << endl;
   TGraph *gSys = new TGraph(1, xFinalSys, yFinalSys);
   Setup(gSys);
 

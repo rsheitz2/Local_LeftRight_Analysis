@@ -48,11 +48,17 @@ Local_LeftRight_Analysis/Macros/MassFitting/include/Fit_thirteen.h"
 void DoFit(TH1D *h, TMatrixDSym &cov, Double_t Mmin, Double_t Mmax){
   h->Sumw2();
   TVirtualFitter::SetMaxIterations(50000);
+  //ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Minuit2");
   TFitResultPtr status = h->Fit("fitFunc", "RLSQ", "", Mmin, Mmax);
-  
+  //TFitResultPtr status = h->Fit("fitFunc", "RLS", "", Mmin, Mmax);
+  //TFitResultPtr status = h->Fit("fitFunc", "RS", "", Mmin, Mmax);
+
   if (status->Status() ){
-    cout << h->GetTitle() << "  Fit failed" << endl;
+    cout << h->GetTitle() << "  Fit failed" << endl; 
     exit(EXIT_FAILURE); 
+  }
+  else{
+    cout << h->GetTitle() << "  Fit Success" << endl;
   }
 
   cov = status->GetCovarianceMatrix();
@@ -179,25 +185,25 @@ TF1* FitGetLR(TH1D **h, Int_t bin, Double_t *LR, Double_t *e_LR,
 		       &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, hIsUpS, process);
   }
   else if (whichFit =="thirteen"){
-    //fitFunc = SetupFunc_thirteen(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar);
     fitFunc = SetupFunc_thirteen(h[bin], hIsUpS, fitFunc, Mmin, Mmax, &nPar,
 				 bin, physBinned);
     TMatrixDSym cov;
     cov.ResizeTo(nPar, nPar);
     DoFit(h[bin], cov, Mmin, Mmax);
     
-    ProcessPars_thirteen(fitFunc, processPars, LR_cov, cov, process,nPar,hIsUpS);
+    ProcessPars_thirteen(fitFunc, processPars, LR_cov, cov,process,nPar,hIsUpS);
     Double_t *pars = fitFunc->GetParameters();
     
     TF1 *f_LR =ComponentFuncts_thirteen(pars, Mmin, Mmax, process, hIsUpS);
     
-    //Integrate with errors taken into account
-    /*IntegrateLR_thirteen(f_LR, pars, LR_cov, binWidth, LR_Mmin, LR_Mmax,
-      &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, hIsUpS, process);*/
+    /*//Integrate with errors taken into account
+    IntegrateLR_thirteen(f_LR, pars, LR_cov, binWidth, LR_Mmin, LR_Mmax,
+			 &(LR[bin]), &(e_LR[bin]), Mmin, Mmax, hIsUpS,
+			 process);//*/
     
     //Integrate withOUT  fit errors taken into account
     IntegrateLR_thirteen(f_LR, binWidth, LR_Mmin, LR_Mmax,
-			 &(LR[bin]), &(e_LR[bin]));
+    &(LR[bin]), &(e_LR[bin]));//*/
   }
   else{
     cout << "Invalid fit type:   " << whichFit << endl;

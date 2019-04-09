@@ -11,7 +11,7 @@ Double_t CalSysErrorPeriod(Double_t mean, Double_t sigma){
 
 void pullDist(TString start=""){
   //Setup_______________
-  const Int_t nBins =3;//HMDY
+  /*const Int_t nBins =3;//HMDY
   TString fitMrangeType ="HMDY";
   Int_t hbins =150;
   TString process ="DY";
@@ -22,16 +22,16 @@ void pullDist(TString start=""){
   TString production ="slot1";//"t3", "slot1"
   TString additionalCuts ="phiS0.0";//*/
 
-  /*const Int_t nBins =5;//JPsi
-    TString fitMrangeType ="LowM_AMDY";
-    Int_t hbins =150;
-    TString process ="JPsi";//JPsi, psi
-    TString lrMrange ="2.00_5.00";
-    TString fitMrange ="2.00_8.50";
-    TString binRange ="25_43";
-    TString whichFit ="thirteen";
-    TString production ="slot1";//"t3", "slot1"
-    TString additionalCuts ="phiS0.53";//*/
+  const Int_t nBins =4;//JPsi
+  TString fitMrangeType ="LowM_AMDY";
+  Int_t hbins =150;
+  TString process ="JPsi";//JPsi, psi
+  TString lrMrange ="2.87_3.38";
+  TString fitMrange ="2.87_3.38";
+  TString binRange ="29_34";
+  TString whichFit ="true";
+  TString production ="slot1";//"t3", "slot1"
+  TString additionalCuts ="phiS0.0";//*/
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -216,11 +216,13 @@ GeoMean4Targ_%s%s_%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
     gPad->SetFrameLineWidth(2);
 
     hPulls[i]->SetMarkerStyle(20);
+    hPulls[i]->SetMarkerSize(1.5);
     hPulls[i]->SetMarkerColor(kBlue);
     hPulls[i]->SetLineColor(kBlue);
     hPulls[i]->Draw("E X0");
     hPulls[i]->Fit("gaus", "Q");
-    hPulls[i]->GetFunction("gaus")->SetLineStyle(7);
+    hPulls[i]->GetFunction("gaus")->SetLineStyle(9);
+    hPulls[i]->GetFunction("gaus")->SetLineWidth(4);
   }
   
   //Systematic Error
@@ -235,6 +237,8 @@ GeoMean4Targ_%s%s_%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
     xvals[i] = 1 + i;
   }
 
+  Double_t wPullMeanPhys=0.0, wPullSigmaPhys=0.0;
+  Double_t e_wPullMeanPhys=0.0, e_wPullSigmaPhys=0.0;
   Double_t sysErrorPhys[nPhysBinned];
   for (Int_t i=0; i<nPhysBinned; i++) {
     TF1 *fPhys_gaus = hPulls[i]->GetFunction("gaus");
@@ -242,7 +246,24 @@ GeoMean4Targ_%s%s_%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
     Double_t sigmaPhys = fPhys_gaus->GetParameter(2);
 
     sysErrorPhys[i] = CalSysErrorPeriod(meanPhys, sigmaPhys);
+
+    Double_t e_meanPhys = fPhys_gaus->GetParError(1);
+    Double_t e_sigmaPhys = fPhys_gaus->GetParError(2);
+
+    //if (i==nPhysBinned-1) continue;//not including integrated
+    wPullMeanPhys += meanPhys/(e_meanPhys*e_meanPhys);
+    wPullSigmaPhys += sigmaPhys/(e_sigmaPhys*e_sigmaPhys);
+    e_wPullMeanPhys += 1.0/(e_meanPhys*e_meanPhys);
+    e_wPullSigmaPhys += 1.0/(e_sigmaPhys*e_sigmaPhys);
   }
+  wPullMeanPhys /= e_wPullMeanPhys; wPullSigmaPhys /= e_wPullSigmaPhys;
+  cout << "\n\nWeighted average from uncorrelated pulls sys Error/stat Error "; 
+  cout << CalSysErrorPeriod(wPullMeanPhys, wPullSigmaPhys) << "\n\n" << endl;
+  Double_t sysStatError_wPhys[nBins];
+  for (Int_t bi=0; bi<nBins; bi++) 
+    sysStatError_wPhys[bi] = CalSysErrorPeriod(wPullMeanPhys, wPullSigmaPhys);
+  TGraph *gSys_StatFinal = new TGraphErrors(nBins, xvals, sysStatError_wPhys);
+  SetUp(gSys_StatFinal);
   
   //Draw systematic error
   TGraph *gSys = new TGraphErrors(nBins, xvals, sysError);
@@ -305,7 +326,8 @@ GeoMean4Targ_%s%s_%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
 	gSysPhys[i]->Write(Form("gSys_%s", physBinned[i].Data()));
       }
     }
-    
+
+    gSys_StatFinal->Write("gSys_Stat");
     cPulls->Write("cPulls");
     cSysPhys->Write("cSysPhys");
   }

@@ -24,43 +24,64 @@ analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
 
 ##Setup___  first line (25) to seach setup
 ##########
-###Additional settings
-production="slot1"
-phiPhotonCut=0.0 #0.0, 0.044, 0.088, 0.17, 0.36, 0.53, 0.71, 0.88, 1.07 #HMDY=0.1866, #LowM_AMDY=0.195
-##Step ONE settings ###### DY
-fitMrangeType="HMDY"
-nBins=1
-#binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
-binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}binsRelease.txt
-#binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/WAll_HMDY_${nBins}bins.txt
-hbins=150
-fitMmin=4.30  #true fit mass range
-fitMmax=8.50  #true fit mass range
-binRange="43_85"
-##Step TWO settings
-process="DY"
-LR_Mmin=4.30
-LR_Mmax=8.50
-whichFit="true"
-
-
-###Additional settings
+####Additional settings
 #production="slot1"
-#phiPhotonCut=0.53 #HMDY=0.187, #LowM_AMDY=0.195
+#phiPhotonCut=0.0 #0.0, 0.044, 0.088, 0.17, 0.36, 0.53, 0.71, 0.88, 1.07 #HMDY=0.1866, #LowM_AMDY=0.195
+###Step ONE settings ###### DY
+#fitMrangeType="HMDY"
+#nBins=1 #integrated taken care of
+##binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}bins.txt
+#binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_${nBins}binsRelease.txt
+##binFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/WAll_HMDY_${nBins}bins.txt
+#hbins=150
+#fitMmin=4.30  #true fit mass range
+#fitMmax=8.50  #true fit mass range
+#binRange="43_85"
+###Step TWO settings
+#process="DY"
+#LR_Mmin=4.30
+#LR_Mmax=8.50
+#whichFit="true"
+
+
+#####Additional settings
+#production="slot1"
+#phiPhotonCut=0.0 #HMDY=0.187, #LowM_AMDY=0.195
 ###Step ONE settings  ########JPsi
 #fitMrangeType="LowM_AMDY"
-#nBins=5
-#hbins=150
+#nBins=5 #integrated taken care of
+#hbins=90
 #fitMmin=2.00  #true fit mass range
 #fitMmax=8.50  #true fit mass range
 ##fitMmax: xN=6.00, xPi=6.30, xF=pT=8.50
 #binRange="25_43"
 #binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/slot1WAll_JPsi${binRange}_${nBins}bins.txt
+##binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/Wall_JPsi${binRange}_3bins.txt
 ###Step TWO settings
 #process="JPsi"
 #LR_Mmin=2.00
 #LR_Mmax=5.00
 #whichFit="thirteen"
+
+
+##Additional settings
+production="slot1"
+phiPhotonCut=0.0 #HMDY=0.187, #LowM_AMDY=0.195
+##Step ONE settings  ########JPsi
+fitMrangeType="LowM_AMDY"
+nBins=4 #integrated taken care of
+hbins=150
+fitMmin=1.00 #2.87 #3.08 #2.87  #true fit mass range
+fitMmax=8.50 #3.38 #3.17 #3.38  #true fit mass range
+#fitMmax: xN=6.00, xPi=6.30, xF=pT=8.50
+binRange="29_34" #"31_32" #"29_34" #25_43
+binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/slot1WAll_JPsi${binRange}_${nBins}bins.txt
+#binFile=${analysisPath}/Presents/DATA/RealData/JPsi/BinValues/Wall_JPsi${binRange}_3bins.txt
+##Step TWO settings
+process="JPsi"
+LR_Mmin=$fitMmin #3sigma =2.52, 2sigma =2.72, 1sigma =2.92, 0.5sigma =3.02
+LR_Mmax=$fitMmax #3sigma =3.72, 2sigma =3.52, 1sigma =3.32, 0.5sigma =3.22
+whichFit="true"
 
 
 additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include all cuts used
@@ -71,6 +92,7 @@ additionalCuts=phiS$phiPhotonCut #add and new cuts here.  This should include al
 ##Setup___ last line (70) to search setup
 period=("W07" "W08" "W09" "W10" "W11" "W12" "W13" "W14" "W15" "WAll")
 physBinned=("xN" "xPi" "xF" "pT" "M")
+
 loopFile=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Scripts/Src/pipeline.sh
 
 lrMrange="${LR_Mmin}_${LR_Mmax}"
@@ -118,6 +140,10 @@ aNPath=${HOME}/AN_calculation
 
 #Intial save files to be changed
 cp ${loopFile} ${loopFile}_tmp
+if [ -f ${loopFile}_log.txt ]; then
+    timeStamp=$(date +"%Y-%m-%d_%T")
+    mv ${loopFile}_log.txt $aNPath/Scripts/Logs/periodPhysBinned_${timeStamp}.txt
+fi
 
 for per in ${period[@]}; do
     echo ""
@@ -128,7 +154,7 @@ for per in ${period[@]}; do
 	echo ""
 	echo "Physics Binned $phy"
 	echo ""
-    
+	
 	#pipeline changes
 	${aNPath}/Scripts/ChangeScripts/changeGenericPipeline.sh ${loopFile} ${per} $fitMrangeType $nBins $hbins $fitMmin $fitMmax $phy $process $LR_Mmin $LR_Mmax \
 		 ${whichFit} ${binRange} ${binFile} ${production} ${phiPhotonCut} ${additionalCuts}
@@ -139,10 +165,23 @@ for per in ${period[@]}; do
 	    mv ${loopFile} ${loopFile}.bak
 	    mv ${loopFile}_tmp ${loopFile}
 	    exit 1
-	else
-	    rm ${loopFile}_log.txt
 	fi
     done #physics binning
+
+    #Integrated
+    echo "Integrated"
+    echo ""
+    intBinFile=${analysisPath}/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_1bins.txt
+    ${aNPath}/Scripts/ChangeScripts/changeGenericPipeline.sh ${loopFile} ${per} $fitMrangeType 1 $hbins $fitMmin $fitMmax "xN" $process $LR_Mmin $LR_Mmax \
+	     ${whichFit} ${binRange} ${intBinFile} ${production} ${phiPhotonCut} ${additionalCuts}
+    #Execute
+    ${loopFile} ${Steps} >> ${loopFile}_log.txt
+    if [ $? != 0 ]; then
+	echo "${loopFile}.sh did not execute well"
+	mv ${loopFile} ${loopFile}.bak
+	mv ${loopFile}_tmp ${loopFile}
+	exit 1
+    fi
 done #period binning
 
 #Clean up

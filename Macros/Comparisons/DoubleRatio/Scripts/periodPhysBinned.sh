@@ -19,11 +19,11 @@ Steps=$1
 
 ##Setup___  first line (20) to seach setup
 ##########
-nBins=1
+nBins=3 #integrated automatically done now
 nHbins=8
 Mtype="HMDY"
 production="slot1"
-
+whichTSA="Siv" #"Siv", "Pretz", "Trans" 
 
 
 
@@ -40,6 +40,7 @@ echo "production used:   $production"
 echo " "
 echo "Kinematic binning types:       ${physBinned[@]}"
 echo "Periods considered:         ${period[@]}"
+echo "TSA considered:             ${whichTSA}"
 
 if [ ${Steps} == "h" ] || [ ${Steps} -lt 1 ]; then #Help option, output settings
     exit 1
@@ -63,8 +64,20 @@ for phy in ${physBinned[@]}; do
 	echo ""
 
 	#pipeline changes
-	${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/doubleRatio.C $nBins $nHbins $per $Mtype $phy ${production}
+	${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/doubleRatio.C $nBins $nHbins $per $Mtype $phy ${production} ${whichTSA}
 	#Execute
+	root -l -b -q "${HOME}/doubleRatio.C(1)" >> ${HOME}/doubleRatio_log.txt
+	if [ $? != 0 ]; then
+	    echo "${HOME}/doubleRatio.C did not execute well"
+	    mv ${HOME}/doubleRatio.C ${HOME}/doubleRatio.C.bak
+	    mv ${HOME}/doubleRatio_tmp.C ${HOME}/doubleRatio.C
+	    exit 1
+	else
+	    rm ${HOME}/doubleRatio_log.txt
+	fi
+
+	#Integrated changes
+	${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/doubleRatio.C 1 $nHbins $per $Mtype $phy ${production} ${whichTSA}
 	root -l -b -q "${HOME}/doubleRatio.C(1)" >> ${HOME}/doubleRatio_log.txt
 	if [ $? != 0 ]; then
 	    echo "${HOME}/doubleRatio.C did not execute well"
@@ -77,8 +90,20 @@ for phy in ${physBinned[@]}; do
     done #period binning
 
     #pipeline changes
-    ${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/wAvg.C $nBins $nHbins blank $Mtype $phy ${production}
+    ${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/wAvg.C $nBins $nHbins blank $Mtype $phy ${production} ${whichTSA}
     #Execute
+    root -l -b -q "${HOME}/wAvg.C(1)" >> ${HOME}/wAvg_log.txt
+    if [ $? != 0 ]; then
+    	echo "wAvg.C did not execute well"
+    	mv ${HOME}/wAvg.C ${HOME}/wAvg.C.bak
+    	mv ${HOME}/wAvg_tmp.C ${HOME}/wAvg.C
+    	exit 1
+    else
+    	rm ${HOME}/wAvg_log.txt
+    fi
+
+    #Integrated changes
+    ${HOME}/Scripts/ChangeScripts/changeMacro.sh ${HOME}/wAvg.C 1 $nHbins blank $Mtype $phy ${production} ${whichTSA}
     root -l -b -q "${HOME}/wAvg.C(1)" >> ${HOME}/wAvg_log.txt
     if [ $? != 0 ]; then
     	echo "wAvg.C did not execute well"

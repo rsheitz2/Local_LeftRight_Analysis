@@ -1,6 +1,4 @@
-#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
-TGeant/Local_LeftRight_Analysis/Macros/Systematics/PhiScut/Include/\
-helperFunctions.h"
+#include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/Macros/Systematics/PhiScut/Include/helperFunctions.h"
 
 void resolutionHMDYPhiS(TString start=""){
   //Setup__________

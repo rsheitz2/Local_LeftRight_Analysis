@@ -1,11 +1,11 @@
 #include "include/helperFunctions.h"
 
-void physBinnedPeriod(TString start=""){
+void accByPeriod(TString start=""){
   //Setup_______________
-  /*const Int_t nBins =3;//HMDY
+  /*const Int_t nBins =1;//HMDY
   TString fitMrangeType ="HMDY";
   Int_t hbins =150;
-  TString physBinned ="M";//xN, xPi, xF, pT, M
+  TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="DY";
   TString lrMrange ="4.30_8.50";
   TString fitMrange ="4.30_8.50";
@@ -14,14 +14,14 @@ void physBinnedPeriod(TString start=""){
   TString production ="slot1";//"t3", "slot1"
   TString additionalCuts ="phiS0.0";//*/
   
-  const Int_t nBins =4;
+  const Int_t nBins =1;
   TString fitMrangeType ="LowM_AMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="2.87_3.38";
-  TString fitMrange ="2.87_3.38";
-  TString binRange ="29_34";
+  TString lrMrange ="2.80_3.44";
+  TString fitMrange ="2.80_3.44";
+  TString binRange ="25_43";
   TString whichFit ="true";
   TString production ="slot1";//"t3", "slot1"
   TString additionalCuts ="phiS0.0";//*/
@@ -32,6 +32,8 @@ void physBinnedPeriod(TString start=""){
   TString pathAN ="/Users/robertheitz/Documents/Research/DrellYan/\
 Analysis/TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/\
 GeoMean4Targ";
+  TString pathFA ="/Users/robertheitz/Documents/Research/DrellYan/\
+Analysis/TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data";
   
   if (start==""){
     cout << "Script takes the AN data for a given DY kinematic binning/n";
@@ -59,117 +61,70 @@ GeoMean4Targ";
   const Int_t nPeriods =9;
   TString periods[nPeriods] =
     {"07", "08", "09", "10", "11", "12", "13", "14", "15"};
-  TGraphErrors *g_periods[nPeriods];
 
   //Aesthetic setups
-  TCanvas* cAllper = new TCanvas();
-  TLegend *legend = new TLegend(0.1,0.7,0.48,0.9); legend->SetNColumns(3);
-  Double_t yMax = (fitMrangeType=="HMDY") ? 0.75 : 0.25;
-  Int_t icolor[nPeriods] = {kBlue+2, kRed+2, kGreen+2, kMagenta+2, kCyan+2,
-			    kBlue, kRed, kGreen, kMagenta};
-  Int_t imarker[nPeriods] = {20, 21, 22, 23, 24, 25, 26, 27, 28};
-  Double_t offset;
-  if (physBinned =="xF") offset = 0.003;
-  else if (physBinned =="pT") offset = 0.01;
-  else if (physBinned =="xN") offset = 0.0009;
-  else if (physBinned =="xPi") offset = 0.002;
-  else if (physBinned =="xM") offset = 0.035;
-
-  //Compute Weighed Average per Period 
-  Double_t xVal[nPeriods], perWavg[nPeriods];
-  Double_t ex[nPeriods] ={0.0}, e_perWavg[nPeriods];
-
-  Double_t upSWavg[nPeriods], downSWavg[nPeriods];
-  Double_t e_upSWavg[nPeriods], e_downSWavg[nPeriods];
+  Double_t yMax = (fitMrangeType=="HMDY") ? 1.2 : 1.05;
+  TCanvas* cAlpha = new TCanvas(); cAlpha->Divide(1,2);
 
   //Get Data files/TGraphs and Draw
   for (Int_t p=0; p<nPeriods; p++) {
-    TString fname;
+    TString fname_FA;
     if  (whichFit=="true"){
-      fname =
-	Form("%s/GeoMean4Targ_true_W%s_%s_%s%s_%s%s%i_%s_%s.root",pathAN.Data(),
-	     periods[p].Data(), fitMrangeType.Data(), process.Data(),
-	     fitMrange.Data(), binRange.Data(), physBinned.Data(), nBins,
-	     production.Data(), additionalCuts.Data());
+      fname_FA = Form("%s/acceptanceFourTargRatio/\
+acceptanceFourTargRatio_true_W%s_%s_%s%s_%s%s%i_%s_%s.root",
+		   pathFA.Data(), periods[p].Data(), fitMrangeType.Data(),
+		   process.Data(), fitMrange.Data(), binRange.Data(),
+		   physBinned.Data(), nBins, production.Data(),
+		   additionalCuts.Data());
     }
     else{
-      fname =
+      cout <<"not setup" <<endl;
+      exit(EXIT_FAILURE);
+      fname_FA =
 	Form("%s/GeoMean4Targ_%s%s_W%s_%s_%s%s_%s%s%i_%ihbin_%s_%s.root",
 	     pathAN.Data(), whichFit.Data(), fitMrange.Data(),periods[p].Data(),
 	     fitMrangeType.Data(), process.Data(), lrMrange.Data(),
 	     binRange.Data(), physBinned.Data(), nBins, hbins,production.Data(),
 	     additionalCuts.Data());
     }
-    cout << "Using data from:  " << fname << endl;
-    TFile *f = TFile::Open(fname);
+    cout << "Using data from:  " << fname_FA << endl;
+    TFile *f = OpenFile(fname_FA);
 
-    if (!f){
-      cout << "RD or RD_noCorr file does not exist " << endl;
-      exit(EXIT_FAILURE);
-    }
-
-    g_periods[p] = (TGraphErrors*) f->Get("AN");
-    SetUp(g_periods[p], icolor[p], imarker[p], p*offset);
-
-    Double_t wAvg = WeightedAvg(g_periods[p]);
-    Double_t e_Wavg = WeightedErr(g_periods[p]);
-    legend->AddEntry(g_periods[p],
-		     Form("W%s= %.3f +/- %.3f",periods[p].Data(), wAvg, e_Wavg),
-		     "p");
-
-    TGraphErrors *g_upS = (TGraphErrors*)f->Get("AN_ups");
-    TGraphErrors *g_downS = (TGraphErrors*)f->Get("AN_downs");
+    TGraphErrors *g_alpha_subper = (TGraphErrors*) f->Get("alpha_subper");
+    TGraphErrors *g_alpha_pol = (TGraphErrors*) f->Get("alpha_pol");
     
+    TGraphErrors *g_alpha_upS = (TGraphErrors*) f->Get("alpha_upS");
+    TGraphErrors *g_alpha_downS = (TGraphErrors*) f->Get("alpha_downS");
+
+    OffSet(g_alpha_subper, p+1.0); OffSet(g_alpha_pol, p+1.0);
+    OffSet(g_alpha_upS, p+1.0); OffSet(g_alpha_downS, p+1.0); 
+
+    //Draw acceptance
+    cAlpha->cd(1);
     if (p==0) {
-      g_periods[p]->Draw("AP");
-      g_periods[p]->GetYaxis()->SetRangeUser(-yMax, yMax);
-      g_periods[p]->SetTitle("AN");
-      g_periods[p]->GetXaxis()->SetTitle(physBinned);
-      if (physBinned=="M")
-	g_periods[p]->GetXaxis()->SetLimits(4.3, 7.0);
-      DrawLine(g_periods[p], 0.0);
+      g_alpha_subper->Draw("AP");
+      g_alpha_subper->GetYaxis()->SetRangeUser(2-yMax , yMax);
+      g_alpha_subper->GetXaxis()->SetLimits(0, nPeriods+1);
+      DrawLine(g_alpha_subper, 1.0);
     }
-    else g_periods[p]->Draw("Psame");
-    g_periods[p]->SetMarkerSize(1.5);
+    else g_alpha_subper->Draw("Psame");
 
-    //Weighted average per period
-    perWavg[p] = wAvg;
-    e_perWavg[p] = e_Wavg;
-    xVal[p] = p+1;
+    g_alpha_pol->Draw("Psame");
 
-    upSWavg[p] = WeightedAvg(g_upS);
-    e_upSWavg[p] = WeightedErr(g_upS);
-    downSWavg[p] = WeightedAvg(g_downS);
-    e_downSWavg[p] = WeightedErr(g_downS);
+    cAlpha->cd(2);
+    if (p==0) {
+      g_alpha_upS->Draw("AP");
+      g_alpha_upS->GetYaxis()->SetRangeUser(2-yMax, yMax);
+      g_alpha_upS->GetXaxis()->SetLimits(0, nPeriods+1);
+      DrawLine(g_alpha_upS, 1.0);
+    }
+    else g_alpha_upS->Draw("Psame");
+
+    g_alpha_downS->Draw("Psame");
     
   }//end p loop
-  legend->SetBorderSize(0); legend->SetTextFont(132); legend->SetTextSize(0.01);
-  legend->Draw("same");
 
-  //Graph aesthetic setups/Draw Graph
-  TGraphErrors *g_Wavg =
-    new TGraphErrors(nPeriods, xVal, perWavg, ex, e_perWavg);
-  TGraphErrors *g_upSWavg =
-    new TGraphErrors(nPeriods, xVal, upSWavg, ex, e_upSWavg);
-  TGraphErrors *g_downSWavg =
-    new TGraphErrors(nPeriods, xVal, downSWavg, ex, e_downSWavg);
-  SetUp(g_Wavg); SetUp(g_upSWavg); SetUp(g_downSWavg);
-  
-  TCanvas* cWavg = new TCanvas();
-  g_Wavg->Draw("AP");
-  g_Wavg->Fit("pol0");
-  g_Wavg->SetTitle("Weighted Average");
-  g_Wavg->GetXaxis()->SetTitle("Period");
-  DrawLine(g_Wavg, 0.0);
-
-  TCanvas* cgeo = new TCanvas(); 
-  g_upSWavg->Draw("AP"); g_upSWavg->GetYaxis()->SetRangeUser(-0.12, 0.12);
-  g_downSWavg->Draw("Psame");
-  g_upSWavg->SetMarkerColor(kRed); g_downSWavg->SetMarkerColor(kBlue);
-  g_downSWavg->SetMarkerStyle(25);
-  DrawLine(g_upSWavg, 0.0);
-
-  //Write Output/Final Settings
+  /*//Write Output/Final Settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis\
 /TGeant/Local_LeftRight_Analysis/Macros/Systematics/PeriodCompatibility";
   TString fOutput;
@@ -216,5 +171,5 @@ physBinnedPeriod_%s%s_%s_%s%s_%s%i_%ihbin_%s_%s.root",
     cout << " " << endl;
   }
   if (toWrite) cout << "File:  " << fOutput << "   was written" << endl;
-  else cout << "File: " << fOutput << " was NOT written" << endl;
+  else cout << "File: " << fOutput << " was NOT written" << endl;//*/
 }

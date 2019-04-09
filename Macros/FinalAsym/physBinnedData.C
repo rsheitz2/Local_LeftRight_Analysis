@@ -2,53 +2,16 @@
 #include "/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/\
 Local_LeftRight_Analysis/Macros/include/finalSetup.h"
 
-void DrawLegend(TGraphErrors *g){
-  TString name = g->GetName();
-  Double_t sigma;
-  Double_t avg = WeightedAvgAndError(g, &sigma);
-
-  TLegend *leg = new TLegend(0.25,0.9,0.7,0.99);
-  leg->AddEntry(name, Form("#bar{A}_{N} = %0.2f #pm %0.2f", avg, sigma),
-		"p");
-  leg->SetBorderSize(0); leg->SetTextFont(133); leg->SetTextSize(25);
-  leg->Draw("same");
-}
-
+void DrawLegend(TGraphErrors *g);
 
 void FinalSetupLocal(TGraphErrors *g, TString xName, Double_t yMax,
-		     Bool_t same=false){
-  (same) ? g->Draw("Psame") : g->Draw("AP");
-  g->GetYaxis()->SetRangeUser(-yMax, yMax);
-  
-  FinalSetup(g);
+		     Bool_t same=false);
 
-  g->SetMarkerColor(kRed);
-  g->SetMarkerStyle(20);
-  g->SetMarkerSize(1.8);
-  g->SetFillStyle(0);
-  g->SetLineWidth(2);
-  g->SetTitle("");
-
-  SetTitleName(g, xName, "x");
-
-  DrawLine(g, 0.0);
-  if (!same) DrawLegend(g);
-}
-
-
-void FinalLocalIntegrated(TGraphErrors *g){
-  SetTitleName(g, "A_{N}", "y");
-  g->GetXaxis()->SetLimits(0.0, 0.35);
-  g->GetXaxis()->SetLabelSize(0.0);
-  g->GetXaxis()->SetTickSize(0.0);
-
-  DrawLine(g, 0.0);
-}
-
+void FinalLocalIntegrated(TGraphErrors *g);
 
 void physBinnedData(TString start=""){
   //Setup_______________
-  const Int_t nBins =3;//HMDY
+  /*const Int_t nBins =3;//HMDY
   TString Mtype ="HMDY";
   Int_t hbins =150;
   TString process ="DY";//JPsi, psi, DY
@@ -59,16 +22,16 @@ void physBinnedData(TString start=""){
   TString production ="slot1";
   TString additionalCuts ="phiS0.0";//*/
 
-  /*const Int_t nBins =5;//JPsi
+  const Int_t nBins =4;//JPsi
   TString Mtype ="LowM_AMDY";
   Int_t hbins =150;
   TString process ="JPsi";//JPsi, psi, DY
-  TString lrMrange ="2.00_5.00";
-  TString fitMrange ="2.00_8.50";
-  TString binRange ="25_43";
-  TString whichFit ="thirteen";
+  TString lrMrange ="2.87_3.38";//"3.08_3.17"; //"2.87_3.38";
+  TString fitMrange =lrMrange;
+  TString binRange ="29_34";//"31_32"; //"29_34"; //"25_43";
+  TString whichFit ="true";
   TString production ="slot1";
-  TString additionalCuts ="phiS0.53";//*/
+  TString additionalCuts ="phiS0.0";//*/
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -100,7 +63,7 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
   //Aesthetics setup
   TCanvas* cAsym = new TCanvas();
   cAsym->SetLeftMargin(0.2); cAsym->Divide(nPhysBinned, 1, 0, 0);
-  Double_t yMax =(process=="DY") ? 0.25 : 0.1;
+  Double_t yMax =(process=="DY") ? 0.25 : 0.06;
   TCanvas* cAsym_1targ= new TCanvas();
   cAsym_1targ->SetLeftMargin(0.2); cAsym_1targ->Divide(nPhysBinned, 1, 0, 0);
   TString xNames[nPhysBinned] =
@@ -149,13 +112,13 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
     cAsym_1targ->cd(phys+1); gPad->SetFrameLineWidth(2);
     g_AN_upS[phys] =(TGraphErrors*)f_AN->Get("AN_ups");
     g_AN_upS[phys]->SetName("AN_upS");
-    FinalSetupLocal(g_AN_upS[phys], xNames[phys], 0.43);
+    FinalSetupLocal(g_AN_upS[phys], xNames[phys], 2*yMax);
     g_AN_upS[phys]->GetYaxis()->SetNdivisions(505);
     if (integrated) { FinalLocalIntegrated(g_AN_upS[phys]); }
 
     g_AN_downS[phys] =(TGraphErrors*)f_AN->Get("AN_downs");
     g_AN_downS[phys]->SetName("AN_downs");
-    FinalSetupLocal(g_AN_downS[phys], xNames[phys], 0.43, true);
+    FinalSetupLocal(g_AN_downS[phys], xNames[phys], 2*yMax, true);
     g_AN_downS[phys]->GetYaxis()->SetNdivisions(505);
     if (integrated) { FinalLocalIntegrated(g_AN_downS[phys]); }
     g_AN_downS[phys]->SetMarkerColor(kBlue);
@@ -206,3 +169,46 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
   else cout << "File: " << fOutput << " was NOT written" << endl;
 }
 
+
+void DrawLegend(TGraphErrors *g){
+  TString name = g->GetName();
+  Double_t sigma;
+  Double_t avg = WeightedAvgAndError(g, &sigma);
+
+  TLegend *leg = new TLegend(0.25,0.9,0.7,0.99);
+  leg->AddEntry(name, Form("#bar{A} = %0.2f #pm %0.2f", avg, sigma),
+		"p");
+  leg->SetBorderSize(0); leg->SetTextFont(133); leg->SetTextSize(25);
+  leg->Draw("same");
+}
+
+
+void FinalSetupLocal(TGraphErrors *g, TString xName, Double_t yMax,
+		     Bool_t same=false){
+  (same) ? g->Draw("Psame") : g->Draw("AP");
+  g->GetYaxis()->SetRangeUser(-yMax, yMax);
+  
+  FinalSetup(g);
+
+  g->SetMarkerColor(kRed);
+  g->SetMarkerStyle(20);
+  g->SetMarkerSize(1.8);
+  g->SetFillStyle(0);
+  g->SetLineWidth(2);
+  g->SetTitle("");
+
+  SetTitleName(g, xName, "x");
+
+  DrawLine(g, 0.0);
+  if (!same) DrawLegend(g);
+}
+
+
+void FinalLocalIntegrated(TGraphErrors *g){
+  SetTitleName(g, "A_{lr}", "y");
+  g->GetXaxis()->SetLimits(0.0, 0.35);
+  g->GetXaxis()->SetLabelSize(0.0);
+  g->GetXaxis()->SetTickSize(0.0);
+
+  DrawLine(g, 0.0);
+}

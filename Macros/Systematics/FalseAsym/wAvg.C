@@ -33,7 +33,7 @@ void AddErrorWAvg(TGraph *g, Double_t *yWavg){
 void wAvg(){
   //Setup_______________
   const Int_t nBins =3;//HMDY
-  TString Mtype ="HMDY";
+  TString fitMrangeType ="HMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
@@ -45,7 +45,7 @@ void wAvg(){
   TString additionalCuts ="phiS0.0";//*/
 
   /*const Int_t nBins =1;//JPsi
-  TString Mtype ="HMDY";
+  TString fitMrangeType ="HMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
@@ -91,21 +91,21 @@ TGeant/Local_LeftRight_Analysis/Macros/Systematics/FalseAsym/Data";
     if (whichFit=="true"){
       perFAsubper =
 	Form("%s/TargFlip/falseGeoMean4Targ_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
-	     pathFA.Data(), whichFit.Data(), period[p].Data(), Mtype.Data(),
+	     pathFA.Data(), whichFit.Data(), period[p].Data(), fitMrangeType.Data(),
 	     process.Data(), lrMrange.Data(), binRange.Data(),physBinned.Data(),
 	     nBins, production.Data(), additionalCuts.Data());
       
       perAcc =
 	Form("%s/acceptanceFourTargRatio/\
 acceptanceFourTargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
-	     pathFA.Data(), whichFit.Data(), period[p].Data(), Mtype.Data(),
+	     pathFA.Data(), whichFit.Data(), period[p].Data(), fitMrangeType.Data(),
 	     process.Data(), lrMrange.Data(), binRange.Data(),physBinned.Data(),
 	     nBins, production.Data(), additionalCuts.Data());
 
       perSysErr =
 	Form("%s/acceptanceFourTargRatio/SystematicError/\
 accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
-	     pathFA.Data(), whichFit.Data(), period[p].Data(), Mtype.Data(),
+	     pathFA.Data(), whichFit.Data(), period[p].Data(), fitMrangeType.Data(),
 	     process.Data(), lrMrange.Data(), binRange.Data(),physBinned.Data(),
 	     nBins, production.Data(), additionalCuts.Data());
     }
@@ -116,7 +116,7 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
       perFAsubper =
 	Form("%s/falseGeoMean4Targ_%s%s_%s_%s_%s%s_%s%s%i_%ihbin_%s_%s.root",
 	     pathFA.Data(), whichFit.Data(), fitMrange.Data(), period[p].Data(),
-	     Mtype.Data(), process.Data(), lrMrange.Data(), binRange.Data(),
+	     fitMrangeType.Data(), process.Data(), lrMrange.Data(), binRange.Data(),
 	     physBinned.Data(), nBins, hbins, production.Data(),
 	     additionalCuts.Data());
     }
@@ -201,14 +201,14 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
   TCanvas* cFA = new TCanvas();
   g_WAvg_FAsubper->Draw("AP");
   g_WAvg_FAsubper->SetTitle("falseAN_subper/pol(blue)");
-  if (Mtype=="HMDY"){ g_WAvg_FAsubper->GetYaxis()->SetRangeUser(-0.25, 0.25); }
+  if (fitMrangeType=="HMDY"){ g_WAvg_FAsubper->GetYaxis()->SetRangeUser(-0.25, 0.25); }
   else { g_WAvg_FAsubper->GetYaxis()->SetRangeUser(-0.08, 0.08); }
   DrawLine(g_WAvg_FAsubper, 0.0);
   g_WAvg_FApol->Draw("Psame"); g_WAvg_FApol->SetMarkerColor(kBlue);
 
   TCanvas* cAcc = new TCanvas();
   g_WAvg_Acc->Draw("AP"); g_WAvg_Acc->SetTitle("acc_subper");
-  if (Mtype=="HMDY"){ g_WAvg_Acc->GetYaxis()->SetRangeUser(1-0.1, 1+0.1); }
+  if (fitMrangeType=="HMDY"){ g_WAvg_Acc->GetYaxis()->SetRangeUser(1-0.1, 1+0.1); }
   else { g_WAvg_Acc->GetYaxis()->SetRangeUser(1-0.08, 1+0.08); }
   DrawLine(g_WAvg_Acc, 1.0);
 
@@ -223,7 +223,7 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
   TString fOutput;
   if (whichFit=="true"){
     fOutput = Form("%s/WAvg/wAvg_%s_%s_%s%s_%s%s%i_%ihbin_%s_%s.root",
-		   pathFA.Data(), whichFit.Data(), Mtype.Data(),
+		   pathFA.Data(), whichFit.Data(), fitMrangeType.Data(),
 		   process.Data(), lrMrange.Data(), binRange.Data(),
 		   physBinned.Data(), nBins, hbins, production.Data(),
 		   additionalCuts.Data());
@@ -231,7 +231,7 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
   else{
     fOutput = Form("%s/WAvg/wAvg_%s%s_%s_%s%s_%s%s%i_%ihbin_%s_%s.root",
 		   pathFA.Data(), whichFit.Data(), fitMrange.Data(),
-		   Mtype.Data(), process.Data(), lrMrange.Data(),
+		   fitMrangeType.Data(), process.Data(), lrMrange.Data(),
 		   physBinned.Data(), binRange.Data(), nBins, hbins,
 		   production.Data(), additionalCuts.Data());
   }
@@ -249,7 +249,7 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
   cout << "Settings________" << endl;
   cout << "Data coming from:            " << pathFA << endl;
   cout << "physBinned nBins times:     " << nBins << endl;
-  cout << "Mass type considered:   " << Mtype << endl;
+  cout << "Mass type considered:   " << fitMrangeType << endl;
   cout << "Binned in which DY physics:  " << physBinned << endl;
   cout << "AN physical process:        " << process << endl;
   if (whichFit == "true"){

@@ -1,39 +1,23 @@
 #include "include/helperFunctions.h"
 
 Bool_t BinFill(TH1D *h[], Double_t binVar, Double_t *bounds,
-	       Double_t fillVal, Int_t nBins){
-  for (Int_t bi=0; bi<nBins; bi++) {
-    if (binVar < bounds[bi+1]) {
+	       Double_t fillVal, Int_t nBins);
 
-      h[bi]->Fill(fillVal);
-      return true;
-    }
-  }
-
-  return false;
-}//BinFill
-
+Bool_t BinAdd(Double_t *Count, Double_t binVar, Double_t *bounds,
+	      Double_t fillVal, Int_t nBins);
 
 Double_t ErrorCal(Int_t n_UpS_up, Int_t n_DownS_up,
-		  Int_t n_UpS_down, Int_t n_DownS_down){
-  
-  Double_t Ratio = 1.0*n_UpS_up*n_DownS_up/(n_UpS_down*n_DownS_down);
-  
-  Double_t error = 1.0/n_UpS_up + 1.0/n_DownS_up;
-  error += 1.0/n_UpS_down + 1.0/n_DownS_down;
-  error = TMath::Sqrt(error);
-
-  return error*Ratio;
-}
+		  Int_t n_UpS_down, Int_t n_DownS_down);
 
 void doubleRatio(TString start=""){
   //Setup_______________
-  const Int_t nBins =3;//# of physBinned bins
+  const Int_t nBins =1;//# of physBinned bins
   const Int_t nHbins =8;
   TString period ="WAll";
   TString Mtype ="HMDY";
-  TString physBinned ="xN";//"xN", "xPi", "xF", "pT", "M"
+  TString physBinned ="xPi";//"xN", "xPi", "xF", "pT", "M"
   TString production ="slot1";//"t3", "slot1"
+  TString whichTSA ="Trans";//"Siv", "Trans", "Pretz"
   
   Bool_t toWrite =false;
   //Setup_______________
@@ -73,6 +57,7 @@ TGeant/Presents/DATA/RealData/%s/BinValues/%sWAll_%s_%ibins.txt",
     cout << "physBinned nBins times:     " << nBins << endl;
     cout << "Binned in which DY physics:  " << physBinned << endl;
     cout << "Polarizations from file:     " << LRfile << endl;
+    cout << "TSA determined:     " << whichTSA << endl;
     cout << "\nTo write output file:       " << toWrite << endl;
     exit(EXIT_FAILURE);
   }
@@ -97,10 +82,12 @@ TGeant/Presents/DATA/RealData/%s/BinValues/%sWAll_%s_%ibins.txt",
   if (physBinned =="mass") physBinned ="M";
   
   //Setup tree
-  Double_t PhiS_simple, Spin_0;
+  Double_t PhiS_simple, Phi_CS, Theta_CS, Spin_0;
   Int_t targetPosition;
   Double_t x_target, x_beam, x_feynman, q_transverse, Mmumu;
   tRD->SetBranchAddress("PhiS_simple", &PhiS_simple);
+  tRD->SetBranchAddress("Phi_CS", &Phi_CS);
+  tRD->SetBranchAddress("Theta_CS", &Theta_CS);
   tRD->SetBranchAddress("targetPosition", &targetPosition);
   tRD->SetBranchAddress("Spin_0", &Spin_0);
   tRD->SetBranchAddress("x_target", &x_target);
@@ -121,21 +108,31 @@ TGeant/Presents/DATA/RealData/%s/BinValues/%sWAll_%s_%ibins.txt",
   TH1D *h_DownS_up[nBins], *h_DownS_down[nBins];
   TH1D *h_Ratio[nBins];
   for (Int_t i=0; i<nBins; i++) {
+    Double_t xmax;
+    if ( whichTSA == "Siv" ) xmax = TMath::Pi();
+    else if ( whichTSA == "Pretz" ) xmax = 3*TMath::Pi();
+    else if ( whichTSA == "Trans" ) xmax = 3*TMath::Pi();
+    else{
+      cout << "Wrong TSA input" << endl;
+      exit(EXIT_FAILURE);
+    }
+    
     h_UpS_up[i] = new TH1D(Form("UpS_up_%i", i), Form("UpS_up_%i", i),
-			   nHbins, -TMath::Pi(), TMath::Pi());
+			   nHbins, -xmax, xmax);
     h_UpS_down[i] = new TH1D(Form("UpS_down_%i", i), Form("UpS_down_%i", i),
-			     nHbins, -TMath::Pi(), TMath::Pi());
+			     nHbins, -xmax, xmax);
 
     h_DownS_up[i] = new TH1D(Form("DownS_up_%i", i), Form("DownS_up_%i", i),
-			     nHbins, -TMath::Pi(), TMath::Pi());
+			     nHbins, -xmax, xmax);
     h_DownS_down[i] = new TH1D(Form("DownS_down_%i", i),Form("DownS_down_%i",i),
-			       nHbins, -TMath::Pi(), TMath::Pi());
+			       nHbins, -xmax, xmax);
 
     h_Ratio[i] = new TH1D(Form("Ratio_%i", i),Form("Ratio_%i",i),
-			  nHbins, -TMath::Pi(), TMath::Pi());
+			  nHbins, -xmax, xmax);
   }
 
-  
+  //Depolarization factor
+  Double_t Depol[nBins] ={0.0}, binCounts[nBins] ={0.0};
   
   //Loop over tree
   Int_t treeEntries = tRD->GetEntries();
@@ -143,20 +140,44 @@ TGeant/Presents/DATA/RealData/%s/BinValues/%sWAll_%s_%ibins.txt",
   for (Int_t ev=0; ev<treeEntries; ev++) {
     tRD->GetEntry(ev);
 
+    Double_t depolarization, angle;
+    if ( whichTSA == "Siv" ) {
+      depolarization = 1.0;
+      angle = PhiS_simple;
+    }
+    else if ( whichTSA == "Trans" ) {
+      depolarization =
+	TMath::Sin(Theta_CS)/(1+TMath::Cos(Theta_CS)*TMath::Cos(Theta_CS));
+      angle = 2*Phi_CS - PhiS_simple;
+    }
+    else if ( whichTSA == "Pretz" ) {
+      depolarization =
+	TMath::Sin(Theta_CS)/(1+TMath::Cos(Theta_CS)*TMath::Cos(Theta_CS));
+      angle = 2*Phi_CS + PhiS_simple;
+    }
+    else{
+      cout << "wrong TSA input" << endl;
+      exit(EXIT_FAILURE);
+    }
+
+    //Depolarization average
+    BinAdd(Depol, *physVal, bounds, depolarization, nBins);
+    BinAdd(binCounts, *physVal, bounds, 1.0, nBins);
+
     if (targetPosition == 0){//upstream
       if (Spin_0 >0){//spin up
-	BinFill(h_UpS_up, *physVal, bounds, PhiS_simple, nBins);
+	BinFill(h_UpS_up, *physVal, bounds, angle, nBins);
       }
       else{//spin down
-	BinFill(h_UpS_down, *physVal, bounds, PhiS_simple, nBins);
+	BinFill(h_UpS_down, *physVal, bounds, angle, nBins);
       }
     }
     else{
       if (Spin_0 >0){//spin up
-	BinFill(h_DownS_up, *physVal, bounds, PhiS_simple, nBins);
+	BinFill(h_DownS_up, *physVal, bounds, angle, nBins);
       }
       else{//spin down
-	BinFill(h_DownS_down, *physVal, bounds, PhiS_simple, nBins);
+	BinFill(h_DownS_down, *physVal, bounds, angle, nBins);
       }
     }
 
@@ -183,22 +204,37 @@ TGeant/Presents/DATA/RealData/%s/BinValues/%sWAll_%s_%ibins.txt",
   for (Int_t bi=0; bi<nBins; bi++) {
     cRatio->cd(bi+1); h_Ratio[bi]->Draw("e");
 
-    TF1 *fit = new TF1("fit", "[0]*(1+4*[1]*sin(x))", -TMath::Pi(),TMath::Pi());
+    TF1 *fit;
+    if ( whichTSA == "Siv" )
+      fit = new TF1("fit", "[0]*(1+4*[1]*sin(x))", -TMath::Pi(),TMath::Pi());
+    else if ( whichTSA == "Pretz" )
+      fit = new TF1("fit", "[0]*(1+4*[1]*sin(x))",-3*TMath::Pi(),3*TMath::Pi());
+    else if ( whichTSA == "Trans" )
+      fit = new TF1("fit", "[0]*(1+4*[1]*sin(x))",-3*TMath::Pi(),3*TMath::Pi());
+    else{
+      cout << "Wrong TSA input" << endl;
+      exit(EXIT_FAILURE);
+    }
     fit->SetParameters(1.0, 0.0);
     
-    if ( h_Ratio[bi]->Fit("fit", "R") ){
+    if ( h_Ratio[bi]->Fit("fit", "RQ") ){
       cout << period << " bin " << bi << " phys binned " << physBinned;
       cout << "  Fit failed" << endl;
       exit(EXIT_FAILURE); 
     }
 
+    //Depolarization average
+    Depol[bi] /= binCounts[bi];
+
     Double_t *pars =fit->GetParameters();
     Amp[bi] = pars[1];
     Amp[bi] /= (Pol[bi]);
+    Amp[bi] /= (Depol[bi]);
 
     const Double_t *e_pars =fit->GetParErrors();
     eAmp[bi] = e_pars[1];
     eAmp[bi] /= (Pol[bi]);
+    eAmp[bi] /= (Depol[bi]);
   }
 
   Double_t ex[nBins] ={0.0};
@@ -207,15 +243,15 @@ TGeant/Presents/DATA/RealData/%s/BinValues/%sWAll_%s_%ibins.txt",
 
   TCanvas* cAmp = new TCanvas();
   gAmp->Draw("AP"); DrawLine(gAmp, 0.0);
-  gAmp->SetTitle("Sivers Amplitude");
+  gAmp->SetTitle("TSA Amplitude");
 
   //Write output/Settings
   TString thisDirPath="/Users/robertheitz/Documents/Research/DrellYan/Analysis/\
 TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data/DoubleRatio";
   TString fOutput =
-    Form("%s/doubleRatio_%s_%s_%s%i_%ihbins_%s.root", thisDirPath.Data(),
+    Form("%s/doubleRatio_%s_%s_%s%i_%ihbins_%s_%s.root", thisDirPath.Data(),
 	 period.Data(), Mtype.Data(), physBinned.Data(), nBins, nHbins,
-	 production.Data());
+	 production.Data(), whichTSA.Data());
   if (toWrite){
     TFile *fResults = new TFile(fOutput, "RECREATE");
     gAmp->Write("Amp");
@@ -236,6 +272,7 @@ TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data/DoubleRatio"
   cout << "Mass range considered:      " << Mtype << endl;
   cout << "Binned in which DY physics:  " << physBinned << endl;
   cout << "Production considered:      " << production << endl;
+  cout << "TSA determined:     " << whichTSA << endl;
   cout << "Polarizations from file:     " << LRfile << endl;
   cout << "Bin file used:               " << binfile << endl;
   cout << "\nTo write output file:       " << toWrite << endl;
@@ -243,4 +280,42 @@ TGeant/Local_LeftRight_Analysis/Macros/Comparisons/DoubleRatio/Data/DoubleRatio"
     cout << "File:  " << fOutput << "   was written" << endl;
   }
   else cout << "File: " << fOutput << " was NOT written" << endl;
+}
+
+Bool_t BinFill(TH1D *h[], Double_t binVar, Double_t *bounds,
+	       Double_t fillVal, Int_t nBins){
+  for (Int_t bi=0; bi<nBins; bi++) {
+    if (binVar < bounds[bi+1]) {
+
+      h[bi]->Fill(fillVal);
+      return true;
+    }
+  }
+
+  return false;
+}//BinFill
+
+Bool_t BinAdd(Double_t *Count, Double_t binVar, Double_t *bounds,
+	       Double_t fillVal, Int_t nBins){
+  for (Int_t bi=0; bi<nBins; bi++) {
+    if (binVar < bounds[bi+1]) {
+
+      Count[bi] += fillVal;
+      return true;
+    }
+  }
+
+  return false;
+}//BinAdd
+
+Double_t ErrorCal(Int_t n_UpS_up, Int_t n_DownS_up,
+		  Int_t n_UpS_down, Int_t n_DownS_down){
+  
+  Double_t Ratio = 1.0*n_UpS_up*n_DownS_up/(n_UpS_down*n_DownS_down);
+  
+  Double_t error = 1.0/n_UpS_up + 1.0/n_DownS_up;
+  error += 1.0/n_UpS_down + 1.0/n_DownS_down;
+  error = TMath::Sqrt(error);
+
+  return error*Ratio;
 }

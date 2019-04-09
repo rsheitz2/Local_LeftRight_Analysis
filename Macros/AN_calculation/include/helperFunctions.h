@@ -170,6 +170,13 @@ Double_t ExpoInt(Double_t A, Double_t b){
 
 
 //Aesthetics
+void OffSet(TGraphErrors *g, Double_t offset){
+  Double_t *xval = g->GetX();
+  for (Int_t i=0; i<g->GetN(); i++) xval[i] += offset;
+
+}
+
+
 void SetUpTGraph(TGraphErrors* g, Int_t icolor=1,
 		 Double_t offset=0.0, Int_t nBins=0){
   g->SetMarkerStyle(21);

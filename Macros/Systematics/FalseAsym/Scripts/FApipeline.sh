@@ -16,7 +16,7 @@ if [ $# -ne 1 ]; then
     echo ""
     echo "To run this script provide as an argument:"
     echo "     \"h\" or \"0\" to see the current settings"
-    echo "     Or enter a number greater than 0 (i.e. 1)"
+    #echo "     Or enter a number greater than 0 (i.e. 1)"
     echo "     Or enter a number greater than 10 to skip steps outside of this directory (i.e. 11)"
     echo ""
     exit 1
@@ -25,25 +25,25 @@ fi
 #General variables
 Steps=$1
 analysisPath=/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant
-##Setup___  first line (25) to seach setup
-##########
-###Additional settings
-production="slot1"
-phiPhotonCut="0.0"
-##Step ONE settings
-fitMrangeType="HMDY"
-nBins=3
-binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_3bins.txt"
-hbins=150
-fitMmin=4.30
-fitMmax=8.50
-binRange="43_85"
-##Step TWO settings
-process="DY"
-LR_Mmin=4.30
-LR_Mmax=8.50
-whichFit="true"
-##Step THREE settings
+###Setup___  first line (25) to seach setup
+###########
+####Additional settings
+#production="slot1"
+#phiPhotonCut="0.0"
+###Step ONE settings
+#fitMrangeType="HMDY"
+#nBins=3
+#binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/HMDY/BinValues/slot1WAll_HMDY_3bins.txt"
+#hbins=150
+#fitMmin=4.30
+#fitMmax=8.50
+#binRange="43_85"
+###Step TWO settings
+#process="DY"
+#LR_Mmin=4.30
+#LR_Mmax=8.50
+#whichFit="true"
+###Step THREE settings
 
 ###Additional settings
 #production="slot1"
@@ -62,6 +62,24 @@ whichFit="true"
 #LR_Mmax=8.50
 #whichFit="true"
 ###Step THREE settings
+
+###Additional settings
+production="slot1"
+phiPhotonCut="0.0"
+##Step ONE settings
+fitMrangeType="LowM_AMDY"
+nBins=4
+binRange="29_34" #"25_43"
+binFile="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Presents/DATA/RealData/JPsi/BinValues/slot1WAll_JPsi${binRange}_${nBins}bins.txt"
+hbins=150
+fitMmin=2.87
+fitMmax=3.38
+##Step TWO settings
+process="JPsi"
+LR_Mmin=${fitMmin}
+LR_Mmax=${fitMmax}
+whichFit="true"
+##Step THREE settings
 
 
 additionalCuts="phiS0.0"

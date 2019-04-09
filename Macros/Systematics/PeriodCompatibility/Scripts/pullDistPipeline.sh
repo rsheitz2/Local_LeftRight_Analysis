@@ -20,14 +20,26 @@ Steps=$1
 
 ##Setup___
 ##########
+####HMDY
+#fitMrangeType="HMDY"
+#nBins=3
+#hbins=150
+#process="DY"
+#lrMrange="4.30_8.50" #0.01 precision  #does nothing for true fit
+#fitMrange="4.30_8.50" #0.01 precision
+#binRange="43_85"
+#whichFit="true"
+#production="slot1" #"t3", "slot1"
+#additionalCuts="phiS0.0"
+
 ###HMDY
-fitMrangeType="HMDY"
-nBins=3
+fitMrangeType="LowM_AMDY"
+nBins=4
 hbins=150
-process="DY"
-lrMrange="4.30_8.50" #0.01 precision  #does nothing for true fit
-fitMrange="4.30_8.50" #0.01 precision
-binRange="43_85"
+process="JPsi"
+lrMrange="2.87_3.38" #0.01 precision  #does nothing for true fit
+fitMrange=$lrMrange
+binRange="29_34" #"25_43"
 whichFit="true"
 production="slot1" #"t3", "slot1"
 additionalCuts="phiS0.0" 
@@ -88,6 +100,17 @@ for phys in ${physBinned[@]}; do
 	exit 1
     fi
 done
+
+#Integrated
+${thisSysPath}/Scripts/ChangeScripts/changeMacro.sh ${thisSysPath}/physBinnedPeriod.C 1 $fitMrangeType $hbins "xN" $process $lrMrange $fitMrange $binRange \
+	      $whichFit $production $additionalCuts
+#Execute 
+root -l -b -q "${thisSysPath}/physBinnedPeriod.C(1)" >> ${thisSysPath}/Scripts/Logs/physBinnedPeriod_log.txt
+if [ $? != 0 ]; then
+    echo "physBinnedPeriod.C did not execute well"
+    mv ${thisSysPath}/tmp_physBinnedPeriod.C ${thisSysPath}/physBinnedPeriod.C
+    exit 1
+fi
 mv ${thisSysPath}/tmp_physBinnedPeriod.C ${thisSysPath}/physBinnedPeriod.C
 
 echo " "

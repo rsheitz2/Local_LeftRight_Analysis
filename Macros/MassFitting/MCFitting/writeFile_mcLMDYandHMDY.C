@@ -10,7 +10,8 @@ void SetUp(TH1D* h){
 
 void writeFile_mcLMDYandHMDY(){
   //Setup_____
-  const Int_t nBins =5;
+  const Int_t nBins =4;
+  TString binRange="29_34";
   TString physBinned[4] ={"xN", "xPi", "xF", "pT"};
   TString targets[4] ={"upstream_up", "upstream_down",
 		       "downstream_up", "downstream_down"};
@@ -21,12 +22,12 @@ void writeFile_mcLMDYandHMDY(){
   cout << "Output is written to a file" << endl;
   
   TString lrPath ="/Users/robertheitz/Documents/Research/DrellYan/Analysis/TGeant/Local_LeftRight_Analysis/";
-  TString nameLMDY ="Data/leftRight_byTarget_Charles_LMDY1.00_8.50_5bins25_43_150hbin.root";
-  TString nameHMDY ="Data/leftRight_byTarget_Charles_HMDY1.00_8.50_5bins25_43_150hbin.root";
+  TString nameLMDY =Form("Data/leftRight_byTarget_Charles_LMDY1.00_8.50_%ibins%s_150hbin.root", nBins, binRange.Data());
+  TString nameHMDY =Form("Data/leftRight_byTarget_Charles_HMDY1.00_8.50_%ibins%s_150hbin.root", nBins, binRange.Data());
   TFile *fHMDY = TFile::Open(lrPath+nameHMDY);
   TFile *fLMDY = TFile::Open(lrPath+nameLMDY);
   
-  TFile *fOutput = new TFile(lrPath+"Data/leftRight_byTarget_Charles_AMDY1.00_8.50_5bins25_43_150hbin.root", "RECREATE");
+  TFile *fOutput = new TFile(Form("%sData/leftRight_byTarget_Charles_AMDY1.00_8.50_%ibins%s_150hbin.root", lrPath.Data(), nBins, binRange.Data()), "RECREATE");
   for (Int_t tr=0; tr<4; tr++) {
     for (Int_t phys=0; phys<4; phys++) {
       for (Int_t bi=0; bi<nBins; bi++) {

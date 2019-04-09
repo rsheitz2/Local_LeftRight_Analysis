@@ -1,3 +1,4 @@
+
 #ifndef FIT_THIRTEEN_H
 #define FIT_THIRTEEN_H
 //2 Crystal Balls for JPsi and psi'
@@ -75,32 +76,13 @@ Double_t Fit_thirteen_DownS(Double_t *x, Double_t *par){
 }
 
 
-/*Double_t Fit_thirteen_scan(Double_t *x, Double_t *par){
-//Feed one scan parameter as par[13]=psiMW
-Double_t xShift = x[0]-par[12];
-Double_t ratioPsi = par[13];
-
-Double_t par_JPsi[] = {par[0], par[1], par[2], par[3], par[4]};
-Double_t JPsi = thirteen_CrystalBall(x, par_JPsi);
-
-Double_t par_psi[] =
-{par[5], par[1]*ratioPsi, par[2]*ratioPsi, par[6], par[7]};
-Double_t psi = thirteen_CrystalBall(x, par_psi);
-
-Double_t CombBg = par[8]*TMath::Exp( par[9]*xShift );
-Double_t DY = par[10]*TMath::Exp( par[11]*xShift );
-    
-return CombBg + JPsi + psi + DY;
-}*/
-
-
 void Paras_thirteen(TH1D *h, TF1 *fitFunc, Int_t nPar, Double_t Mmin,
 		    Double_t Mmax, Bool_t hIsUpS, Int_t bin,TString physBinned){
   //Normal parameter setup
   //     Fixed parameter setup
   Double_t massJPsi =3.131, widthJPsi=0.17;
-  Double_t alphaJPsi, nJPsi;
-  Double_t Bg_slope;
+  Double_t alphaJPsi =1.5, nJPsi =1.5;
+  Double_t Bg_slope =-2.0;
   Double_t DY_slope = -0.90, DY_Mmin = 4.5;
 
   Double_t ratioPsi = (hIsUpS) ?
@@ -110,633 +92,45 @@ void Paras_thirteen(TH1D *h, TF1 *fitFunc, Int_t nPar, Double_t Mmin,
   Double_t A_Bg =  h->GetBinContent(h->FindBin(Mmin) );
   Double_t A_DY =  h->GetBinContent(h->FindBin(DY_Mmin) );
   
+  A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
+  A_Bg = A_Bg - A_DY;
 
-  if (physBinned == "xN"){//xN specific Setup below
-    if (hIsUpS){
-      alphaJPsi =2.5;
-      nJPsi =5.0; 
-      Bg_slope =-1.85;
-    }
-    else{
-      alphaJPsi =1.6;
-      nJPsi =1.6; 
-      Bg_slope =-3.0;
-    }
-    
-    if (bin < 2){
-      A_DY = 0.0;
+  Double_t C 
+    =(nJPsi/alphaJPsi)*(1.0/(nJPsi-1.0))*TMath::Exp(-alphaJPsi*alphaJPsi/2.0);
+  Double_t D
+    =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( alphaJPsi/TMath::Sqrt(2) ) );
+  Double_t Norm = 1.0/(widthJPsi*(C+D) );
+  A_JPsi /= Norm;
 
-      if  (A_Bg < 5.0) A_Bg = 5.0;
-    }
-    else if (bin >= 2){
-      A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
-      A_Bg = A_Bg - A_DY;
-
-      if  (A_Bg < 5.0) A_Bg = 5.0;
-      if  (A_DY < 5.0) A_DY = 5.0;
-    }
-
-    Double_t C
-      =(nJPsi/alphaJPsi)*(1.0/(nJPsi-1.0))*TMath::Exp(-alphaJPsi*alphaJPsi/2.0);
-    Double_t D
-      =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( alphaJPsi/TMath::Sqrt(2) ) );
-    Double_t Norm = 1.0/(widthJPsi*(C+D) );
-    A_JPsi /= Norm;
-  }//xN
-  else if (physBinned == "xPi"){//xPi specific Setup below
-    if (hIsUpS){
-      alphaJPsi =1.5;
-      nJPsi =1.5; 
-      Bg_slope =-2.0;
-    }
-    else{
-      alphaJPsi =1.6;
-      nJPsi =1.6; 
-      Bg_slope =-3.0;
-    }
-
-    if (bin < 2){
-      A_DY = 0.0;
-
-      if  (A_Bg < 5.0) A_Bg = 5.0;
-    }
-    else if (bin == 2){
-      A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
-      A_Bg = A_Bg - A_DY;
-
-      if  (A_Bg < 5.0) A_Bg = 5.0;
-      if  (A_DY < 5.0) A_DY = 5.0;
-    }
-    else{
-      A_Bg = 0.0;
-
-      if  (A_DY < 5.0) A_DY = 5.0;
-    }
-
-    Double_t C
-      =(nJPsi/alphaJPsi)*(1.0/(nJPsi-1.0))*TMath::Exp(-alphaJPsi*alphaJPsi/2.0);
-    Double_t D
-      =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( alphaJPsi/TMath::Sqrt(2) ) );
-    Double_t Norm = 1.0/(widthJPsi*(C+D) );
-
-    A_JPsi /= Norm;
-  }//xPi
-  else if (physBinned == "xF"){//xF specific Setup below
-    if (hIsUpS){
-      alphaJPsi =1.5;
-      nJPsi =1.5; 
-      Bg_slope =-1.85;
-    }
-    else{
-      alphaJPsi =1.6;
-      nJPsi =1.6; 
-      Bg_slope =-3.0;
-    }
-
-    A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
-    A_Bg = A_Bg - A_DY;
-
-    Double_t C
-      =(nJPsi/alphaJPsi)*(1.0/(nJPsi-1.0))*TMath::Exp(-alphaJPsi*alphaJPsi/2.0);
-    Double_t D
-      =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( alphaJPsi/TMath::Sqrt(2) ) );
-    Double_t Norm = 1.0/(widthJPsi*(C+D) );
-
-    A_JPsi /= Norm;
-  }//xF
-  else if (physBinned == "pT"){//pT specific Setup below
-    if (hIsUpS){
-      alphaJPsi =1.5;
-      nJPsi =1.5; //pT
-      Bg_slope =-1.85;
-    }
-    else{
-      alphaJPsi =1.6;
-      nJPsi =1.6; //pT
-      Bg_slope =-3.0;
-    }
-
-    A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
-    A_Bg = A_Bg - A_DY;
-
-    Double_t C
-      =(nJPsi/alphaJPsi)*(1.0/(nJPsi-1.0))*TMath::Exp(-alphaJPsi*alphaJPsi/2.0);
-    Double_t D
-      =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( alphaJPsi/TMath::Sqrt(2) ) );
-    Double_t Norm = 1.0/(widthJPsi*(C+D) );
-
-    A_JPsi /= Norm;
-  }//pT
-
-  //General Setup
   Double_t A_psi = A_JPsi/30.0;
 
   if (A_JPsi == 0) A_JPsi = 200.;
-  if (A_psi == 0) A_psi = 200.;
+  if (A_psi < 10) A_psi = 200.;
   if (A_Bg <= 0) A_Bg = 100.;
   if (A_DY == 0) A_DY = 200.;
 
-  Int_t ipar =0;
-  fitFunc->SetParameter(ipar, A_JPsi); ipar++;//JPsi
-  fitFunc->SetParameter(ipar, massJPsi); ipar++;
-  fitFunc->SetParameter(ipar, widthJPsi); ipar++;
-  fitFunc->SetParameter(ipar, alphaJPsi); ipar++;
-  fitFunc->SetParameter(ipar, nJPsi); ipar++;
-  
-  fitFunc->SetParameter(ipar, A_psi); ipar++;//psi
-  
-  fitFunc->SetParameter(ipar, A_Bg); ipar++;//CombBg
-  fitFunc->SetParameter(ipar, Bg_slope); ipar++;
-  fitFunc->SetParameter(ipar, A_DY); ipar++;//DY
-  fitFunc->SetParameter(ipar, DY_slope); ipar++;
-  fitFunc->SetParameter(ipar, Mmin); ipar++;//Mmin
-  if (ipar != nPar){
-    cout << "ipar problem" << endl;
-    exit(EXIT_FAILURE);
-  }
+  fitFunc->SetParameter(0, A_JPsi); //JPsi
+  fitFunc->SetParameter(1, massJPsi); 
+  fitFunc->SetParameter(2, widthJPsi); 
+  fitFunc->SetParameter(3, alphaJPsi); 
+  fitFunc->SetParameter(4, nJPsi); 
+  fitFunc->SetParameter(5, A_psi); //psi
+  fitFunc->SetParameter(6, A_Bg); //CombBg
+  fitFunc->SetParameter(7, Bg_slope); 
+  fitFunc->SetParameter(8, A_DY); //DY
+  fitFunc->SetParameter(9, DY_slope); 
+  fitFunc->SetParameter(10, Mmin); //Mmin
 
-  //Parameter Specific limits
-  if (physBinned == "xN"){
-    Double_t factor =10.0;
-    fitFunc->SetParLimits(1, 2.5, 3.6);//JPsi
-    fitFunc->SetParLimits(2, 0.1, 0.22);
-    fitFunc->SetParLimits(3, 0.5, 2.5);
-    fitFunc->SetParLimits(4, 1.0001, 10.0);
-    fitFunc->SetParLimits(6, 0.0, A_Bg*factor);//CombBg
-  
-    if (bin < 2) {
-      fitFunc->SetParLimits(7, -10.0, 0.0);
-      fitFunc->FixParameter(8, 0.0);//DY //fixed
-      fitFunc->SetParLimits(9, DY_slope, DY_slope);
-    }
-    else if (bin >= 2){
-      fitFunc->SetParLimits(7, -10.0, 0.0);
-      fitFunc->SetParLimits(8, 0.0, A_DY*factor);//DY
-      fitFunc->SetParLimits(9, -2.0, 0.0);
-    }
-  }//xN
-  else if (physBinned == "xPi"){
-    Double_t factor =10.0;
-    fitFunc->SetParLimits(1, 3.0, 3.6);//JPsi
-    fitFunc->SetParLimits(2, 0.1, 0.22);
-    fitFunc->SetParLimits(3, 0.5, 2.5);
-    fitFunc->SetParLimits(4, 1.0001, 10.0);
-    fitFunc->SetParLimits(6, 0.0, A_Bg*factor);//CombBg
-
-    if (bin < 2) {
-      fitFunc->SetParLimits(7, -10.0, 0.0);
-      fitFunc->FixParameter(8, 0.0);//DY //fixed
-      fitFunc->SetParLimits(9, DY_slope, DY_slope);
-    }
-    else if (bin == 2){
-      fitFunc->SetParLimits(6, 0.0, A_Bg*factor);//Bg
-      fitFunc->SetParLimits(7, -10.0, -1.2);
-      fitFunc->SetParLimits(8, 0.0, A_DY*factor);//DY
-      fitFunc->SetParLimits(9, -2.0, 0.0);
-    }
-    else {
-      fitFunc->FixParameter(6, 0.0);//Bg //fixed
-      fitFunc->SetParLimits(7, Bg_slope, Bg_slope);
-      fitFunc->SetParLimits(9, -2.0, 0.0);
-    }
-  }//xPi
-  else if (physBinned == "xF"){
-    Double_t factor =10.0;
-    fitFunc->SetParLimits(1, 3.0, 3.6);//JPsi
-    fitFunc->SetParLimits(2, 0.1, 0.22);
-    fitFunc->SetParLimits(3, 0.5, 2.5);
-    fitFunc->SetParLimits(4, 1.0001, 10.0);
-    fitFunc->SetParLimits(6, 0.0, A_Bg*factor);//CombBg
-    fitFunc->SetParLimits(7, -10.0, -1.2);
-    fitFunc->SetParLimits(8, 0.0, A_DY*factor);//DY
-    fitFunc->SetParLimits(9, -2.0, 0.0);
-  }//xF
-  else if (physBinned == "pT"){
-    Double_t factor =100.0;//pT setup
-    fitFunc->SetParLimits(1, 3.0, 3.6);//JPsi
-    fitFunc->SetParLimits(2, 0.1, 0.22);
-    fitFunc->SetParLimits(3, 0.5, 2.5);
-    fitFunc->SetParLimits(4, 1.0001, 10.0);
-    fitFunc->SetParLimits(6, 0.0, A_Bg*factor);//CombBg
-    fitFunc->SetParLimits(7, -7.0, -1.2);
-    fitFunc->SetParLimits(8, 0.0, A_DY*factor);//DY
-    fitFunc->SetParLimits(9, -2.0, 0.0);
-  }//pT
+  //Constraints
+  Double_t factor =100.0;//pT setup
+  fitFunc->SetParLimits(0, 10, A_JPsi*factor); //A_JPsi
+  fitFunc->SetParLimits(4, 0., 10.0); //nJPsi
+  fitFunc->SetParLimits(5, 1, A_psi*factor); //A_psi
+  fitFunc->SetParLimits(7, -7.0, -1.2); //Bg_slope
+  fitFunc->SetParLimits(9, -2.0, 0.0); //DY_slope
 
   fitFunc->SetParLimits(10, Mmin, Mmin);//Mmin*/
 }
-
-
- /*void Paras_thirteen(TH1D *h, TF1 *fitFunc, Int_t nPar,
-		    Double_t Mmin, Double_t Mmax, Bool_t hIsUpS, Int_t bin,
-		    TString physBinned){
-  //Normal parameter setup
-  //     Fixed parameter setup
-  //xN Setup below
-  Double_t massJPsi =3.131, widthJPsi=0.17;
-  Double_t alphaJPsi, nJPsi;
-  Double_t Bg_slope;
-  if (hIsUpS){
-    alphaJPsi =2.5;
-    nJPsi =5.0; 
-    Bg_slope =-1.85;
-  }
-  else{
-    alphaJPsi =1.6;
-    nJPsi =1.6; 
-    Bg_slope =-3.0;
-  }
-  Double_t DY_slope = -0.90, DY_Mmin = 4.5;
-    
-  //     variable parameter setup
-  Double_t ratioPsi = (hIsUpS) ?
-    Get_thirteen_Ratio("UpS") : Get_thirteen_Ratio("DownS");
-  
-  Double_t A_JPsi = h->GetBinContent(h->FindBin(massJPsi) );
-  Double_t A_Bg =  h->GetBinContent(h->FindBin(Mmin) );
-  Double_t A_DY =  h->GetBinContent(h->FindBin(DY_Mmin) );
-  if (bin < 2){
-    A_DY = 0.0;
-
-    if  (A_Bg < 5.0) A_Bg = 5.0;
-  }
-  else if (bin >= 2){
-    A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
-    A_Bg = A_Bg - A_DY;
-
-    if  (A_Bg < 5.0) A_Bg = 5.0;
-    if  (A_DY < 5.0) A_DY = 5.0;
-  }
-
-  Double_t C
-    =(nJPsi/alphaJPsi)*(1.0/(nJPsi-1.0))*TMath::Exp(-alphaJPsi*alphaJPsi/2.0);
-  Double_t D
-    =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( alphaJPsi/TMath::Sqrt(2) ) );
-  Double_t Norm = 1.0/(widthJPsi*(C+D) );
-
-  A_JPsi /= Norm;
-  Double_t A_psi = A_JPsi/30.0;
-
-  if (A_JPsi == 0) A_JPsi = 200.;
-  if (A_psi == 0) A_psi = 200.;
-  if (A_Bg <= 0) A_Bg = 100.;
-  if (A_DY == 0) A_DY = 200.;
-
-  Int_t ipar =0;
-  fitFunc->SetParameter(ipar, A_JPsi); ipar++;//JPsi
-  fitFunc->SetParameter(ipar, massJPsi); ipar++;
-  fitFunc->SetParameter(ipar, widthJPsi); ipar++;
-  fitFunc->SetParameter(ipar, alphaJPsi); ipar++;
-  fitFunc->SetParameter(ipar, nJPsi); ipar++;
-  
-  fitFunc->SetParameter(ipar, A_psi); ipar++;//psi
-  
-  fitFunc->SetParameter(ipar, A_Bg); ipar++;//CombBg
-  fitFunc->SetParameter(ipar, Bg_slope); ipar++;
-  fitFunc->SetParameter(ipar, A_DY); ipar++;//DY
-  fitFunc->SetParameter(ipar, DY_slope); ipar++;
-  fitFunc->SetParameter(ipar, Mmin); ipar++;//Mmin
-  if (ipar != nPar){
-    cout << "ipar problem" << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  Double_t factor =10.0;
-  fitFunc->SetParLimits(1, 2.5, 3.6);//JPsi
-  fitFunc->SetParLimits(2, 0.1, 0.22);
-  fitFunc->SetParLimits(3, 0.5, 2.5);
-  fitFunc->SetParLimits(4, 1.0001, 10.0);
-  fitFunc->SetParLimits(6, 0.0, A_Bg*factor);//CombBg
-  
-  if (bin < 2) {
-    fitFunc->SetParLimits(7, -10.0, 0.0);
-    fitFunc->FixParameter(8, 0.0);//DY //fixed
-    fitFunc->SetParLimits(9, DY_slope, DY_slope);
-  }
-  else if (bin >= 2){
-    fitFunc->SetParLimits(7, -10.0, 0.0);
-    fitFunc->SetParLimits(8, 0.0, A_DY*factor);//DY
-    fitFunc->SetParLimits(9, -2.0, 0.0);
-  }
-    
-  fitFunc->SetParLimits(10, Mmin, Mmin); ipar++;//Mmin//*/
-
-  
-  //xPi Setup below
-  /*Double_t massJPsi =3.131, widthJPsi=0.17;
-  Double_t alphaJPsi, nJPsi;
-  Double_t Bg_slope;
-  if (hIsUpS){
-    alphaJPsi =1.5;
-    nJPsi =1.5; 
-    Bg_slope =-2.0;
-  }
-  else{
-    alphaJPsi =1.6;
-    nJPsi =1.6; 
-    Bg_slope =-3.0;
-  }
-  Double_t DY_slope = -0.90, DY_Mmin = 4.5;
-    
-  //     variable parameter setup
-  Double_t ratioPsi = (hIsUpS) ?
-    Get_thirteen_Ratio("UpS") : Get_thirteen_Ratio("DownS");
-  
-  Double_t A_JPsi = h->GetBinContent(h->FindBin(massJPsi) );
-  Double_t A_Bg =  h->GetBinContent(h->FindBin(Mmin) );
-  Double_t A_DY =  h->GetBinContent(h->FindBin(DY_Mmin) );
-
-  if (bin < 2){
-    A_DY = 0.0;
-
-    if  (A_Bg < 5.0) A_Bg = 5.0;
-  }
-  else if (bin == 2){
-    A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
-    A_Bg = A_Bg - A_DY;
-
-    if  (A_Bg < 5.0) A_Bg = 5.0;
-    if  (A_DY < 5.0) A_DY = 5.0;
-  }
-  else{
-    A_Bg = 0.0;
-
-    if  (A_DY < 5.0) A_DY = 5.0;
-  }
-
-  Double_t C
-    =(nJPsi/alphaJPsi)*(1.0/(nJPsi-1.0))*TMath::Exp(-alphaJPsi*alphaJPsi/2.0);
-  Double_t D
-    =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( alphaJPsi/TMath::Sqrt(2) ) );
-  Double_t Norm = 1.0/(widthJPsi*(C+D) );
-
-  A_JPsi /= Norm;
-  Double_t A_psi = A_JPsi/30.0;
-
-  if (A_JPsi <= 0) A_JPsi = 5.;
-  if (A_psi <= 0) A_psi = 5.;
-
-  Int_t ipar =0;
-  fitFunc->SetParameter(ipar, A_JPsi); ipar++;//JPsi
-  fitFunc->SetParameter(ipar, massJPsi); ipar++;
-  fitFunc->SetParameter(ipar, widthJPsi); ipar++;
-  fitFunc->SetParameter(ipar, alphaJPsi); ipar++;
-  fitFunc->SetParameter(ipar, nJPsi); ipar++;
-  
-  fitFunc->SetParameter(ipar, A_psi); ipar++;//psi
-  
-  fitFunc->SetParameter(ipar, A_Bg); ipar++;//CombBg
-  fitFunc->SetParameter(ipar, Bg_slope); ipar++;
-  fitFunc->SetParameter(ipar, A_DY); ipar++;//DY
-  fitFunc->SetParameter(ipar, DY_slope); ipar++;
-  fitFunc->SetParameter(ipar, Mmin); ipar++;//Mmin
-  if (ipar != nPar){
-    cout << "ipar problem" << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  Double_t factor =10.0;
-  fitFunc->SetParLimits(1, 3.0, 3.6);//JPsi
-  fitFunc->SetParLimits(2, 0.1, 0.22);
-  fitFunc->SetParLimits(3, 0.5, 2.5);
-  fitFunc->SetParLimits(4, 1.0001, 10.0);
-  fitFunc->SetParLimits(6, 0.0, A_Bg*factor);//CombBg
-
-  if (bin < 2) {
-    fitFunc->SetParLimits(7, -10.0, 0.0);
-    fitFunc->FixParameter(8, 0.0);//DY //fixed
-    fitFunc->SetParLimits(9, DY_slope, DY_slope);
-  }
-  else if (bin == 2){
-    fitFunc->SetParLimits(6, 0.0, A_Bg*factor);//Bg
-    fitFunc->SetParLimits(7, -10.0, -1.2);
-    fitFunc->SetParLimits(8, 0.0, A_DY*factor);//DY
-    fitFunc->SetParLimits(9, -2.0, 0.0);
-  }
-  else {
-    fitFunc->FixParameter(6, 0.0);//Bg //fixed
-    fitFunc->SetParLimits(7, Bg_slope, Bg_slope);
-    fitFunc->SetParLimits(9, -2.0, 0.0);
-  }
-  
-  fitFunc->SetParLimits(10, Mmin, Mmin); ipar++;//Mmin//*/
-
-  
-  //xF Setup below
-  /*Double_t massJPsi =3.131, widthJPsi=0.17;
-  Double_t alphaJPsi, nJPsi;
-  Double_t Bg_slope;
-  if (hIsUpS){
-    alphaJPsi =1.5;
-    nJPsi =1.5; 
-    Bg_slope =-1.85;
-  }
-  else{
-    alphaJPsi =1.6;
-    nJPsi =1.6; 
-    Bg_slope =-3.0;
-  }
-  Double_t DY_slope = -0.90, DY_Mmin = 4.5;
-    
-  //     variable parameter setup
-  Double_t ratioPsi = (hIsUpS) ?
-    Get_thirteen_Ratio("UpS") : Get_thirteen_Ratio("DownS");
-  
-  Double_t A_JPsi = h->GetBinContent(h->FindBin(massJPsi) );
-  Double_t A_Bg =  h->GetBinContent(h->FindBin(Mmin) );
-  Double_t A_DY =  h->GetBinContent(h->FindBin(DY_Mmin) );
-
-  A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
-  A_Bg = A_Bg - A_DY;
-
-  Double_t C
-    =(nJPsi/alphaJPsi)*(1.0/(nJPsi-1.0))*TMath::Exp(-alphaJPsi*alphaJPsi/2.0);
-  Double_t D
-    =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( alphaJPsi/TMath::Sqrt(2) ) );
-  Double_t Norm = 1.0/(widthJPsi*(C+D) );
-
-  A_JPsi /= Norm;
-  Double_t A_psi = A_JPsi/30.0;
-
-  if (A_JPsi == 0) A_JPsi = 200.;
-  if (A_psi == 0) A_psi = 200.;
-  if (A_Bg <= 0) A_Bg = 100.;
-  if (A_DY == 0) A_DY = 200.;
-
-  Int_t ipar =0;
-  fitFunc->SetParameter(ipar, A_JPsi); ipar++;//JPsi
-  fitFunc->SetParameter(ipar, massJPsi); ipar++;
-  fitFunc->SetParameter(ipar, widthJPsi); ipar++;
-  fitFunc->SetParameter(ipar, alphaJPsi); ipar++;
-  fitFunc->SetParameter(ipar, nJPsi); ipar++;
-  
-  fitFunc->SetParameter(ipar, A_psi); ipar++;//psi
-  
-  fitFunc->SetParameter(ipar, A_Bg); ipar++;//CombBg
-  fitFunc->SetParameter(ipar, Bg_slope); ipar++;
-  fitFunc->SetParameter(ipar, A_DY); ipar++;//DY
-  fitFunc->SetParameter(ipar, DY_slope); ipar++;
-  fitFunc->SetParameter(ipar, Mmin); ipar++;//Mmin
-  if (ipar != nPar){
-    cout << "ipar problem" << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  Double_t factor =10.0;
-  fitFunc->SetParLimits(1, 3.0, 3.6);//JPsi
-  fitFunc->SetParLimits(2, 0.1, 0.22);
-  fitFunc->SetParLimits(3, 0.5, 2.5);
-  fitFunc->SetParLimits(4, 1.0001, 10.0);
-  fitFunc->SetParLimits(6, 0.0, A_Bg*factor);//CombBg
-  fitFunc->SetParLimits(7, -10.0, -1.2);
-  fitFunc->SetParLimits(8, 0.0, A_DY*factor);//DY
-  fitFunc->SetParLimits(9, -2.0, 0.0);
-    
-  fitFunc->SetParLimits(10, Mmin, Mmin); ipar++;//Mmin//*/
-  
-    
-  /*//pT Setup below
-  Double_t massJPsi =3.131, widthJPsi=0.17;
-  Double_t alphaJPsi, nJPsi;
-  Double_t Bg_slope;
-  if (hIsUpS){
-    alphaJPsi =1.5;
-    nJPsi =1.5; //pT
-    Bg_slope =-1.85;
-  }
-  else{
-    alphaJPsi =1.6;
-    nJPsi =1.6; //pT
-    Bg_slope =-3.0;
-  }
-  Double_t DY_slope = -0.90, DY_Mmin = 4.5;
-    
-  //     variable parameter setup
-  Double_t ratioPsi = (hIsUpS) ?
-    Get_thirteen_Ratio("UpS") : Get_thirteen_Ratio("DownS");
-  
-  Double_t A_JPsi = h->GetBinContent(h->FindBin(massJPsi) );
-  Double_t A_Bg =  h->GetBinContent(h->FindBin(Mmin) );
-  Double_t A_DY =  h->GetBinContent(h->FindBin(DY_Mmin) );
-
-  A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
-  A_Bg = A_Bg - A_DY;
-
-  Double_t C
-    =(nJPsi/alphaJPsi)*(1.0/(nJPsi-1.0))*TMath::Exp(-alphaJPsi*alphaJPsi/2.0);
-  Double_t D
-    =TMath::Sqrt( TMath::Pi()/2.0 )*(1+TMath::Erf( alphaJPsi/TMath::Sqrt(2) ) );
-  Double_t Norm = 1.0/(widthJPsi*(C+D) );
-
-  A_JPsi /= Norm;
-  Double_t A_psi = A_JPsi/30.0;
-
-  if (A_JPsi == 0) A_JPsi = 200.;
-  if (A_psi == 0) A_psi = 200.;
-  if (A_Bg <= 0) A_Bg = 100.;
-  if (A_DY == 0) A_DY = 200.;
-
-  Int_t ipar =0;
-  fitFunc->SetParameter(ipar, A_JPsi); ipar++;//JPsi
-  fitFunc->SetParameter(ipar, massJPsi); ipar++;
-  fitFunc->SetParameter(ipar, widthJPsi); ipar++;
-  fitFunc->SetParameter(ipar, alphaJPsi); ipar++;
-  fitFunc->SetParameter(ipar, nJPsi); ipar++;
-  
-  fitFunc->SetParameter(ipar, A_psi); ipar++;//psi
-  
-  fitFunc->SetParameter(ipar, A_Bg); ipar++;//CombBg
-  fitFunc->SetParameter(ipar, Bg_slope); ipar++;
-  fitFunc->SetParameter(ipar, A_DY); ipar++;//DY
-  fitFunc->SetParameter(ipar, DY_slope); ipar++;
-  fitFunc->SetParameter(ipar, Mmin); ipar++;//Mmin
-  if (ipar != nPar){
-    cout << "ipar problem" << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  Double_t factor =100.0;//pT setup
-  fitFunc->SetParLimits(1, 3.0, 3.6);//JPsi
-  fitFunc->SetParLimits(2, 0.1, 0.22);
-  fitFunc->SetParLimits(3, 0.5, 2.5);
-  fitFunc->SetParLimits(4, 1.0001, 10.0);
-  fitFunc->SetParLimits(6, 0.0, A_Bg*factor);//CombBg
-  fitFunc->SetParLimits(7, -7.0, -1.2);
-  fitFunc->SetParLimits(8, 0.0, A_DY*factor);//DY
-  fitFunc->SetParLimits(9, -2.0, 0.0);
-  
-  fitFunc->SetParLimits(10, Mmin, Mmin); ipar++;//Mmin  //*/
-  //}//*/
-
-
-/*void Paras_thirteen(TH1D *h, TF1 *fitFunc, Int_t nPar,
-  Double_t Mmin, Double_t Mmax, Double_t psiMW){
-  //Nominally used for setting up to scan psiMW value
-  Int_t ipar =0;
-  Double_t ratioPsi =psiMW;
-  Double_t massJPsi =3.131;
-  Double_t DY_slope = -0.90, DY_Mmin = 4.5;
-  
-  Double_t A_JPsi = h->GetBinContent(h->FindBin(massJPsi) );
-  Double_t A_psi = h->GetBinContent(h->FindBin(massJPsi*ratioPsi) );
-  Double_t A_Bg =  h->GetBinContent(h->FindBin(Mmin) );
-  Double_t A_DY =  h->GetBinContent(h->FindBin(DY_Mmin) );
-  
-  A_DY /= (TMath::Exp(DY_slope*(DY_Mmin-Mmin)));
-  A_Bg = A_Bg - A_DY;
-
-  if (A_JPsi == 0) A_JPsi = 200.;
-  if (A_psi == 0) A_psi = 200.;
-  if (A_Bg <= 0) A_Bg = 100.;
-  if (A_DY == 0) A_DY = 200.;
-  //fitFunc->SetParameter(ipar, 2.55e4); ipar++;//JPsi
-  fitFunc->SetParameter(ipar, A_JPsi); ipar++;//JPsi
-  fitFunc->SetParameter(ipar, massJPsi); ipar++;
-  fitFunc->SetParameter(ipar, 0.159); ipar++;
-  fitFunc->SetParameter(ipar, 1.23); ipar++;
-  fitFunc->SetParameter(ipar, 21.3); ipar++;
-  
-  //fitFunc->SetParameter(ipar, 1.0e4); ipar++;//psi
-  fitFunc->SetParameter(ipar, A_psi); ipar++;//psi
-  fitFunc->SetParameter(ipar, 1.53); ipar++;
-  fitFunc->SetParameter(ipar, 1.0); ipar++;
-  
-  //fitFunc->SetParameter(ipar, 2.28e4); ipar++;//CombBg
-  fitFunc->SetParameter(ipar, A_Bg); ipar++;//CombBg
-  fitFunc->SetParameter(ipar, -3.0); ipar++;
-  //fitFunc->SetParameter(ipar, 4230); ipar++;//DY
-  fitFunc->SetParameter(ipar, A_DY); ipar++;//DY
-  fitFunc->SetParameter(ipar, DY_slope); ipar++;
-  fitFunc->SetParameter(ipar, Mmin); ipar++;//Mmin
-  fitFunc->SetParameter(ipar, psiMW); ipar++;//psiMW
-  if (ipar != nPar){
-  cout << "ipar problem" << endl;
-  exit(EXIT_FAILURE);
-  }
-  
-  ipar=0;
-  Double_t factor =5.0;
-  fitFunc->SetParLimits(ipar, A_JPsi/factor, A_JPsi*factor); ipar++;//JPsi
-  fitFunc->SetParLimits(ipar, 3.0, 3.6); ipar++;
-  fitFunc->SetParLimits(ipar, 0, 0.22); ipar++;
-  fitFunc->SetParLimits(ipar, 0.5, 3.0); ipar++;
-  fitFunc->SetParLimits(ipar, 10.0, 30.0); ipar++;
-  
-  fitFunc->SetParLimits(ipar, A_psi/factor, A_psi*factor); ipar++;//psi
-  fitFunc->SetParLimits(ipar, 0.5, 4.0); ipar++;
-  fitFunc->SetParLimits(ipar, 0.1, 3.0); ipar++;
-  
-  fitFunc->SetParLimits(ipar, 0.0, A_Bg*factor); ipar++;//CombBg
-  fitFunc->SetParLimits(ipar, -7.0, -2.0); ipar++;
-  fitFunc->SetParLimits(ipar, 0.0, A_DY*factor); ipar++;//DY
-  fitFunc->SetParLimits(ipar, -2.0, 0.0); ipar++;
-  fitFunc->SetParLimits(ipar, Mmin, Mmin); ipar++;//Mmin
-  fitFunc->SetParLimits(ipar, psiMW, psiMW); ipar++;//psiMW
-  if (ipar != nPar){
-  cout << "ipar problem" << endl;
-  exit(EXIT_FAILURE);
-  }
-  }*/
 
 
 TF1* SetupFunc_thirteen(TH1D *h, Bool_t hIsUpS, TF1 *fitFunc, Double_t Mmin,
@@ -755,18 +149,37 @@ TF1* SetupFunc_thirteen(TH1D *h, Bool_t hIsUpS, TF1 *fitFunc, Double_t Mmin,
 }
 
 
-/*TF1* SetupFunc_thirteen(TH1D *h, TF1 *fitFunc, Double_t Mmin, Double_t Mmax,
-  Int_t *nPar, Double_t psiMW){
-  //Setup fit function for scanning psiMW
-  *nPar =13;
+void Basic_thirteenChecks(Double_t *pars){
+  Int_t failure = 0;
+  if (pars[0] < 0 ) {
+    cout << pars[0] << " A_JPsi" << endl;
+    failure++;
+  }
+  if ( (pars[1] < 2.9) || (pars[1] > 3.3) ) {
+    cout << pars[1] << " massJPsi" << endl;
+    failure++;
+  }
+  if ( (pars[2] < 0) || (pars[2] > 0.4) ) {
+    cout << pars[2] << " widthJPsi" << endl;
+    failure++;
+  }
+  if (pars[5] < 0){
+    cout << pars[5] << " A_psi" << endl;
+    failure++;
+  }
+  if (pars[6] < 0){
+    cout << pars[6] << " A_Bg" << endl;
+    failure++;
+  }
+  if (pars[8] < 0){
+    cout << pars[9] << " A_DY" << endl;
+    failure++;
+  }
 
-  fitFunc = new TF1("fitFunc", Fit_thirteen_scan, Mmin, Mmax, *nPar);
-
-  //Setup intial parameters of fit and parameter constraints
-  Paras_thirteen(h, fitFunc, *nPar, Mmin, Mmax, psiMW);
-
-  return fitFunc;
-  }//*/
+  if (failure){
+    exit(EXIT_FAILURE);
+  }
+}
 
 
 void ProcessPars_thirteen(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
@@ -775,7 +188,8 @@ void ProcessPars_thirteen(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
   //Gets some physical parameters, sets up cov matrix
   Double_t *pars = fitFunc->GetParameters();
   Double_t psiMW = (hIsUpS) ? Get_thirteen_Ratio("UpS") : Get_thirteen_Ratio("DownS");
-  
+  Basic_thirteenChecks(pars);
+
   processPars[0] = pars[0];//JPsi
   processPars[1] = pars[1];
   processPars[2] = pars[2];
@@ -826,35 +240,13 @@ void ProcessPars_thirteen(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
 }
 
 
-/*void ProcessPars_thirteen(TF1 *fitFunc, Double_t *processPars,Double_t *LR_cov,
-  TMatrixDSym &cov, TString process, Int_t nPars,
-  Bool_t hIsUpS, Double_t *e_processPars){
-  //Gets some physical parameters, sets up cov matrix
-  //    and gets errors of physical parameters
-  ProcessPars_thirteen(fitFunc, processPars, LR_cov, cov, process,nPars,hIsUpS);
-  const Double_t *e_pars = fitFunc->GetParErrors();
-  
-  Double_t psiMW = (hIsUpS) ? Get_thirteen_Ratio("UpS") : Get_thirteen_Ratio("DownS");
-
-  e_processPars[0] = e_pars[0];//JPsi
-  e_processPars[1] = e_pars[1];
-  e_processPars[2] = e_pars[2];
-
-  e_processPars[3] = e_pars[5];//psi
-  e_processPars[4] = e_pars[1]*psiMW;
-  e_processPars[5] = e_pars[2]*psiMW;
-
-  e_processPars[6] = e_pars[10];//DY
-  e_processPars[7] = e_pars[11];
-  }*/
-
-
 void ProcessPars_thirteen(TF1 *fitFunc, Double_t *processPars,
 			  Double_t *e_processPars, TString process,
 			  Bool_t hIsUpS){
   //Used to monitor some physical parameters
   Double_t *pars = fitFunc->GetParameters();
   const Double_t *e_pars = fitFunc->GetParErrors();
+  Basic_thirteenChecks(pars);
   
   Double_t psiMW;
   if (hIsUpS) psiMW = Get_thirteen_Ratio("UpS");
@@ -888,25 +280,12 @@ void ProcessPars_thirteen(TF1 *fitFunc, Double_t *processPars,
 }
 
 
-/*void ProcessPars_thirteen(TF1 *fitFunc, vector<vector<Double_t> > &processPars,
-  vector<vector<Double_t> > &e_processPars, Bool_t hIsUpS){
-  //Used to monitor all output paramters
-  //For macro functParas.C
-  Double_t *pars = fitFunc->GetParameters();
-  const Double_t *e_pars = fitFunc->GetParErrors();
-
-  for (Int_t i=0; i<13; i++) {
-  processPars[i].push_back(pars[i]);
-  e_processPars[i].push_back(e_pars[i]);
-  }
-  }*/
-
-
 void ProcessPhysicsPars_thirteen(TF1 *fitFunc, Double_t *processPars,
   Double_t *e_processPars, TString process,
   Bool_t hIsUpS){
   Double_t *pars = fitFunc->GetParameters();
   const Double_t *e_pars = fitFunc->GetParErrors();
+  Basic_thirteenChecks(pars);
 
   Double_t psiMW;
   if (hIsUpS) psiMW = Get_thirteen_Ratio("UpS");
@@ -1001,80 +380,5 @@ void IntegrateLR_thirteen(TF1 *f, Double_t *pars, Double_t *LR_cov,
     (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, DY_pars, LR_cov)/binWidth;
   }
 }
-
-
-/*void IntegrateLR_thirteen(TF1 *f, Double_t *pars, Double_t *LR_cov,
-  Double_t binWidth, Double_t LR_width, Double_t *LR,
-  Double_t *e_LR, Bool_t hIsUpS, TString process){
-  //Integration considering correlation errors
-  //Integrate around mass value
-  Double_t Mass = pars[1];
-  Double_t psiMW;
-  if (process == "psi") {
-  psiMW = (hIsUpS) ? Get_thirteen_Ratio("UpS"):Get_thirteen_Ratio("DownS");
-  Mass *= psiMW;
-  }
-  Double_t LR_Mmin = Mass - LR_width;
-  Double_t LR_Mmax = Mass + LR_width;
-  
-  (*LR) = f->Integral(LR_Mmin, LR_Mmax)/binWidth;
-  if (process =="JPsi"){
-  (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, pars, LR_cov)/binWidth;
-  }
-  else if (process =="psi"){
-  Double_t psi_pars[] =
-  {pars[5], psiMW*pars[1], psiMW*pars[2], pars[6], pars[7]};
-  (*e_LR) = f->IntegralError(LR_Mmin, LR_Mmax, psi_pars, LR_cov)/binWidth;
-  }
-  else {
-  cout << "Process not defined for this IntegrateLR_thirteen" << endl;
-  }
-  }*/
-
-
-/*void IntegrateLRpercent_thirteen(TF1 *f, Double_t *pars, Double_t *LR_cov,
-  Double_t binWidth, Double_t widthFraction,
-  Double_t *LR, Double_t *e_LR, Bool_t hIsUpS,
-  Double_t Mmin,Double_t Mmax, TString process){
-  //Integrate around mass value with an interval as a percentage of the width
-  if (process != "JPsi"  && process != "psi") {
-  cout << "Process not defined for this IntegrateLR_ten" << endl;
-  exit(EXIT_FAILURE);
-  }
-
-  //Integrate around mass value
-  Double_t psiMW = (hIsUpS) ? Get_thirteen_Ratio("UpS") : Get_thirteen_Ratio("DownS");
-  Double_t Mass = (process=="JPsi") ? pars[1] : psiMW*pars[1];
-  Double_t Width = (process=="JPsi") ? pars[2] : psiMW*pars[2];
-  
-  Double_t LR_Mmin = Mass - Width*widthFraction;
-  Double_t LR_Mmax = Mass + Width*widthFraction;
-  
-  IntegrateLR_thirteen(f, pars, LR_cov, binWidth, LR_Mmin, LR_Mmax, LR, e_LR,
-  Mmin, Mmax, hIsUpS, process);
-  }*/
-
-
-/*void IntegrateLRpercent_thirteen(TF1 *f, Double_t *pars, Double_t binWidth,
-  Double_t widthFraction, Double_t *LR,
-  Double_t *e_LR, Bool_t hIsUpS, TString process){
-  //Integrate around mass value with an interval as a percentage of the width
-  //Correlation errors not taken into account
-  if (process != "JPsi"  && process != "psi") {
-  cout << "Process not defined for this IntegrateLR_ten" << endl;
-  exit(EXIT_FAILURE);
-  }
-
-  //Integrate around mass value
-  Double_t psiMW = (hIsUpS) ? Get_thirteen_Ratio("UpS") : Get_thirteen_Ratio("DownS");
-  Double_t Mass = (process=="JPsi") ? pars[1] : psiMW*pars[1];
-  Double_t Width = (process=="JPsi") ? pars[2] : psiMW*pars[2];
-  
-  Double_t LR_Mmin = Mass - Width*widthFraction;
-  Double_t LR_Mmax = Mass + Width*widthFraction;
-  
-  IntegrateLR_thirteen(f, binWidth, LR_Mmin, LR_Mmax, LR, e_LR);
-  }//*/
-
 
 #endif
