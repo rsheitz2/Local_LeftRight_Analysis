@@ -11,7 +11,7 @@ void FinalLocalIntegrated(TGraphErrors *g);
 
 void physBinnedData(TString start=""){
   //Setup_______________
-  /*const Int_t nBins =3;//HMDY
+  const Int_t nBins =3;//HMDY
   TString Mtype ="HMDY";
   Int_t hbins =150;
   TString process ="DY";//JPsi, psi, DY
@@ -22,7 +22,7 @@ void physBinnedData(TString start=""){
   TString production ="slot1";
   TString additionalCuts ="phiS0.0";//*/
 
-  const Int_t nBins =4;//JPsi
+  /*const Int_t nBins =4;//JPsi
   TString Mtype ="LowM_AMDY";
   Int_t hbins =150;
   TString process ="JPsi";//JPsi, psi, DY
@@ -115,6 +115,7 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
     FinalSetupLocal(g_AN_upS[phys], xNames[phys], 2*yMax);
     g_AN_upS[phys]->GetYaxis()->SetNdivisions(505);
     if (integrated) { FinalLocalIntegrated(g_AN_upS[phys]); }
+    g_AN_upS[phys]->SetMarkerStyle(22);
 
     g_AN_downS[phys] =(TGraphErrors*)f_AN->Get("AN_downs");
     g_AN_downS[phys]->SetName("AN_downs");
@@ -122,6 +123,7 @@ TGeant/Local_LeftRight_Analysis/Macros/FinalAsym/Data/WAvg";
     g_AN_downS[phys]->GetYaxis()->SetNdivisions(505);
     if (integrated) { FinalLocalIntegrated(g_AN_downS[phys]); }
     g_AN_downS[phys]->SetMarkerColor(kBlue);
+    g_AN_downS[phys]->SetMarkerStyle(23);
     DrawLegend(g_AN_downS[phys]);
   }//phys binned loop
   

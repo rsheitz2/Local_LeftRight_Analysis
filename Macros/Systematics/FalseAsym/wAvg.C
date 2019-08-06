@@ -30,6 +30,8 @@ void AddErrorWAvg(TGraph *g, Double_t *yWavg){
 }
 
 
+void TableFormat(TString p, TString physBinned, TGraphErrors *g);
+
 void wAvg(){
   //Setup_______________
   const Int_t nBins =3;//HMDY
@@ -44,7 +46,7 @@ void wAvg(){
   TString production ="slot1";
   TString additionalCuts ="phiS0.0";//*/
 
-  /*const Int_t nBins =1;//JPsi
+  /*const Int_t nBins =4;//JPsi
   TString fitMrangeType ="HMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
@@ -195,7 +197,10 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
   TGraph* g_WAvg_Sys_Stat = new TGraph(nBins, xvals, ySys_stat);
   
   SetUp(g_WAvg_FAsubper); SetUp(g_WAvg_Acc); SetUp(g_WAvg_FApol);
-  SetUp(g_WAvg_Sys); SetUp(g_WAvg_Sys_Stat); 
+  SetUp(g_WAvg_Sys); SetUp(g_WAvg_Sys_Stat);
+
+  TableFormat("False Asymmetry", physBinned, g_WAvg_FAsubper);
+  TableFormat("Acceptance Ratio", physBinned, g_WAvg_Acc);
 
   //Draw data
   TCanvas* cFA = new TCanvas();
@@ -265,4 +270,14 @@ accSys4TargRatio_%s_%s_%s_%s%s_%s%s%i_%s_%s.root",
     cout << "File:  " << fOutput << "   was written" << endl;
   }
   else cout << "File: " << fOutput << " was NOT written" << endl;
+}
+
+
+void TableFormat(TString p, TString physBinned, TGraphErrors *g){
+  Double_t *yval = g->GetY();
+  Double_t *e_yval = g->GetEY();
+  for (Int_t i=0; i<g->GetN(); i++) {
+    cout << p << ", " << physBinned << ", "
+	 << yval[i] << ", " << e_yval[i] << endl;
+  }
 }

@@ -10,6 +10,14 @@ void AddData(TGraphErrors *g, Double_t *wAvg, Double_t *eWavg){
 }
 
 
+void TableFormat(Int_t p, TString physBinned, TGraphErrors *g);
+
+void TableFormat(Int_t p, TString physBinned, TGraphErrors *g,
+		 TGraphErrors *g_uncorr);
+
+void TableFormat(TString p, TString physBinned, TGraphErrors *g,
+		 TGraphErrors *g_uncorr);
+
 void FinalWavg(Double_t *wAvg, Double_t *eWavg, Int_t nBins){
   for (Int_t i=0; i<nBins; i++) {
     wAvg[i] /= eWavg[i];
@@ -20,7 +28,7 @@ void FinalWavg(Double_t *wAvg, Double_t *eWavg, Int_t nBins){
 
 void wAvg(){
   //Setup_______________
-  const Int_t nBins =3;//HMDY
+  /*const Int_t nBins =3;//HMDY
   TString Mtype ="HMDY";
   Int_t hbins =150;
   TString physBinned ="M";//xN, xPi, xF, pT, M
@@ -32,14 +40,14 @@ void wAvg(){
   TString production ="slot1";
   TString additionalCuts ="phiS0.0";//*/
 
-  /*const Int_t nBins =1;//JPsi
-  TString Mtype ="HMDY";
+  const Int_t nBins =4;//JPsi
+  TString Mtype ="LowM_AMDY";
   Int_t hbins =150;
-  TString physBinned ="xN";//xN, xPi, xF, pT, M
-  TString process ="DY";//JPsi, psi, DY
-  TString lrMrange ="4.30_8.50";
-  TString fitMrange ="4.30_8.50";
-  TString binRange ="43_85";
+  TString physBinned ="M";//xN, xPi, xF, pT, M
+  TString process ="JPsi";//JPsi, psi, DY
+  TString lrMrange ="2.87_3.38";
+  TString fitMrange ="2.87_3.38";
+  TString binRange ="29_34";
   TString whichFit ="true";
   TString production ="slot1";
   TString additionalCuts ="phiS0.0";//*/
@@ -55,6 +63,7 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
   TString period[nPer] ={"07", "08", "09", "10", "11", "12", "13", "14", "15"};
   
   Double_t yVal_wAvg[nBins] ={0.0}, e_yVal_wAvg[nBins] ={0.0};
+  Double_t yVal_wAvg_uncorr[nBins] ={0.0}, e_yVal_wAvg_uncorr[nBins] ={0.0};
   Double_t yVal_wAvg_upS[nBins] ={0.0}, e_yVal_wAvg_upS[nBins] ={0.0};
   Double_t yVal_wAvg_downS[nBins] ={0.0}, e_yVal_wAvg_downS[nBins] ={0.0};
   Double_t ex[nBins] ={0.0};
@@ -81,23 +90,30 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
     }
     TFile *f_Wper = OpenFile(n_Wper);
     TGraphErrors *g_Wper = (TGraphErrors*) f_Wper->Get("AN");
+    TGraphErrors *g_Wper_uncorr = (TGraphErrors*) f_Wper->Get("ANuncorr");
     TGraphErrors *g_Wper_upS = (TGraphErrors*) f_Wper->Get("AN_ups");
     TGraphErrors *g_Wper_downS = (TGraphErrors*) f_Wper->Get("AN_downs");
 
     AddData(g_Wper, yVal_wAvg, e_yVal_wAvg);
+    AddData(g_Wper_uncorr, yVal_wAvg_uncorr, e_yVal_wAvg_uncorr);
     AddData(g_Wper_upS, yVal_wAvg_upS, e_yVal_wAvg_upS);
     AddData(g_Wper_downS, yVal_wAvg_downS, e_yVal_wAvg_downS);
+
+    TableFormat(p, physBinned, g_Wper, g_Wper_uncorr);
 
     if (p==0) xvals = g_Wper->GetX();
   }
 
   //Final wAvg calculation
   FinalWavg(yVal_wAvg, e_yVal_wAvg, nBins);
+  FinalWavg(yVal_wAvg_uncorr, e_yVal_wAvg_uncorr, nBins);
   FinalWavg(yVal_wAvg_upS, e_yVal_wAvg_upS, nBins);
   FinalWavg(yVal_wAvg_downS, e_yVal_wAvg_downS, nBins);
 
   TGraphErrors* g_WAvg =
     new TGraphErrors(nBins, xvals, yVal_wAvg, ex, e_yVal_wAvg);
+  TGraphErrors* g_WAvg_uncorr =
+    new TGraphErrors(nBins, xvals, yVal_wAvg_uncorr, ex, e_yVal_wAvg_uncorr);
   TGraphErrors* g_WAvg_upS =
     new TGraphErrors(nBins, xvals, yVal_wAvg_upS, ex, e_yVal_wAvg_upS);
   TGraphErrors* g_WAvg_downS =
@@ -113,6 +129,8 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
     g_WAvg_upS->GetXaxis()->SetLimits(0.05, 0.65);
     g_WAvg_downS->GetXaxis()->SetLimits(0.05, 0.65);
   }
+
+  TableFormat("avg", physBinned, g_WAvg, g_WAvg_uncorr);
 
   //Draw data
   TCanvas* c1 = new TCanvas();
@@ -154,7 +172,7 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
     g_WAvg_downS->Write("AN_downs");
   }
 
-  cout << " " << endl;
+  /*cout << " " << endl;
   cout << "Settings________" << endl;
   cout << "Data coming from:            " << pathAN << endl;
   cout << "physBinned nBins times:     " << nBins << endl;
@@ -173,5 +191,45 @@ TGeant/Local_LeftRight_Analysis/Macros/AN_calculation/Data/GeoMean4Targ";
   if (toWrite){
     cout << "File:  " << fOutput << "   was written" << endl;
   }
-  else cout << "File: " << fOutput << " was NOT written" << endl;
+  else cout << "File: " << fOutput << " was NOT written" << endl;*/
+}
+
+
+void TableFormat(Int_t p, TString physBinned, TGraphErrors *g){
+  Double_t *yval = g->GetY();
+  Double_t *e_yval = g->GetEY();
+  for (Int_t i=0; i<g->GetN(); i++) {
+    cout << "W" << p+7 << ", " << physBinned << ", "
+	 << yval[i] << ", " << e_yval[i] << endl;
+  }
+}
+
+
+void TableFormat(Int_t p, TString physBinned, TGraphErrors *g,
+		 TGraphErrors *g_uncorr){
+  Double_t *yval = g->GetY();
+  Double_t *e_yval = g->GetEY();
+  Double_t *yval_uncorr = g_uncorr->GetY();
+  Double_t *e_yval_uncorr = g_uncorr->GetEY();
+  for (Int_t i=0; i<g->GetN(); i++) {
+    cout << "W" << p+7 << ", " << physBinned << ", "
+	 << yval[i] << ", " << e_yval[i] << ", "
+	 << yval_uncorr[i] << ", " << e_yval_uncorr[i] << ", "
+	 <<  yval_uncorr[i]/yval[i] << endl;
+  }
+}
+
+
+void TableFormat(TString p, TString physBinned, TGraphErrors *g,
+		 TGraphErrors *g_uncorr){
+  Double_t *yval = g->GetY();
+  Double_t *e_yval = g->GetEY();
+  Double_t *yval_uncorr = g_uncorr->GetY();
+  Double_t *e_yval_uncorr = g_uncorr->GetEY();
+  for (Int_t i=0; i<g->GetN(); i++) {
+    cout << p << ", " << physBinned << ", "
+	 << yval[i] << ", " << e_yval[i] << ", "
+	 << yval_uncorr[i] << ", " << e_yval_uncorr[i] << ", "
+	 <<  yval_uncorr[i]/yval[i] << endl;
+  }
 }

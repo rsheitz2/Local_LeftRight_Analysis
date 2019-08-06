@@ -2,7 +2,7 @@
 
 void falseApullDist(TString start=""){
   //Setup_______________
-  /*const Int_t nBins =3;//HMDY
+  const Int_t nBins =3;//HMDY
   TString fitMrangeType ="HMDY";
   Int_t hbins =150;
   TString process ="DY";
@@ -13,7 +13,7 @@ void falseApullDist(TString start=""){
   TString production ="slot1";//"t3", "slot1"
   TString additionalCuts ="phiS0.0";//*/
 
-  const Int_t nBins =4;//JPsi
+  /*const Int_t nBins =4;//JPsi
   TString fitMrangeType ="LowM_AMDY";
   Int_t hbins =150;
   TString process ="JPsi";//JPsi, psi

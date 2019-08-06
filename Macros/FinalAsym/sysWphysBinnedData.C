@@ -34,15 +34,15 @@ void sysWphysBinnedData(TString start=""){
   TString additionalCuts ="phiS0.0";//*/
 
   const Int_t nBins =4;//JPsi
-    TString Mtype ="LowM_AMDY";
-    Int_t hbins =150;
-    TString process ="JPsi";//JPsi, psi, DY
-    TString lrMrange ="2.87_3.38";
-    TString fitMrange ="2.87_3.38";
-    TString binRange ="29_34";
-    TString whichFit ="true";
-    TString production ="slot1";
-    TString additionalCuts ="phiS0.0";//*/
+  TString Mtype ="LowM_AMDY";
+  Int_t hbins =150;
+  TString process ="JPsi";//JPsi, psi, DY
+  TString lrMrange ="2.87_3.38";
+  TString fitMrange ="2.87_3.38";
+  TString binRange ="29_34";
+  TString whichFit ="true";
+  TString production ="slot1";
+  TString additionalCuts ="phiS0.0";//*/
 
   Bool_t toWrite =false;
   Bool_t b_AnCorrected =true;
@@ -56,10 +56,10 @@ void sysWphysBinnedData(TString start=""){
     b_additional =true; b_period =false; b_impurity =false;
   }
   else if (Mtype=="LowM_AMDY"){
-    /*b_alphaAcc =true; b_lrCrossOver =true; b_faPull =true;
+    b_alphaAcc =true; b_lrCrossOver =true; b_faPull =true;
       b_additional =true; b_period =true; b_impurity =true;//*/
 
-    b_alphaAcc =false; b_lrCrossOver =false; b_faPull =false;
+      /*b_alphaAcc =false; b_lrCrossOver =false; b_faPull =false;
     b_additional =false; b_period =false; b_impurity =false;//*/
   }
   cout << "Systematic effects included" << endl;
@@ -203,14 +203,14 @@ TGeant/Local_LeftRight_Analysis";
     g_AN[phys] =(TGraphErrors*)f_AN->Get("AN");
 
     if (b_AnCorrected){
-      if (phys==0) cout << "AN correction pi/2" << endl;
-      for (Int_t bi=0; bi<nBins; bi++) {
+      if (phys==0) cout << "\n!!!AN correction pi/2!!!\n" << endl;
+      for (Int_t bi=0; bi<nBinsName; bi++) {
 	g_AN[phys]->GetY()[bi] *= TMath::Pi()/2.0;
 	g_AN[phys]->GetEY()[bi] *= TMath::Pi()/2.0;
       }
     }
     g_AN[phys]->Draw("AP"); g_AN[phys]->GetYaxis()->SetRangeUser(-yMax, yMax);
-
+    
     if (nBins==4){
       if (physBinned[phys] == "xN")
 	g_AN[phys]->GetXaxis()->SetLimits(0.02, 0.17);
@@ -234,7 +234,10 @@ TGeant/Local_LeftRight_Analysis";
       g_AN[phys]->GetXaxis()->SetLabelSize(0.0);
       g_AN[phys]->GetXaxis()->SetTickSize(0.0);
 
+      cout << "\nIntegrated Asym:  " << g_AN[phys]->GetY()[0] << endl;
       cout << "Integrated error:  " << g_AN[phys]->GetEY()[0] << endl;
+      cout << "Integrated x value:  " << physBinned[phys] << " = "
+	   << g_AN[phys]->GetX()[0] << "\n"<<endl;
     }
     DrawLine(g_AN[phys], 0.0);
     Double_t *xvals = g_AN[phys]->GetX();
@@ -330,6 +333,12 @@ TGeant/Local_LeftRight_Analysis";
       Double_t sysOverStat[1];
       CalTotalSysOverStat(sysErr, g_AN[phys], sysOverStat);
       g_sys_stat[phys] = new TGraph(1, xvals, sysOverStat);
+
+      Double_t tot_int_error = sysErr[0]*sysErr[0]
+	+ g_AN[phys]->GetEY()[0]*g_AN[phys]->GetEY()[0];
+      cout << "\nIntegrated sys error:  " << sysErr[0] << endl;
+      cout << "Integrated stat + sys error:  " << TMath::Sqrt(tot_int_error)
+	   << "\n"<<endl;
     }
     else{//Not integrated
       Double_t yvals[nBins], eyb[nBins] = {0.0};

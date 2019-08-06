@@ -15,8 +15,8 @@ Double_t e_OneTargAmp(Double_t *NL, Double_t *NR,
 
 void GeoMean4Targ(TString start =""){
   //Setup_______________
-  /*const Int_t nBins =3;//HMDY
-  TString period_Mtype ="WAll_HMDY";
+  const Int_t nBins =3;//HMDY
+  TString period_Mtype ="W15_HMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
   TString process ="DY";//JPsi, psi, DY
@@ -27,7 +27,7 @@ void GeoMean4Targ(TString start =""){
   TString production ="slot1";//"t3", "slot1"
   TString additionalCuts ="phiS0.0";//*/
 
-  const Int_t nBins =5;//JPsi
+  /*const Int_t nBins =5;//JPsi
   TString period_Mtype ="WAll_LowM_AMDY";
   Int_t hbins =150;
   TString physBinned ="xN";//xN, xPi, xF, pT, M
@@ -37,7 +37,7 @@ void GeoMean4Targ(TString start =""){
   TString binRange ="25_43";
   TString whichFit ="true";
   TString production ="slot1";//"t3", "slot1"
-  TString additionalCuts ="phiS0.0";
+  TString additionalCuts ="phiS0.0";//*/
 
   Bool_t toWrite =false;
   //Setup_______________
@@ -211,6 +211,9 @@ TGeant/Local_leftRight_Analysis/Data/";
       e_OneTargAmp(&(LeftCounts[bi][2]), &(RightCounts[bi][2]), 
 		   &(e_LeftCounts[bi][2]), &(e_RightCounts[bi][2]),
 		   Pol_downs[bi]);
+
+    cout << "AN corrected geomean: " << AN_4targ[bi] << " +/- "
+	 << e_AN_4targ[bi] << "\n";
   }
 
   //Draw AN

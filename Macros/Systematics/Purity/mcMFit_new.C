@@ -25,12 +25,12 @@ void mcMFit_new(){
   //Setup_______________
   TString period_Mtype ="WAll_LowM_AMDY"; 
   Int_t hbins =150;//# of histogram bins using in mass fitting
-  const Int_t nBins =5;
-  TString binRange ="25_43"; //"29_34";
+  const Int_t nBins =4;
+  TString binRange ="29_34"; //"29_34";
   TString physBinned ="pT";//"xN", "xPi", "xF", "pT"
   TString process ="JPsi";//JPsi, psi, DY
-  Double_t LR_Mmin =2.5;
-  Double_t LR_Mmax =4.3;//L/R counts mass range
+  Double_t LR_Mmin =2.87;
+  Double_t LR_Mmax =3.38;//L/R counts mass range
   Double_t Mmin =2.00;//Fit Mass minimum
   Double_t Mmax =8.50;//Fit Mass maximum
   
